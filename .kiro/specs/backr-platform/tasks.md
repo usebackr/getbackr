@@ -1,0 +1,408 @@
+# Implementation Plan: Backr Platform
+
+## Overview
+
+Incremental implementation of the Backr MVP: infrastructure and data layer first, then auth and KYC, then campaign and wallet services, then contribution and payment flows, then engagement features (spending log, updates, boost, email tool), then social sharing, subscriptions, discovery, and finally real-time dashboard wiring.
+
+All code is TypeScript (Node.js / Next.js). Property-based tests use [fast-check](https://github.com/dubzzz/fast-check).
+
+---
+
+## Tasks
+
+- [x] 1. Project scaffold and infrastructure setup
+  - Initialise Next.js (App Router) project with TypeScript
+  - Configure ESLint, Prettier, and path aliases
+  - Set up PostgreSQL connection (pg / Drizzle ORM) and Redis client (ioredis)
+  - Configure Bull queue with Redis
+  - Set up environment variable schema (zod) and `.env.example`
+  - Configure Jest + Supertest for API tests and fast-check for property tests
+  - _Requirements: all_
+
+- [x] 2. Database schema and migrations
+  - [x] 2.1 Create migration files for all tables: `users`, `campaigns`, `project_wallets`, `contributions`, `withdrawals`, `spending_logs`, `campaign_updates`, `boost_purchases`, `email_campaigns`, `email_contacts`, `subscriptions`, `audit_logs`
+    - Define all columns, types, constraints, and indexes as specified in the data models
+    - _Requirements: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14_
+  - [ ]* 2.2 Write property test for schema integrity
+    - Verify that inserting a duplicate email is rejected at the DB level (unique constraint)
+    - **Property 1: Duplicate email registration is rejected**
+    - **Validates: Requirements 1.3**
+
+- [x] 3. Auth service — registration and email verification
+  - [x] 3.1 Implement `POST /api/auth/register` — validate input, hash password (bcrypt cost 12), create user, enqueue verification email
+    - Enforce password policy: ≥8 chars, uppercase, lowercase, digit
+    - Return 409 if email already exists
+    - _Requirements: 1.1, 1.3, 1.7, 13.3_
+  - [ ]* 3.2 Write property test for duplicate email rejection
+    - **Property 1: Duplicate email registration is rejected**
+    - **Validates: Requirements 1.3**
+  - [ ]* 3.3 Write property test for invalid password rejection
+    - **Property 3: Invalid passwords are rejected**
+    - **Validates: Requirements 1.7**
+  - [ ]* 3.4 Write property test for bcrypt cost factor
+    - **Property 49: Passwords stored as bcrypt hashes**
+    - **Validates: Requirements 13.3**
+  - [x] 3.5 Implement `POST /api/auth/verify-email` — validate token, activate account, redirect to onboarding
+    - _Requirements: 1.2_
+  - [ ]* 3.6 Write property test for email verification round trip
+    - **Property 2: Email verification activates account (round trip)**
+    - **Validates: Requirements 1.2**
+
+- [x] 4. Auth service — login, JWT, refresh, and 2FA
+  - [x] 4.1 Implement `POST /api/auth/login` — verify credentials, issue JWT + refresh token, write audit log entry
+    - Increment `failed_login_count` on failure; lock account after 5 consecutive failures for 15 min
+    - Return 423 with time-remaining when account is locked
+    - _Requirements: 13.2, 13.5, 13.6_
+  - [ ]* 4.2 Write property test for account lockout after 5 failed logins
+    - **Property 51: Account lockout after 5 failed logins**
+    - **Validates: Requirements 13.6**
+  - [x] 4.3 Implement `POST /api/auth/logout` — invalidate refresh token, write audit log entry
+    - _Requirements: 13.5_
+  - [x] 4.4 Implement `POST /api/auth/refresh` — rotate access token using valid refresh token
+    - _Requirements: 13.1_
+  - [x] 4.5 Implement `POST /api/auth/2fa/setup` and `POST /api/auth/2fa/verify` — enrol TOTP/SMS, verify code
+    - _Requirements: 13.2_
+  - [ ]* 4.6 Write property test for 2FA login round trip
+    - **Property 48: 2FA login round trip**
+    - **Validates: Requirements 13.2**
+  - [x] 4.7 Implement auth event audit logging middleware — capture login, logout, failed login with IP and timestamp
+    - _Requirements: 13.5_
+  - [ ]* 4.8 Write unit tests for auth events logged with metadata
+    - Verify audit log entries contain event type, timestamp, and IP address
+    - **Property 50: Auth events logged with metadata**
+    - **Validates: Requirements 13.5**
+
+- [x] 5. Checkpoint — auth tests pass
+  - Ensure all auth tests pass, ask the user if questions arise.
+
+- [x] 6. KYC service
+  - [x] 6.1 Implement `POST /api/kyc/submit` — upload ID + selfie to S3-compatible storage, create KYC job, set `kyc_status = pending`
+    - Restrict document storage access to admins only
+    - _Requirements: 1.4, 13.7_
+  - [x] 6.2 Implement `GET /api/kyc/status` — return current KYC status for authenticated creator
+    - _Requirements: 1.4_
+  - [x] 6.3 Implement `POST /api/kyc/webhook` — receive async result from KYC provider, update `kyc_status`, notify creator on rejection
+    - _Requirements: 1.4, 1.5_
+  - [ ]* 6.4 Write unit tests for KYC status transitions
+    - Test: pending → verified, pending → rejected, rejected → resubmitted
+    - _Requirements: 1.4, 1.5_
+  - [ ]* 6.5 Write unit test for KYC document access restriction
+    - **Property 52: KYC documents inaccessible to non-admins**
+    - **Validates: Requirements 13.7**
+
+- [x] 7. Creator profile service
+  - [x] 7.1 Implement `GET /api/creators/:username` — public profile with display name, bio, avatar, social links, category, and active/completed campaigns
+    - _Requirements: 2.1, 2.3_
+  - [x] 7.2 Implement `PUT /api/creators/me` — update bio, avatar, social links, category
+    - _Requirements: 2.2_
+  - [x] 7.3 Implement `PUT /api/creators/me/username` — change username with uniqueness check
+    - Return error if username already taken
+    - _Requirements: 2.4_
+  - [ ]* 7.4 Write property test for profile URL uniqueness
+    - **Property 5: Creator profile URL uniqueness**
+    - **Validates: Requirements 2.1, 2.4**
+  - [ ]* 7.5 Write property test for profile update round trip
+    - **Property 6: Profile update round trip**
+    - **Validates: Requirements 2.2, 2.3**
+
+- [x] 8. Campaign service — creation and management
+  - [x] 8.1 Implement `POST /api/campaigns` — validate KYC status, create campaign record, provision project wallet in a single transaction
+    - Reject if `kyc_status != verified`
+    - Generate unique slug from title
+    - _Requirements: 3.1, 3.2, 3.5, 4.1_
+  - [ ]* 8.2 Write property test for campaign creation provisions wallet
+    - **Property 7: Campaign creation provisions a wallet**
+    - **Validates: Requirements 3.1, 4.1**
+  - [ ]* 8.3 Write property test for unverified KYC blocks campaign creation
+    - **Property 8: Unverified KYC blocks campaign creation**
+    - **Validates: Requirements 3.5**
+  - [x] 8.4 Implement `POST /api/campaigns/:id/publish` — transition campaign from `draft` to `active`
+    - _Requirements: 3.3_
+  - [ ]* 8.5 Write unit test for published campaign appears in listings
+    - **Property 9: Published campaign appears in listings**
+    - **Validates: Requirements 3.3**
+  - [x] 8.6 Implement `PUT /api/campaigns/:id` — allow editing description and cover image only; reject changes to goal or end date on active campaigns
+    - _Requirements: 3.4_
+  - [ ]* 8.7 Write unit test for active campaign editable fields invariant
+    - **Property 10: Active campaign editable fields invariant**
+    - **Validates: Requirements 3.4**
+  - [x] 8.8 Implement campaign auto-close scheduler — Bull job that sets `status = closed` for campaigns past `end_date`
+    - _Requirements: 3.6_
+  - [ ]* 8.9 Write unit test for expired campaign auto-closes
+    - **Property 11: Expired campaign auto-closes**
+    - **Validates: Requirements 3.6**
+  - [x] 8.10 Implement `POST /api/campaigns/:id/cancel` — allow cancellation only if no confirmed contributions exist
+    - _Requirements: 3.7, 3.8_
+  - [ ]* 8.11 Write unit tests for campaign cancellation rules
+    - Test zero-contribution cancel succeeds (Property 12)
+    - Test funded campaign cancel rejected (Property 13)
+    - **Validates: Requirements 3.7, 3.8**
+
+- [x] 9. Checkpoint — campaign and KYC tests pass
+  - Ensure all campaign and KYC tests pass, ask the user if questions arise.
+
+- [x] 10. Wallet and contribution service
+  - [x] 10.1 Implement `POST /api/campaigns/:id/contribute` — validate amount ≥ minimum, supported currency, return Paystack/Flutterwave checkout URL
+    - Reject contributions to non-active or expired campaigns
+    - _Requirements: 7.1, 7.2, 7.5, 7.7_
+  - [ ]* 10.2 Write property test for minimum contribution enforcement
+    - **Property 28: Minimum contribution enforcement**
+    - **Validates: Requirements 7.7**
+  - [ ]* 10.3 Write unit test for contribution initiates payment URL
+    - **Property 24: Contribution initiates payment URL**
+    - **Validates: Requirements 7.1**
+  - [x] 10.4 Implement `POST /api/payments/webhook` — verify gateway signature, handle `contribution.confirmed`, `contribution.failed`, `boost.confirmed`, `subscription.confirmed` events idempotently
+    - On `contribution.confirmed`: calculate fee (3–5%), credit net amount to wallet, enqueue receipt email, record contribution
+    - On `contribution.failed`: no wallet credit, mark contribution failed
+    - _Requirements: 4.2, 4.3, 7.3, 7.4_
+  - [ ]* 10.5 Write property test for platform fee invariant
+    - **Property 14: Platform fee invariant**
+    - **Validates: Requirements 4.3**
+  - [ ]* 10.6 Write property test for wallet balance reflects contributions
+    - **Property 15: Wallet balance reflects contributions**
+    - **Validates: Requirements 4.2, 4.4**
+  - [ ]* 10.7 Write unit test for failed payment does not credit wallet
+    - **Property 25: Failed payment does not credit wallet**
+    - **Validates: Requirements 7.4**
+  - [ ]* 10.8 Write unit test for guest contribution accepted
+    - **Property 26: Guest contribution is accepted**
+    - **Validates: Requirements 7.5**
+  - [ ]* 10.9 Write unit test for registered backer contribution history round trip
+    - **Property 27: Registered backer contribution history round trip**
+    - **Validates: Requirements 7.6**
+  - [ ]* 10.10 Write unit test for confirmed payment receipt enqueued
+    - **Property 29: Confirmed payment receipt enqueued**
+    - **Validates: Requirements 7.3**
+
+- [x] 11. Withdrawal service
+  - [x] 11.1 Implement `POST /api/campaigns/:id/withdraw` — validate KYC verified and sufficient balance, generate OTP, enqueue OTP delivery
+    - Reject if `kyc_status != verified`
+    - _Requirements: 4.5, 4.8, 13.4_
+  - [ ]* 11.2 Write property test for unverified KYC blocks withdrawals
+    - **Property 4: Unverified KYC blocks withdrawals**
+    - **Validates: Requirements 1.6, 4.8, 13.4**
+  - [x] 11.3 Implement `POST /api/campaigns/:id/withdraw/verify` — validate OTP hash and expiry, process withdrawal via payment gateway
+    - Reject if OTP expired (> 10 min)
+    - Use optimistic lock on wallet row to prevent race conditions
+    - _Requirements: 4.5, 4.6, 4.7_
+  - [ ]* 11.4 Write property test for expired OTP rejected
+    - **Property 17: Expired OTP is rejected**
+    - **Validates: Requirements 4.6**
+  - [ ]* 11.5 Write unit test for withdrawal requires OTP confirmation
+    - **Property 16: Withdrawal requires OTP confirmation**
+    - **Validates: Requirements 4.5**
+
+- [x] 12. Spending log service
+  - [x] 12.1 Implement `POST /api/campaigns/:id/spending` — validate amount ≤ wallet balance, append entry, make publicly visible
+    - _Requirements: 5.1, 5.4_
+  - [ ]* 12.2 Write property test for overspend entry rejected
+    - **Property 20: Overspend entry is rejected**
+    - **Validates: Requirements 5.4**
+  - [x] 12.3 Implement `GET /api/campaigns/:id/spending` — return non-deleted entries with running total
+    - _Requirements: 5.2, 5.3_
+  - [ ]* 12.4 Write property test for spending log running total invariant
+    - **Property 19: Spending log running total invariant**
+    - **Validates: Requirements 5.3, 5.5**
+  - [x] 12.5 Implement `DELETE /api/campaigns/:id/spending/:eid` — soft-delete entry (set `deleted_at`), recalculate running total
+    - Retain entry in audit log
+    - _Requirements: 5.5, 5.6_
+  - [ ]* 12.6 Write unit test for spending log entry round trip
+    - **Property 18: Spending log entry round trip**
+    - **Validates: Requirements 5.1, 5.2**
+  - [ ]* 12.7 Write unit test for deleted entries persist in audit log
+    - **Property 21: Deleted entries persist in audit log**
+    - **Validates: Requirements 5.6**
+
+- [x] 13. Checkpoint — wallet, contribution, and spending log tests pass
+  - Ensure all wallet, contribution, withdrawal, and spending log tests pass, ask the user if questions arise.
+
+- [x] 14. Backr Boost service
+  - [x] 14.1 Implement `GET /api/boost/tiers` — return available tiers with prices and durations
+    - _Requirements: 8.2_
+  - [x] 14.2 Implement `POST /api/campaigns/:id/boost` — validate campaign is active, create pending boost record, return payment URL
+    - _Requirements: 8.1, 8.6, 8.7_
+  - [x] 14.3 Wire `payments/webhook` to handle `boost.confirmed` — transition boost to `active`, set `starts_at` and `expires_at`
+    - _Requirements: 8.3_
+  - [ ]* 14.4 Write unit test for boost activation on confirmed payment
+    - **Property 30: Boost activation on confirmed payment**
+    - **Validates: Requirements 8.1, 8.3, 8.5**
+  - [x] 14.5 Implement boost expiry scheduler — Bull job that sets `status = expired` for boosts past `expires_at`
+    - _Requirements: 8.4_
+  - [ ]* 14.6 Write unit test for expired boost removes campaign from boosted section
+    - **Property 31: Expired boost removes campaign from boosted section**
+    - **Validates: Requirements 8.4**
+  - [ ]* 14.7 Write unit test for boost rejected for non-active campaigns
+    - **Property 32: Boost rejected for non-active campaigns**
+    - **Validates: Requirements 8.6**
+  - [ ]* 14.8 Write unit test for consecutive boosts allowed
+    - **Property 33: Consecutive boosts are allowed**
+    - **Validates: Requirements 8.7**
+
+- [x] 15. Campaign updates service
+  - [x] 15.1 Implement `POST /api/campaigns/:id/updates` — validate body ≤ 10,000 chars, persist update, enqueue backer notification emails
+    - _Requirements: 10.1, 10.2, 10.4, 10.5_
+  - [ ]* 15.2 Write property test for update body length limit enforced
+    - **Property 40: Update body length limit enforced**
+    - **Validates: Requirements 10.5**
+  - [x] 15.3 Implement `GET /api/campaigns/:id/updates` — return non-deleted updates ordered by `created_at` DESC
+    - _Requirements: 10.3_
+  - [ ]* 15.4 Write property test for updates ordered reverse-chronologically
+    - **Property 39: Updates ordered reverse-chronologically**
+    - **Validates: Requirements 10.3**
+  - [x] 15.5 Implement `DELETE /api/campaigns/:id/updates/:uid` — soft-delete update
+    - _Requirements: 10.6_
+  - [ ]* 15.6 Write unit test for update appears in public page round trip
+    - **Property 38: Update appears in public page (round trip)**
+    - **Validates: Requirements 10.1**
+  - [ ]* 15.7 Write unit test for deleted update removed from public page
+    - **Property 41: Deleted update removed from public page**
+    - **Validates: Requirements 10.6**
+
+- [x] 16. Premium subscription service
+  - [x] 16.1 Implement `POST /api/subscriptions` — create pending subscription, return Paystack/Flutterwave payment URL
+    - _Requirements: 12.1_
+  - [x] 16.2 Wire `payments/webhook` to handle `subscription.confirmed` — set `premium_status = active`, set `premium_expires_at`
+    - _Requirements: 12.2_
+  - [ ]* 16.3 Write unit test for premium activation on confirmed subscription payment
+    - **Property 45: Premium activation on confirmed subscription payment**
+    - **Validates: Requirements 12.2**
+  - [x] 16.4 Implement subscription expiry and grace period scheduler — on failed renewal set `premium_status = grace`; after 7 days set `premium_status = none`
+    - _Requirements: 12.3, 12.5_
+  - [ ]* 16.5 Write unit test for failed subscription payment triggers grace period
+    - **Property 47: Failed subscription payment triggers grace period**
+    - **Validates: Requirements 12.5**
+  - [ ]* 16.6 Write unit test for expired/cancelled subscription revokes premium access
+    - **Property 46: Expired/cancelled subscription revokes premium access**
+    - **Validates: Requirements 12.3**
+  - [x] 16.7 Implement `GET /api/subscriptions/me` and `POST /api/subscriptions/cancel`
+    - _Requirements: 12.3, 12.4_
+
+- [x] 17. Email marketing service (premium)
+  - [x] 17.1 Implement premium guard middleware — reject requests to email endpoints if `premium_status != active`
+    - Return 403 with upgrade prompt payload
+    - _Requirements: 9.5_
+  - [ ]* 17.2 Write unit test for non-premium creator cannot access Email Tool
+    - **Property 34: Non-premium creator cannot access Email Tool**
+    - **Validates: Requirements 9.5**
+  - [x] 17.3 Implement `POST /api/email-campaigns/import` — parse and validate CSV, upsert contacts into `email_contacts`
+    - _Requirements: 9.2_
+  - [x] 17.4 Implement `POST /api/email-campaigns` — compose email campaign, enforce daily send limit (10,000), enqueue send jobs via Bull
+    - _Requirements: 9.1, 9.3, 9.7_
+  - [ ]* 17.5 Write unit test for daily email send limit enforced
+    - **Property 36: Daily email send limit enforced**
+    - **Validates: Requirements 9.7**
+  - [x] 17.6 Implement unsubscribe handler `POST /api/email/unsubscribe` — validate token, set `unsubscribed = true`, exclude from future sends
+    - _Requirements: 9.4_
+  - [ ]* 17.7 Write property test for unsubscribe removes recipient from future sends
+    - **Property 35: Unsubscribe removes recipient from future sends**
+    - **Validates: Requirements 9.4**
+  - [x] 17.8 Implement `GET /api/email-campaigns` — return sent campaigns with `sent_count`, `open_rate`, `click_rate`
+    - _Requirements: 9.6_
+  - [ ]* 17.9 Write unit test for email campaign stats fields present
+    - **Property 37: Email campaign stats fields present**
+    - **Validates: Requirements 9.6**
+
+- [x] 18. Checkpoint — boost, updates, subscriptions, and email tool tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 19. Social sharing and OG image service
+  - [x] 19.1 Implement SSR campaign page (`/campaigns/[slug]`) with `generateMetadata` — inject `og:title`, `og:description`, `og:image`
+    - _Requirements: 11.1, 11.2, 11.5_
+  - [ ]* 19.2 Write unit test for Open Graph metadata and share links present
+    - **Property 43: Open Graph metadata and share links present**
+    - **Validates: Requirements 11.2, 11.3**
+  - [x] 19.3 Implement `GET /api/campaigns/:id/share-card` — generate 1200×630 OG image using `@vercel/og` or `sharp`, store in S3, update `og_image_url`
+    - _Requirements: 11.4_
+  - [ ]* 19.4 Write unit test for OG image meets minimum dimensions
+    - **Property 44: OG image meets minimum dimensions**
+    - **Validates: Requirements 11.4**
+  - [x] 19.5 Implement share button API response — return pre-formatted X, WhatsApp, and clipboard URLs
+    - _Requirements: 11.3_
+  - [ ]* 19.6 Write unit test for campaign URL uniqueness
+    - **Property 42: Campaign URL uniqueness**
+    - **Validates: Requirements 11.1**
+
+- [x] 20. Discovery and listings service
+  - [x] 20.1 Implement `GET /api/campaigns` — return all active campaigns ordered by `created_at` DESC, with boosted campaigns in a separate top section
+    - Include campaign card fields: title, creator name, cover image URL, funding progress %, days remaining
+    - _Requirements: 14.1, 14.5, 14.6_
+  - [ ]* 20.2 Write property test for listings contain all active campaigns ordered by recency
+    - **Property 53: Listings contain all active campaigns ordered by recency**
+    - **Validates: Requirements 14.1, 14.5**
+  - [x] 20.3 Implement category filter on `GET /api/campaigns?category=` — return only campaigns matching the category
+    - _Requirements: 14.2_
+  - [ ]* 20.4 Write property test for category filter returns only matching campaigns
+    - **Property 54: Category filter returns only matching campaigns**
+    - **Validates: Requirements 14.2**
+  - [x] 20.5 Implement keyword search on `GET /api/campaigns?q=` — full-text match against title and description using PostgreSQL `tsvector`
+    - _Requirements: 14.3, 14.4_
+  - [ ]* 20.6 Write property test for keyword search returns only matching campaigns
+    - **Property 55: Keyword search returns only matching campaigns**
+    - **Validates: Requirements 14.3**
+  - [ ]* 20.7 Write unit test for campaign card contains required fields
+    - **Property 56: Campaign card contains required fields**
+    - **Validates: Requirements 14.6**
+
+- [x] 21. Real-time dashboard service
+  - [x] 21.1 Implement `GET /api/campaigns/:id/dashboard` — return snapshot: funding progress %, total raised, goal, unique backer count, days remaining, recent contributors list
+    - _Requirements: 6.1, 6.2, 6.4_
+  - [ ]* 21.2 Write unit test for dashboard metrics correctness
+    - **Property 22: Dashboard metrics correctness**
+    - **Validates: Requirements 6.1, 6.2**
+  - [x] 21.3 Implement Socket.io server and `/campaigns/:id/dashboard` room — emit `dashboard:update` event when contribution webhook credits wallet
+    - _Requirements: 6.3_
+  - [x] 21.4 Implement anonymity logic — mask backer name as "Anonymous" in all public views; expose real identity only in creator's private dashboard
+    - _Requirements: 6.4, 6.5, 6.6_
+  - [ ]* 21.5 Write property test for anonymity invariant
+    - **Property 23: Anonymity invariant**
+    - **Validates: Requirements 6.4, 6.5, 6.6**
+  - [x] 21.6 Implement `GET /api/campaigns/:id/wallet` — return balance, total received, total withdrawn
+    - _Requirements: 4.4_
+
+- [x] 22. Notification and email job workers
+  - [x] 22.1 Implement Bull worker for receipt emails — dequeue jobs, render receipt template, send via SendGrid with retry (3 attempts, exponential backoff)
+    - _Requirements: 7.3, 10.2_
+  - [x] 22.2 Implement Bull worker for backer update notifications — send email to all backers when a campaign update is published
+    - _Requirements: 10.2_
+  - [x] 22.3 Implement Bull worker for account lockout notification email
+    - _Requirements: 13.6_
+  - [x] 22.4 Implement Bull worker for subscription renewal failure notification
+    - _Requirements: 12.5_
+
+- [ ] 23. Integration wiring and end-to-end test coverage
+  - [ ]* 23.1 Write integration test for full contribution flow
+    - Initiate contribution → mock gateway webhook → wallet credited → receipt job enqueued
+    - _Requirements: 4.2, 4.3, 7.1, 7.3_
+  - [ ]* 23.2 Write integration test for full boost flow
+    - Purchase boost → mock webhook → boost active → listings show boosted section
+    - _Requirements: 8.1, 8.3, 8.5_
+  - [ ]* 23.3 Write integration test for full subscription flow
+    - Subscribe → mock webhook → premium active → email tool accessible
+    - _Requirements: 12.2, 9.5_
+  - [ ]* 23.4 Write integration test for KYC flow
+    - Submit KYC → mock webhook (approved) → withdrawal unblocked
+    - _Requirements: 1.4, 4.8_
+  - [ ]* 23.5 Write integration test for email campaign flow
+    - Compose → send → jobs enqueued → unsubscribe → removed from list
+    - _Requirements: 9.1, 9.3, 9.4_
+
+- [x] 24. Landing page
+  - Implement public-facing marketing page at `/` using Next.js App Router
+  - Display tagline "Get seen. Get backed.", hero section, key features overview (wallets, transparency, Boost, email tools)
+  - Include CTA buttons linking to creator registration and campaign discovery
+  - Apply brand colours (yellow/gold + deep blue), rounded fonts, minimalistic layout
+  - Ensure responsive design for mobile and desktop
+  - _Requirements: all (marketing surface)_
+
+- [ ] 25. Final checkpoint — all tests pass
+  - Ensure all unit, property, and integration tests pass, ask the user if questions arise.
+
+---
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Property tests use fast-check with `numRuns: 100` minimum; tag each with `// Feature: backr-platform, Property {N}: {text}`
+- Checkpoints ensure incremental validation at logical boundaries
+- The payments webhook handler is shared across contributions, boosts, and subscriptions — implement idempotency (deduplicate by `payment_reference`) in task 10.4
