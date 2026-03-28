@@ -7,6 +7,8 @@ import Testimonials from '@/components/Testimonials';
 import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
