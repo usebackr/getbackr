@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid checkout data' }, { status: 422 });
     }
 
-    const { campaignId, amount } = parsed.data;
+    const { campaignId, amount, isAnonymous, shareDetails } = parsed.data;
     
     // If not logged in, we must have an email from the body
     if (!userId) {
