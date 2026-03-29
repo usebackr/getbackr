@@ -25,10 +25,18 @@ export default function WalletDashboard() {
 
   const fetchWallet = async () => {
     try {
-      const sumRes = await fetch('/api/dashboard/wallet-summary');
-      if (sumRes.ok) setSummary(await sumRes.json());
+      const [sumRes, txRes] = await Promise.all([
+        fetch('/api/dashboard/wallet-summary'),
+        fetch('/api/dashboard/wallet-transactions')
+      ]);
 
-      const txRes = await fetch('/api/dashboard/wallet-transactions');
+      if (sumRes.status === 401 || txRes.status === 401) {
+        console.warn('[Wallet] Session expired');
+        window.location.href = '/login?error=session_expired';
+        return;
+      }
+
+      if (sumRes.ok) setSummary(await sumRes.json());
       if (txRes.ok) {
         const data = await txRes.json();
         setTransactions(data.transactions || []);

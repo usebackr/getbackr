@@ -189,13 +189,28 @@ export default function DashboardPage() {
         fetch('/api/user/bank'),
         fetch('/api/user/campaigns'),
       ]);
-      const statsData = await statsRes.json();
-      const bankData = await bankRes.json();
-      const campaignsData = await campaignsRes.json();
 
-      if (statsRes.ok) setStats(statsData);
-      if (bankRes.ok) setHasBank(!!bankData.account);
-      if (campaignsRes.ok && campaignsData.campaigns) setCampaigns(campaignsData.campaigns);
+      // Check for session expiry (401 Unauthorized)
+      if (statsRes.status === 401 || bankRes.status === 401 || campaignsRes.status === 401) {
+        console.warn('[Dashboard] Session expired');
+        router.push('/login?error=session_expired');
+        return;
+      }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
+      
+      if (bankRes.ok) {
+        const bankData = await bankRes.json();
+        setHasBank(!!bankData.account);
+      }
+      
+      if (campaignsRes.ok) {
+        const campaignsData = await campaignsRes.json();
+        if (campaignsData.campaigns) setCampaigns(campaignsData.campaigns);
+      }
     } catch (err) {
       console.error('Failed to fetch dashboard data');
     } finally {

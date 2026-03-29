@@ -5,7 +5,7 @@ import { getRedis } from '@/lib/redis';
 const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET ?? 'access-secret-change-me';
 const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET ?? 'refresh-secret-change-me';
 
-const ACCESS_TOKEN_TTL = '15m';
+const ACCESS_TOKEN_TTL = '24h';
 const REFRESH_TOKEN_TTL = '7d';
 const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
 

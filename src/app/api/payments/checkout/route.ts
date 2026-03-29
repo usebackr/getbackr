@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
       backerId: userId, // null for guests
       backerName: name || 'A Supporter',
       backerEmail: email,
+      anonymous: isAnonymous || false,
+      shareDetails: shareDetails ?? true,
       type: 'contribution',
     };
     

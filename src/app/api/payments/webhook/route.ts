@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
         // B. Insert confirmed contribution
         console.log(`[Paystack Webhook] Recording contribution in database...`);
-        const isAnonymous = !!metadata.anonymous;
+        const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
         
         await tx.insert(contributions).values({
           campaignId,
@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
           .where(eq(projectWallets.campaignId, campaignId))
           .limit(1);
 
-        let backerName = metadata.backerName || 'A Supporter';
-        if (backerId) {
+        let backerName = isAnonymous ? 'Anonymous Supporter' : (metadata.backerName || 'A Supporter');
+        if (backerId && !isAnonymous) {
           const [backer] = await tx
             .select({ displayName: users.displayName })
             .from(users)
