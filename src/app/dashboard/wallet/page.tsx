@@ -155,8 +155,8 @@ export default function WalletDashboard() {
             {/* Summary Cards */}
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-              gap: '20px' 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+              gap: '12px' 
             }}>
               {[
                 { label: 'Total Raised', value: summary.totalRaised, color: 'var(--accent-primary)', bg: '#fff' },
@@ -165,27 +165,28 @@ export default function WalletDashboard() {
                 { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', highlight: true },
               ].map((stat, i) => (
                 <div key={i} className="dash-card" style={{ 
-                  padding: '24px', 
+                  padding: 'clamp(12px, 3vw, 24px)', 
                   borderTop: `4px solid ${stat.color}`,
                   background: stat.bg,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '4px',
+                  minHeight: 'auto'
                 }}>
-                  <p style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
-                  <p style={{ fontSize: '1.75rem', fontWeight: 900, color: stat.color }}>₦{stat.value.toLocaleString()}</p>
+                  <p style={{ color: '#64748b', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
+                  <p style={{ fontSize: 'clamp(1rem, 4vw, 1.75rem)', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
 
             {/* Withdraw Section */}
-            <div className="dash-card" style={{ padding: 'clamp(20px, 5vw, 32px)' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>Request Withdrawal</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px', fontWeight: 500 }}>
+            <div className="dash-card" style={{ padding: 'clamp(16px, 5vw, 32px)' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', fontWeight: 800 }}>Request Withdrawal</h3>
+              <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '20px', fontWeight: 500 }}>
                  Funds are typically processed within 24 hours of request.
               </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                    <div>
                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Withdrawal Amount</label>
