@@ -154,11 +154,14 @@ export default function IdentityPage() {
               <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', fontWeight: 800 }}>Verification Pending</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
+              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>Verification Pending</h2>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6, fontWeight: 500 }}>
                 We are currently reviewing your documents. This usually takes 24-48 hours. 
                 You'll receive an email as soon as your status is updated!
               </p>
+              <div style={{ marginTop: '24px', display: 'inline-block', padding: '8px 16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', color: '#92400e', fontSize: '0.85rem', fontWeight: 600 }}>
+                Status: Under Review
+              </div>
               
               <div style={{ marginTop: '32px', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
                 <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>Stuck? If you believe there was an error in your submission, you can reset it.</p>
@@ -175,10 +178,17 @@ export default function IdentityPage() {
               <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#10b981', fontWeight: 800 }}>Account Verified</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6 }}>
-                Your identity has been confirmed. You now have full access to all withdrawal features!
+              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#10b981', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>Account Verified</h2>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto', lineHeight: 1.6, fontWeight: 500 }}>
+                Your identity has been confirmed. You now have full access to all withdrawal features 
+                and your campaigns will now display a <b>Verified</b> badge.
               </p>
+              <button 
+                onClick={() => router.push('/dashboard/wallet')}
+                style={{ marginTop: '32px', padding: '12px 32px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Go to Wallet
+              </button>
             </div>
           ) : (
             <div className="dash-card" style={{ padding: '0', overflow: 'hidden' }}>

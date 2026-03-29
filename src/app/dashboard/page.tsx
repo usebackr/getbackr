@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import { VerificationBanner, OnboardingChecklist } from '@/components/dashboard/Onboarding';
 
 const Icons = {
   Empty: () => (
@@ -180,18 +181,20 @@ export default function DashboardPage() {
   const [hasBank, setHasBank] = React.useState(false);
   const [showBankError, setShowBankError] = React.useState(false);
   const [selectedCampaignForBackers, setSelectedCampaignForBackers] = React.useState<string | null>(null);
+  const [user, setUser] = React.useState<any>(null);
 
   const fetchStatsAndBank = async (currentFilter: string) => {
     setLoading(true);
     try {
-      const [statsRes, bankRes, campaignsRes] = await Promise.all([
+      const [statsRes, bankRes, campaignsRes, userRes] = await Promise.all([
         fetch(`/api/dashboard/stats?filter=${currentFilter}`),
         fetch('/api/user/bank'),
         fetch('/api/user/campaigns'),
+        fetch('/api/user/me'),
       ]);
 
       // Check for session expiry (401 Unauthorized)
-      if (statsRes.status === 401 || bankRes.status === 401 || campaignsRes.status === 401) {
+      if (statsRes.status === 401 || bankRes.status === 401 || campaignsRes.status === 401 || userRes.status === 401) {
         console.warn('[Dashboard] Session expired');
         router.push('/login?error=session_expired');
         return;
@@ -210,6 +213,11 @@ export default function DashboardPage() {
       if (campaignsRes.ok) {
         const campaignsData = await campaignsRes.json();
         if (campaignsData.campaigns) setCampaigns(campaignsData.campaigns);
+      }
+
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        setUser(userData.user);
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data');
@@ -442,6 +450,16 @@ export default function DashboardPage() {
             </div>
           ))}
         </section>
+
+        {user && <VerificationBanner user={user} />}
+        
+        {user && (
+          <OnboardingChecklist 
+            user={user} 
+            hasCampaigns={campaigns.length > 0} 
+            hasBank={hasBank} 
+          />
+        )}
 
         {campaigns.length === 0 && !loading ? (
           <section
