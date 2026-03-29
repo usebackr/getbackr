@@ -81,36 +81,54 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          padding: '0 24px',
+          height: '72px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <a
             href="/explore"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              color: 'var(--text-secondary)',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              borderRadius: '20px',
+              color: '#475569',
               textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: '0.9rem',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              transition: 'all 0.2s'
             }}
+            title="Back to Explore"
           >
-            ← Back
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
           </a>
-          <a href="/explore" style={{ textDecoration: 'none', color: 'var(--accent-primary)' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <a href="/" style={{ textDecoration: 'none', color: 'var(--accent-primary)' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.02em', margin: 0 }}>
               backr
             </h2>
           </a>
         </div>
-        <a
-          href="/dashboard"
-          className="btn-primary"
-          style={{ padding: '8px 20px', borderRadius: '8px', fontSize: '0.95rem' }}
-        >
-          Go to dashboard
-        </a>
+
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <a
+            href="/dashboard"
+            className="btn-primary"
+            style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
+          >
+            Dashboard
+          </a>
+        </div>
       </header>
 
       <main className="campaign-main">
@@ -147,7 +165,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Link 
-                  href={creator?.username ? `/u/${creator.username}` : '#'}
+                  href={creator?.username ? `/u/${creator.username}` : `/u/${campaign.creatorId}`}
                   style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}
                 >
                   <div

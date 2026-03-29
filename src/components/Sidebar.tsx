@@ -114,7 +114,7 @@ export default function Sidebar() {
   ];
 
   const secondaryItems = [
-    { label: 'Identity', icon: <Icons.Profile />, path: '/dashboard/identity' },
+    { label: 'Identity Verification', icon: <Icons.Profile />, path: '/dashboard/identity' },
     { label: 'Notifications', icon: <Icons.Notifications />, path: '/dashboard/notifications', count: unreadCount },
     { label: 'Settings', icon: <Icons.Settings />, path: '/dashboard/settings' },
   ];

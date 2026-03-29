@@ -12,11 +12,17 @@ export const dynamic = 'force-dynamic';
 export default async function PublicProfilePage({ params }: { params: { username: string } }) {
   const { username } = params;
 
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+
   // 1. Fetch User Data
   const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.username, username.replace('%40', '')))
+    .where(
+      isUUID 
+        ? eq(users.id, username)
+        : eq(users.username, username.replace('%40', ''))
+    )
     .limit(1);
 
   if (!user) notFound();

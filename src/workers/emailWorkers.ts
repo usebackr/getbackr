@@ -72,136 +72,142 @@ export function registerEmailReceiptWorker(): void {
 
     console.log(`[Email Worker] Processing ${type} job for ${backerEmail || email}`);
 
-    try {
-
-    // A. Withdrawal OTP
-    if (type === 'withdrawal_otp') {
-      const to = email;
-      if (!to) throw new Error('Missing email for withdrawal OTP');
-
-      const [response] = await sgMail.send({
-        to,
-        from: FROM_EMAIL,
-        subject: '🔒 Your Backr Withdrawal security code',
-        html: `
-          <div style="${emailWrapperStyle}">
-            <div style="${emailCardStyle}">
-              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Confirm Your Withdrawal</h2>
-              <p>Your one-time security code for campaign <strong>${campaignTitle ?? 'your campaign'}</strong> is:</p>
-              <div style="background: #f1f5f9; padding: 24px; text-align: center; border-radius: 12px; margin: 32px 0;">
-                <h1 style="letter-spacing: 12px; font-size: 2.5rem; margin: 0; color: ${BRAND_COLOR};">${otp}</h1>
-              </div>
-              <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
-              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 Backr.app
-              </div>
-            </div>
-          </div>
-        `,
-      });
-      console.log(`[Email Worker] OTP sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+    if (!SENDGRID_API_KEY) {
+      console.error('[Email Worker] SENDGRID_API_KEY is missing. Emails will not be sent.');
+      return { sent: false, error: 'Missing API key' };
     }
 
-    // B. Creator Alert (New Funding Received)
-    if (type === 'creator_alert') {
-      const to = backerEmail; // In this job type, backerEmail is the creator's address
-      if (!to) throw new Error('Missing creator email for alert');
+    try {
+      // A. Withdrawal OTP
+      if (type === 'withdrawal_otp') {
+        const to = email;
+        if (!to) throw new Error('Missing email for withdrawal OTP');
+
+        const [response] = await sgMail.send({
+          to,
+          from: FROM_EMAIL,
+          subject: '🔒 Your Backr Withdrawal security code',
+          html: `
+            <div style="${emailWrapperStyle}">
+              <div style="${emailCardStyle}">
+                <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Confirm Your Withdrawal</h2>
+                <p>Your one-time security code for campaign <strong>${campaignTitle ?? 'your campaign'}</strong> is:</p>
+                <div style="background: #f1f5f9; padding: 24px; text-align: center; border-radius: 12px; margin: 32px 0;">
+                  <h1 style="letter-spacing: 12px; font-size: 2.5rem; margin: 0; color: ${BRAND_COLOR};">${otp}</h1>
+                </div>
+                <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
+                <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                  &copy; 2026 Backr.app
+                </div>
+              </div>
+            </div>
+          `,
+        });
+        console.log(`[Email Worker] OTP sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+        return { sent: true, type, messageId: response.headers['x-message-id'] };
+      }
+
+      // B. Creator Alert (New Funding Received)
+      if (type === 'creator_alert') {
+        const to = backerEmail; // In this job type, backerEmail is the creator's address
+        if (!to) throw new Error('Missing creator email for alert');
+
+        const dateStr = new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', month: 'long', day: 'numeric' 
+        });
+
+        const [response] = await sgMail.send({
+          to,
+          from: FROM_EMAIL,
+          subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
+          html: `
+            <div style="${emailWrapperStyle}">
+              <div style="${emailCardStyle}">
+                <p>Hi ${creatorName || 'Creator'},</p>
+                <p>You just received a new contribution for your campaign:</p>
+                <p><strong>"${campaignTitle}"</strong></p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
+                <p><strong>From:</strong> ${backerName || 'A Supporter'}</p>
+                <p><strong>Date:</strong> ${dateStr}</p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                <p>Your campaign is now at:</p>
+                <p><strong>₦${Number(totalRaised).toLocaleString()} raised of ₦${Number(goalAmount).toLocaleString()}</strong></p>
+                <p>Keep the momentum going — every update helps build trust and attract more support.</p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                <p><strong>What to do next:</strong></p>
+                <ul>
+                  <li>Share an update with your supporters</li>
+                  <li>Log how funds are being used</li>
+                  <li>Share your campaign link again</li>
+                </ul>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                <p>
+                  <a href="${campaignUrl || 'https://backr.app/dashboard'}" 
+                     style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                    View your campaign
+                  </a>
+                </p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                <p>You're building something people believe in. Keep going.</p>
+                <p>— Backr Team</p>
+              </div>
+            </div>
+          `,
+        });
+        console.log(`[Email Worker] Creator Alert sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+        return { sent: true, type, messageId: response.headers['x-message-id'] };
+      }
+
+      // C. Donor Receipt (Default)
+      const to = backerEmail;
+      if (!to) throw new Error('Missing backerEmail for receipt');
 
       const dateStr = new Date().toLocaleDateString('en-US', { 
         year: 'numeric', month: 'long', day: 'numeric' 
       });
 
+      console.log(`[Email Worker] Sending donor receipt to ${to} for ${amount} ₦...`);
+
       const [response] = await sgMail.send({
         to,
         from: FROM_EMAIL,
-        subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
+        subject: `Thanks for supporting "${campaignTitle}"! ✨`,
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
-              <p>Hi ${creatorName || 'Creator'},</p>
-              <p>You just received a new contribution for your campaign:</p>
-              <p><strong>"${campaignTitle}"</strong></p>
+              <p>Hi ${backerName || 'A Supporter'},</p>
+              <p>Thank you for supporting <strong>"${campaignTitle}"</strong>.</p>
+              <p>Your contribution has been successfully received.</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
               <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
-              <p><strong>From:</strong> ${backerName || 'A Supporter'}</p>
               <p><strong>Date:</strong> ${dateStr}</p>
+              <p><strong>Reference:</strong> ${data.contributionId || 'N/A'}</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p>Your campaign is now at:</p>
-              <p><strong>₦${Number(totalRaised).toLocaleString()} raised of ₦${Number(goalAmount).toLocaleString()}</strong></p>
-              <p>Keep the momentum going — every update helps build trust and attract more support.</p>
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p><strong>What to do next:</strong></p>
-              <ul>
-                <li>Share an update with your supporters</li>
-                <li>Log how funds are being used</li>
-                <li>Share your campaign link again</li>
-              </ul>
+              <p>You’re now part of this project. You can follow its progress, updates, and how funds are used.</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
               <p>
                 <a href="${campaignUrl || 'https://backr.app/dashboard'}" 
                    style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                  View your campaign
+                  View campaign
                 </a>
               </p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p>You're building something people believe in. Keep going.</p>
+              <p>Creators on Backr can share updates and log how funds are used so you can stay informed as the project develops.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>If you created an account, you’ll receive updates automatically. If not, you can revisit the campaign anytime using the link above.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 12px 0;">
+              <p>Thanks again for your support.</p>
               <p>— Backr Team</p>
             </div>
           </div>
         `,
       });
-      console.log(`[Email Worker] Creator Alert sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
-    }
 
-    // C. Donor Receipt (Default)
-    const to = backerEmail;
-    if (!to) throw new Error('Missing backerEmail for receipt');
-
-    const dateStr = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', month: 'long', day: 'numeric' 
-    });
-
-    const [response] = await sgMail.send({
-      to,
-      from: FROM_EMAIL,
-      subject: `Thanks for supporting "${campaignTitle}"! ✨`,
-      html: `
-        <div style="${emailWrapperStyle}">
-          <div style="${emailCardStyle}">
-            <p>Hi ${backerName || 'A Supporter'},</p>
-            <p>Thank you for supporting <strong>"${campaignTitle}"</strong>.</p>
-            <p>Your contribution has been successfully received.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
-            <p><strong>Date:</strong> ${dateStr}</p>
-            <p><strong>Reference:</strong> ${data.contributionId || 'N/A'}</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p>You’re now part of this project. You can follow its progress, updates, and how funds are used.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p>
-              <a href="${campaignUrl || 'https://backr.app/dashboard'}" 
-                 style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                View campaign
-              </a>
-            </p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p>Creators on Backr can share updates and log how funds are used so you can stay informed as the project develops.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p>If you created an account, you’ll receive updates automatically. If not, you can revisit the campaign anytime using the link above.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p>Thanks again for your support.</p>
-            <p>— Backr Team</p>
-          </div>
-        </div>
-      `,
-    });
-
-    console.log(`[Email Worker] Donor Receipt sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
-    return { sent: true, type: type || 'donor_receipt', contributionId: data.contributionId, messageId: response.headers['x-message-id'] };
+      console.log(`[Email Worker] Donor Receipt sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+      return { sent: true, type: type || 'donor_receipt', contributionId: data.contributionId, messageId: response.headers['x-message-id'] };
     } catch (err: any) {
-      console.error(`[Email Worker] Failed to send ${type}:`, err.response?.body || err.message);
+      console.error(`[Email Worker] Failed to send ${type}:`, JSON.stringify(err.response?.body || err.message, null, 2));
       throw err;
     }
   });

@@ -94,7 +94,14 @@ export async function PUT(
   const { title, category, description, coverImageUrl, goalAmount, endDate, status } = parsed.data;
 
   // goalAmount and endDate are only editable if it's a draft
-  if (!isDraft && (goalAmount !== undefined || endDate !== undefined)) {
+  // If not a draft, we only allow them if the values haven't actually changed
+  const hasGoalChanged = goalAmount !== undefined && Number(goalAmount) !== Number(campaign.goalAmount);
+  
+  const currentEndDateStr = campaign.endDate ? new Date(campaign.endDate).toISOString().split('T')[0] : '';
+  const incomingEndDateStr = endDate !== undefined ? new Date(endDate).toISOString().split('T')[0] : currentEndDateStr;
+  const hasEndDateChanged = endDate !== undefined && incomingEndDateStr !== currentEndDateStr;
+
+  if (!isDraft && (hasGoalChanged || hasEndDateChanged)) {
     return NextResponse.json(
       { error: 'Funding goal and end date cannot be changed after campaign is active.' },
       { status: 422 },

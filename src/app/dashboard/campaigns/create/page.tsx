@@ -297,7 +297,22 @@ function CreateCampaignForm() {
               </div>
               <div>
                 <label className="input-label">End Date *</label>
-                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} min={new Date().toISOString().split('T')[0]} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                <input 
+                  type="date" 
+                  name="endDate" 
+                  value={formData.endDate} 
+                  onChange={handleChange} 
+                  min={new Date().toISOString().split('T')[0]} 
+                  disabled={formData.status === 'active'}
+                  style={{ 
+                    width: '100%', 
+                    padding: '14px', 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0',
+                    background: formData.status === 'active' ? '#f1f5f9' : '#fff',
+                    cursor: formData.status === 'active' ? 'not-allowed' : 'text'
+                  }} 
+                />
               </div>
               <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
                 <button onClick={handlePrev} className="btn-secondary" style={{ padding: '14px 40px', background: '#f1f5f9', border: 'none' }}>Back</button>

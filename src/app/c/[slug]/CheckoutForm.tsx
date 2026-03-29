@@ -152,9 +152,10 @@ export default function CheckoutForm({
 
       {/* Preset Grid */}
       <div
+        className="amount-grid"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
           gap: '12px',
           marginBottom: '24px',
         }}

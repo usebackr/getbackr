@@ -103,6 +103,16 @@ export default function ProfilePage() {
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
         <header style={{ marginBottom: '40px' }}>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            style={{
+              background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
+              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600,
+              padding: '0', fontSize: '0.9rem'
+            }}
+          >
+            ← Back to Dashboard
+          </button>
           <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', marginBottom: '4px', fontWeight: 900 }}>My Profile</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>
              How the world sees you as a creator
