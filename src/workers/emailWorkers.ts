@@ -48,11 +48,12 @@ export interface ReceiptJobData {
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email';
+  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received';
   userId?: string;
   email?: string;
   displayName?: string;
   otp?: string;
+  token?: string;
   rejectionReason?: string;
   // Extra data for creator alert
   creatorName?: string;
@@ -285,6 +286,94 @@ export async function sendEmail(data: ReceiptJobData) {
               <p>Thanks for being part of this.</p>
               <p style="margin: 0;">— ${founderName}</p>
               <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Founder, Backr</p>
+            </div>
+          </div>
+        `,
+      });
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
+    }
+
+    // 4d. Forgot Password
+    if (type === 'forgot_password') {
+      const to = email;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+      const resetUrl = `${appUrl}/reset-password?token=${data.token}&email=${email}`;
+      if (!to) throw new Error('Missing email for Forgot Password');
+
+      const [response] = await sgMail.send({
+        to,
+        from: FROM_EMAIL,
+        subject: '🔒 Reset your Backr password',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Reset Your Password</h2>
+              <p>Someone requested a password reset for your Backr account. If this was you, click the button below to set a new password:</p>
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${resetUrl}" style="display:inline-block; padding:14px 32px; background: #6366f1; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                  Reset Password
+                </a>
+              </div>
+              <p style="font-size: 0.85rem; color: #64748b;">This link will expire in 30 minutes. If you didn't request this, you can safely ignore this email.</p>
+            </div>
+          </div>
+        `,
+      });
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
+    }
+
+    // 4e. Verification Email
+    if (type === 'verification_email') {
+      const to = email;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+      const verifyUrl = `${appUrl}/verify-email?token=${data.token}&email=${email}`;
+      if (!to) throw new Error('Missing email for Verification');
+
+      const [response] = await sgMail.send({
+        to,
+        from: FROM_EMAIL,
+        subject: '⚡️ Verify your Backr account',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Confirm Your Email</h2>
+              <p>Thanks for joining Backr! Please verify your email address to complete your registration and start backing projects.</p>
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${verifyUrl}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                  Verify Email Address
+                </a>
+              </div>
+              <p style="font-size: 0.85rem; color: #64748b;">If you didn't sign up for Backr, you can ignore this email.</p>
+            </div>
+          </div>
+        `,
+      });
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
+    }
+
+    // 4f. KYC Received Confirmation
+    if (type === 'kyc_received') {
+      const to = email;
+      if (!to) throw new Error('Missing email for KYC confirmation');
+
+      const [response] = await sgMail.send({
+        to,
+        from: FROM_EMAIL,
+        subject: '📤 Documents Received: Identity Verification in progress',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <div style="background: #f8fafc; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <span style="font-size: 32px;">📑</span>
+              </div>
+              <h2 style="font-size: 1.5rem; color: #0f172a; text-align: center; margin-bottom: 24px;">Submission Received</h2>
+              <p>We've successfully received your identity verification documents! Our team is now reviewing them.</p>
+              <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 0.9rem; color: #64748b; text-align: center;">
+                  Review usually takes <strong>24-48 business hours</strong>. You'll receive another email as soon as your status is updated.
+                </p>
+              </div>
+              <p>In the meantime, you can continue exploring projects on Backr.</p>
             </div>
           </div>
         `,

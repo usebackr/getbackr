@@ -85,6 +85,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       await tx.update(users).set({ kycStatus: 'pending', kycRejectionReason: null }).where(eq(users.id, userId));
     });
 
+    // Send confirmation email (awaited for Vercel reliability)
+    try {
+      const [user] = await db.select({ email: users.email, displayName: users.displayName }).from(users).where(eq(users.id, userId)).limit(1);
+      if (user?.email) {
+        const { sendEmail } = await import('@/workers/emailWorkers');
+        await sendEmail({
+          type: 'kyc_received',
+          email: user.email,
+          displayName: user.displayName,
+        });
+      }
+    } catch (emailErr) {
+      console.error('[KYC Submit] Confirmation email failed:', emailErr);
+    }
+
     return NextResponse.json({ message: 'KYC submission received. You will be notified within 24-48 hours.' }, { status: 200 });
   } catch (err: any) {
     console.error('[KYC Submit] DB Error:', err);

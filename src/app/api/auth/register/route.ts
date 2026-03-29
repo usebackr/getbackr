@@ -63,14 +63,30 @@ export async function POST(req: NextRequest) {
     const { trackEvent } = await import('@/lib/analytics');
     await trackEvent(beta ? 'beta_signup' : 'user_login', user.id, { email: user.email });
 
-    // Send welcome email — AWAIT it to ensure Vercel doesn't cut it off before handoff
+    // Send welcome and verification emails (awaited for Vercel reliability)
     try {
+      const { generateVerificationToken, storeVerificationToken } = await import('@/lib/auth/tokens');
       const { sendEmail } = await import('@/workers/emailWorkers');
-      await sendEmail({ type: 'welcome_email', email: user.email, displayName }).catch(
-        (err) => console.error('[Register] Welcome email failed:', err)
-      );
-    } catch (importErr) {
-      console.error('[Register] Failed to import email worker:', importErr);
+      
+      const verificationToken = generateVerificationToken();
+      await storeVerificationToken(verificationToken, user.id);
+
+      // We send both or a combined one. For now, let's send verification as primary.
+      await sendEmail({ 
+        type: 'verification_email', 
+        email: user.email, 
+        token: verificationToken 
+      });
+
+      // Also send welcome email
+      await sendEmail({ 
+        type: 'welcome_email', 
+        email: user.email, 
+        displayName 
+      });
+      
+    } catch (emailErr) {
+      console.error('[Register] Email flow failed:', emailErr);
     }
 
     return NextResponse.json(

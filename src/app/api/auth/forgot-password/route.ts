@@ -32,9 +32,18 @@ export async function POST(req: NextRequest) {
       expiresAt,
     });
 
-    // Development Environment Hook
-    // In production, dispatch `getQueue(QUEUE_NAMES.EMAIL_VERIFICATION).add({ type: 'forgot_password', email, token });`
-    console.log(`[PASSWORD RESET DEV TOKEN] To reset ${email}, use token: ${token}`);
+    // Send the email directly (awaited for Vercel reliability)
+    try {
+      const { sendEmail } = await import('@/workers/emailWorkers');
+      await sendEmail({
+        type: 'forgot_password',
+        email: user.email,
+        token,
+      });
+    } catch (emailErr) {
+      console.error('[forgot-password] Email failed:', emailErr);
+      // We still return success to the user so we don't leak information
+    }
 
     return NextResponse.json({
       message: 'If an account exists with that email, a reset link has been sent.',
