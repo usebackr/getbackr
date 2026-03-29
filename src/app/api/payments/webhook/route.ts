@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
 
   const event = JSON.parse(rawBody);
 
-  // 2. Handle Charge Success
+    // 2. Handle Charge Success
   if (event.event === 'charge.success') {
     const data = event.data;
     const metadata = data.metadata || {};
-    const { campaignId, backerId } = metadata;
+    const campaignId = (metadata.campaignId || '').trim();
+    const backerId = (metadata.backerId || '').trim();
     const amountInKobo = data.amount;
     const amountInMajor = amountInKobo / 100;
     const reference = data.reference;
