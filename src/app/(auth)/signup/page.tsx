@@ -24,14 +24,19 @@ export default function SignupPage() {
 
   // Creator-centric categories as requested
   const categories = [
-    { id: 'music', label: 'Music & Sound', icon: '🎵' },
-    { id: 'dance', label: 'Dance & Performance', icon: '💃' },
-    { id: 'art', label: 'Visual Arts', icon: '🎨' },
-    { id: 'cinema', label: 'Film & Cinema', icon: '🎬' },
-    { id: 'poetry', label: 'Poetry & Writing', icon: '✍️' },
-    { id: 'theater', label: 'Theater', icon: '🎭' },
-    { id: 'content', label: 'Digital Content', icon: '📸' },
-    { id: 'other', label: 'Creative Works', icon: '✨' },
+    { id: 'theatre', label: 'Theatre' },
+    { id: 'concerts', label: 'Concerts' },
+    { id: 'events', label: 'Events' },
+    { id: 'art_exhibition', label: 'Art Exhibition' },
+    { id: 'film_video', label: 'Film & Video' },
+    { id: 'music', label: 'Music' },
+    { id: 'photography', label: 'Photography' },
+    { id: 'art_design', label: 'Art & Design' },
+    { id: 'fashion', label: 'Fashion' },
+    { id: 'podcasts', label: 'Podcasts' },
+    { id: 'publishing', label: 'Publishing' },
+    { id: 'food_craft', label: 'Food & Craft' },
+    { id: 'comics', label: 'Comics' },
   ];
 
   const toggleInterest = (id: string) => {
@@ -212,7 +217,7 @@ export default function SignupPage() {
                         transition: 'all 0.2s',
                       }}
                     >
-                      <span>{cat.icon}</span> {cat.label}
+                      {cat.label}
                     </button>
                   ))}
                 </div>

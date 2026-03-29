@@ -95,7 +95,7 @@ export default function ProfilePage() {
   };
 
   const categories = [
-    'Film & Video', 'Music', 'Theatre', 'Art & Design', 'Games', 'Technology', 'Fashion', 'Publishing', 'Food & Craft'
+    'Theatre', 'Concerts', 'Events', 'Art Exhibition', 'Film & Video', 'Music', 'Photography', 'Art & Design', 'Fashion', 'Podcasts', 'Publishing', 'Food & Craft', 'Comics'
   ];
 
   return (

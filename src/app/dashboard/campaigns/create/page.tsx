@@ -14,6 +14,23 @@ function CreateCampaignForm() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
+  const categories = [
+    { name: 'All' },
+    { name: 'Theatre' },
+    { name: 'Concerts' },
+    { name: 'Events' },
+    { name: 'Art Exhibition' },
+    { name: 'Film & Video' },
+    { name: 'Music' },
+    { name: 'Photography' },
+    { name: 'Art & Design' },
+    { name: 'Fashion' },
+    { name: 'Podcasts' },
+    { name: 'Publishing' },
+    { name: 'Food & Craft' },
+    { name: 'Comics' },
+  ];
+
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -239,14 +256,11 @@ function CreateCampaignForm() {
                 <label className="input-label">Category</label>
                 <select name="category" value={formData.category} onChange={handleChange} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                   <option value="">Select a category</option>
-                  <option value="Film & Video">🎬 Film & Video</option>
-                  <option value="Music">🎵 Music</option>
-                  <option value="Technology">💡 Technology</option>
-                  <option value="Art & Design">🎨 Art & Design</option>
-                  <option value="Games">🎮 Games</option>
-                  <option value="Fashion">👗 Fashion</option>
-                  <option value="Publishing">📚 Publishing</option>
-                  <option value="Food & Craft">🍳 Food & Craft</option>
+                  {categories.map((cat) => (
+                    <option key={cat.name} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>

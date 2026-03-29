@@ -4,16 +4,20 @@ import React, { useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 
 const categories = [
-  { name: 'All', icon: '' },
-  { name: 'Film & Video', icon: '🎬' },
-  { name: 'Music', icon: '🎵' },
-  { name: 'Theatre', icon: '🎭' },
-  { name: 'Art & Design', icon: '🎨' },
-  { name: 'Games', icon: '🎮' },
-  { name: 'Technology', icon: '💡' },
-  { name: 'Fashion', icon: '👗' },
-  { name: 'Publishing', icon: '📚' },
-  { name: 'Food & Craft', icon: '🍳' },
+  { name: 'All' },
+  { name: 'Theatre' },
+  { name: 'Concerts' },
+  { name: 'Events' },
+  { name: 'Art Exhibition' },
+  { name: 'Film & Video' },
+  { name: 'Music' },
+  { name: 'Photography' },
+  { name: 'Art & Design' },
+  { name: 'Fashion' },
+  { name: 'Podcasts' },
+  { name: 'Publishing' },
+  { name: 'Food & Craft' },
+  { name: 'Comics' },
 ];
 
 const Icons = {
@@ -130,7 +134,6 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
                 cursor: 'pointer', transition: 'all 0.2s'
               }}
             >
-              {cat.icon && <span>{cat.icon}</span>}
               {cat.name}
             </button>
           ))}
@@ -160,6 +163,9 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
                     </div>
 
                     <div style={{ padding: '24px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ fontSize: '1.25rem' }}>
+                        {/* Category icon removed */}
+                      </div>
                       <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px', lineHeight: 1.3 }}>{camp.title}</h3>
                       <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '16px', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{camp.description}</p>
                       
