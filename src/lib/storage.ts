@@ -130,3 +130,44 @@ export async function uploadFile(
     throw new Error(`Cloud storage upload failed: ${err.message || 'Unknown error'}`);
   }
 }
+
+/**
+ * Construct a public URL for a given file key or existing URL string.
+ * Handles local vs S3/Supabase formatting.
+ * Self-heals broken Supabase S3 API URLs into Public Object URLs.
+ */
+export function getPublicUrl(keyOrUrl: string | null): string {
+  if (!keyOrUrl) return '';
+  
+  // If it's already a local path
+  if (keyOrUrl.startsWith('local:')) {
+    const filename = keyOrUrl.replace('local:', '');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    return `${appUrl}/uploads/${filename}`;
+  }
+
+  // If it's already a full URL, check if it's a broken Supabase S3 API URL
+  if (keyOrUrl.startsWith('http')) {
+    if (keyOrUrl.includes('storage.supabase.co') && keyOrUrl.includes('/storage/v1/s3/')) {
+      // Self-heal: Convert S3 API URL to Public Object URL
+      // From: https://[id].storage.supabase.co/storage/v1/s3/[bucket]/[key]
+      // To:   https://[id].supabase.co/storage/v1/object/public/[bucket]/[key]
+      return keyOrUrl
+        .replace('.storage.supabase.co', '.supabase.co')
+        .replace('/storage/v1/s3/', '/storage/v1/object/public/');
+    }
+    return keyOrUrl;
+  }
+
+  // Otherwise assume it's a raw S3 Key
+  const s3Endpoint = (process.env.S3_ENDPOINT || '').trim();
+  const bucket = BUCKET;
+
+  if (s3Endpoint.includes('supabase.co')) {
+    const projectId = s3Endpoint.split('.')[0].replace('https://', '').replace('.storage', '');
+    return `https://${projectId}.supabase.co/storage/v1/object/public/${bucket}/${keyOrUrl}`;
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_S3_URL || `https://${bucket}.s3.${process.env.S3_REGION || 'us-east-1'}.amazonaws.com`;
+  return `${baseUrl}/${keyOrUrl}`;
+}

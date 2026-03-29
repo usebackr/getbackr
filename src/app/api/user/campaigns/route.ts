@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { verifyAccessToken } from '@/lib/auth/jwt';
+import { getPublicUrl } from '@/lib/storage';
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,7 +31,13 @@ export async function GET(req: NextRequest) {
       .where(eq(campaigns.creatorId, userId))
       .orderBy(desc(campaigns.createdAt));
 
-    return NextResponse.json({ campaigns: userCampaigns });
+    // Cleanup URLs
+    const sanitized = userCampaigns.map(c => ({
+      ...c,
+      coverImageUrl: getPublicUrl(c.coverImageUrl)
+    }));
+
+    return NextResponse.json({ campaigns: sanitized });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });

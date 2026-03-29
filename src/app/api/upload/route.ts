@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/middleware';
-import { uploadFile } from '@/lib/storage';
+import { uploadFile, getPublicUrl } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -33,19 +33,8 @@ export async function POST(req: NextRequest) {
     // Upload to S3 or Local (Dev)
     const resultKey = await uploadFile(buffer, s3Key, file.type);
 
-    let publicUrl = '';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-    if (resultKey.startsWith('local:')) {
-      const filename = resultKey.replace('local:', '');
-      publicUrl = `${appUrl}/uploads/${filename}`;
-    } else {
-      // S3 Production
-      const baseUrl = process.env.NEXT_PUBLIC_S3_URL || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`;
-      publicUrl = process.env.S3_ENDPOINT 
-        ? `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}/${resultKey}` 
-        : `${baseUrl}/${resultKey}`;
-    }
+    // Get the public URL using our helper
+    const publicUrl = getPublicUrl(resultKey);
 
     return NextResponse.json({
       message: 'Upload successful',

@@ -11,6 +11,7 @@ import CheckoutForm from './CheckoutForm';
 import ShareButton from './ShareButton';
 import TransparencyLedger from './TransparencyLedger';
 import BackersList from './BackersList';
+import { getPublicUrl } from '@/lib/storage';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
   const [campaign] = await db
@@ -30,6 +31,10 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .from(users)
     .where(eq(users.id, campaign.creatorId))
     .limit(1);
+
+  // Apply self-healing URLs
+  const coverUrl = getPublicUrl(campaign.coverImageUrl);
+  const avatarUrl = getPublicUrl(creator?.avatarUrl);
 
   const [wallet] = await db
     .select()

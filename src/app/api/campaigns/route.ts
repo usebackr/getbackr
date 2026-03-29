@@ -7,6 +7,7 @@ import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { boostPurchases } from '@/db/schema/boostPurchases';
+import { getPublicUrl } from '@/lib/storage';
 
 const SUPPORTED_CURRENCIES = ['NGN', 'KES', 'GHS', 'ZAR', 'USD'] as const;
 

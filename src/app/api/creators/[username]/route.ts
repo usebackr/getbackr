@@ -3,6 +3,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
+import { getPublicUrl } from '@/lib/storage';
 
 export async function GET(
   _req: NextRequest,
@@ -44,13 +45,19 @@ export async function GET(
       and(eq(campaigns.creatorId, creator.id), inArray(campaigns.status, ['active', 'closed'])),
     );
 
+  // Apply self-healing URLs
+  const sanitizedCampaigns = creatorCampaigns.map(c => ({
+    ...c,
+    coverImageUrl: getPublicUrl(c.coverImageUrl)
+  }));
+
   return NextResponse.json({
     username: creator.username,
     displayName: creator.displayName,
     bio: creator.bio ?? null,
-    avatarUrl: creator.avatarUrl ?? null,
+    avatarUrl: getPublicUrl(creator.avatarUrl),
     category: creator.category ?? null,
     socialLinks: creator.socialLinks ?? null,
-    campaigns: creatorCampaigns,
+    campaigns: sanitizedCampaigns,
   });
 }

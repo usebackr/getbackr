@@ -5,6 +5,7 @@ import { projectWallets } from '@/db/schema/projectWallets';
 import { users } from '@/db/schema/users';
 import { eq, desc, and } from 'drizzle-orm';
 import ExploreClient from './ExploreClient';
+import { getPublicUrl } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 

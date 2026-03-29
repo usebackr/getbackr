@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
 import { eq, desc, sql, or } from 'drizzle-orm';
+import { getPublicUrl } from '@/lib/storage';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -40,7 +41,7 @@ export default async function OngoingProjects() {
             category: c.category || 'Creator Project',
             raised: `₦${raisedNum.toLocaleString()}`,
             progress,
-            image: c.image || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800',
+            image: getPublicUrl(c.image) || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800',
             backers: c.backers,
             href: `/c/${c.slug}`,
           };

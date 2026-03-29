@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
+import { getPublicUrl } from '@/lib/storage';
 
 const editCampaignSchema = z.object({
   title: z.string().optional(),
@@ -36,6 +37,11 @@ export async function GET(
   // Security check: only creator can fetch draft details for editing
   if (campaign.creatorId !== auth.userId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Self-heal the coverImageUrl
+  if (campaign.coverImageUrl) {
+    campaign.coverImageUrl = getPublicUrl(campaign.coverImageUrl);
   }
 
   return NextResponse.json({ campaign });
@@ -124,7 +130,7 @@ export async function PUT(
     slug: updated.slug,
     title: updated.title,
     description: updated.description,
-    coverImageUrl: updated.coverImageUrl,
+    coverImageUrl: getPublicUrl(updated.coverImageUrl),
     status: updated.status,
     goalAmount: updated.goalAmount,
     currency: updated.currency,

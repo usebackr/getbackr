@@ -6,6 +6,7 @@ import { contributions } from '@/db/schema/contributions';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { getPublicUrl } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,8 @@ export default async function PublicProfilePage({ params }: { params: { username
     .limit(1);
 
   if (!user) notFound();
+
+  const avatarUrl = getPublicUrl(user.avatarUrl);
 
   // 2. Fetch User's Campaigns (Live and Closed)
   const creatorCampaigns = await db
@@ -211,10 +214,11 @@ export default async function PublicProfilePage({ params }: { params: { username
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
           {creatorCampaigns.map((c) => {
             const progress = Math.min(100, Math.round((Number(c.raised) / Number(c.goal)) * 100));
+            const campaignImage = getPublicUrl(c.image);
             return (
               <Link key={c.id} href={`/c/${c.slug}`} style={{ textDecoration: 'none' }}>
                 <div className="card-premium" style={{ height: '100%', border: '1px solid #e2e8f0' }}>
-                  <div className="card-image-container" style={{ backgroundImage: `url(${c.image || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800'})`, height: '200px' }}>
+                  <div className="card-image-container" style={{ backgroundImage: `url(${campaignImage || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800'})`, height: '200px' }}>
                      <div className="card-badge">{c.category}</div>
                   </div>
                   <div className="card-content">
