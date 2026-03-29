@@ -137,42 +137,7 @@ export default async function ExplorePage() {
           </button>
         </div>
 
-        <style jsx>{`
-          .search-sort-container {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 32px;
-          }
-          .search-input {
-            width: 100%;
-            padding: 14px 16px 14px 44px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            font-size: 0.95rem;
-          }
-          .sort-button {
-            padding: 0 24px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            fontWeight: 600;
-            cursor: pointer;
-            height: 48px;
-          }
 
-          @media (max-width: 640px) {
-            .search-sort-container {
-              flex-direction: column;
-            }
-            .sort-button {
-              width: 100%;
-              justify-content: center;
-            }
-          }
-        `}</style>
 
         {/* Category Pills */}
         <div
