@@ -157,27 +157,31 @@ export default function WalletDashboard() {
             {/* Summary Cards - 2x2 Grid on Mobile */}
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', 
-              gap: '12px' 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', 
+              gap: '24px' 
             }}>
               {[
-                { label: 'Total Raised', value: summary.totalRaised, color: 'var(--accent-primary)', bg: '#fff' },
-                { label: 'Total Fees', value: summary.totalFees, color: '#f59e0b', bg: '#fff' },
-                { label: 'Total Withdrawn', value: summary.totalWithdrawn, color: '#3b82f6', bg: '#fff' },
-                { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', highlight: true },
+                { label: 'Total Raised', value: summary.totalRaised, color: '#ffffff', bg: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' },
+                { label: 'Total Fees', value: summary.totalFees, color: 'var(--text-primary)', bg: '#ffffff', border: '1px solid #f1f5f9' },
+                { label: 'Total Withdrawn', value: summary.totalWithdrawn, color: 'var(--text-primary)', bg: '#ffffff', border: '1px solid #f1f5f9' },
+                { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', border: '1px solid #bae6fd' },
               ].map((stat, i) => (
-                <div key={i} className="dash-card" style={{ 
-                  padding: '10px 8px', 
-                  borderTop: `3px solid ${stat.color}`,
+                <div key={i} className="dash-stat-card" style={{ 
                   background: stat.bg,
+                  color: stat.color,
+                  border: stat.border || 'none',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  padding: '24px',
+                  borderRadius: '20px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '2px',
-                  minHeight: '75px',
+                  gap: '8px',
+                  minHeight: '140px',
                   justifyContent: 'center'
                 }}>
-                  <p style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
+                  <span className="dash-stat-label">{stat.label}</span>
+                  <span className="dash-stat-value">₦{stat.value.toLocaleString()}</span>
                 </div>
               ))}
             </div>

@@ -45,17 +45,23 @@ export async function GET(req: NextRequest) {
       withdrawable += Number(wallet.balance || 0);
     }
 
-    // Fetch total views across all campaigns
-    const [{ totalViews }] = await db
-      .select({ totalViews: sum(campaigns.views) })
-      .from(campaigns)
-      .where(eq(campaigns.creatorId, userId));
+    // Fetch total views across all campaigns - wrapped in try/catch for stability
+    let finalViews = 0;
+    try {
+      const viewRes = await db
+        .select({ totalViews: sum(campaigns.views) })
+        .from(campaigns)
+        .where(eq(campaigns.creatorId, userId));
+      finalViews = Number(viewRes[0]?.totalViews || 0);
+    } catch (viewErr) {
+      console.error('[Stats] Views column might be missing:', viewErr);
+    }
 
     return NextResponse.json({
       totalRaised,
       withdrawable,
       totalCampaigns: Number(campaignCount || 0),
-      totalViews: Number(totalViews || 0),
+      totalViews: finalViews,
       currency: '₦',
     });
   } catch (err) {

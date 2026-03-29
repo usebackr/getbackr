@@ -20,15 +20,13 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .where(eq(campaigns.slug, params.slug))
     .limit(1);
 
-  if (!campaign) notFound();
-
-  // Increment view count in background
+  // Increment view count in background - wrapped in try/catch for stability
   try {
     await db.update(campaigns)
       .set({ views: sql`${campaigns.views} + 1` })
       .where(eq(campaigns.id, campaign.id));
   } catch (err) {
-    console.error('[Views] Failed to increment:', err);
+    console.error('[Views] Column might be missing, skipping increment:', err);
   }
 
   const [creator] = await db
