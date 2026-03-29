@@ -24,6 +24,7 @@ const getS3Client = () => {
         accessKeyId,
         secretAccessKey,
       },
+      forcePathStyle: true, // Required for Supabase S3 and custom endpoints
       ...(process.env.S3_ENDPOINT ? { endpoint: process.env.S3_ENDPOINT } : {}),
     });
   }
