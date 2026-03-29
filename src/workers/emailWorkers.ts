@@ -70,12 +70,16 @@ export function registerEmailReceiptWorker(): void {
       creatorName, backerName, totalRaised, goalAmount, campaignUrl 
     } = data;
 
+    console.log(`[Email Worker] Processing ${type} job for ${backerEmail || email}`);
+
+    try {
+
     // A. Withdrawal OTP
     if (type === 'withdrawal_otp') {
       const to = email;
       if (!to) throw new Error('Missing email for withdrawal OTP');
 
-      await sgMail.send({
+      const [response] = await sgMail.send({
         to,
         from: FROM_EMAIL,
         subject: '🔒 Your Backr Withdrawal security code',
@@ -95,7 +99,8 @@ export function registerEmailReceiptWorker(): void {
           </div>
         `,
       });
-      return { sent: true, type };
+      console.log(`[Email Worker] OTP sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
     }
 
     // B. Creator Alert (New Funding Received)
@@ -107,7 +112,7 @@ export function registerEmailReceiptWorker(): void {
         year: 'numeric', month: 'long', day: 'numeric' 
       });
 
-      await sgMail.send({
+      const [response] = await sgMail.send({
         to,
         from: FROM_EMAIL,
         subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
@@ -146,7 +151,8 @@ export function registerEmailReceiptWorker(): void {
           </div>
         `,
       });
-      return { sent: true, type };
+      console.log(`[Email Worker] Creator Alert sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
     }
 
     // C. Donor Receipt (Default)
@@ -157,7 +163,7 @@ export function registerEmailReceiptWorker(): void {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    await sgMail.send({
+    const [response] = await sgMail.send({
       to,
       from: FROM_EMAIL,
       subject: `Thanks for supporting "${campaignTitle}"! ✨`,
@@ -192,7 +198,12 @@ export function registerEmailReceiptWorker(): void {
       `,
     });
 
-    return { sent: true, type: 'donor_receipt', contributionId: data.contributionId };
+    console.log(`[Email Worker] Donor Receipt sent to ${to}. Message ID: ${response.headers['x-message-id']}`);
+    return { sent: true, type: type || 'donor_receipt', contributionId: data.contributionId, messageId: response.headers['x-message-id'] };
+    } catch (err: any) {
+      console.error(`[Email Worker] Failed to send ${type}:`, err.response?.body || err.message);
+      throw err;
+    }
   });
 }
 

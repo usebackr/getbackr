@@ -10,6 +10,8 @@ export default function WalletDashboard() {
     totalWithdrawn: 0,
     availableBalance: 0,
     campaigns: [],
+    kycStatus: 'pending',
+    hasBank: false,
   });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +49,17 @@ export default function WalletDashboard() {
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Safety Checks
+    if (!summary.hasBank) {
+      setError('You must link a bank account in Settings before withdrawing.');
+      return;
+    }
+    if (summary.kycStatus !== 'verified') {
+      setError('Identity verification (KYC) is required for withdrawals. Please visit the KYC tab.');
+      return;
+    }
+
     setActing(true);
     setError('');
     setSuccess('');
@@ -61,7 +74,7 @@ export default function WalletDashboard() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to request withdrawal');
 
-      setSuccess('Withdrawal requested successfully.');
+      setSuccess('Withdrawal requested successfully. Your request is pending and will be reviewed within 1 hour.');
       setWithdrawAmount('');
       setWithdrawReason('');
       setCampaignId('');
@@ -78,11 +91,33 @@ export default function WalletDashboard() {
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
         <header style={{ marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '4px' }}>Wallet</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', marginBottom: '4px', fontWeight: 800 }}>Wallet</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
             Manage your creator earnings and payouts.
           </p>
         </header>
+
+        {/* Withdrawal Guards Alerts */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+          {!summary.hasBank && (
+            <div style={{ padding: '16px 20px', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🏦</span>
+                <p style={{ fontSize: '0.85rem', color: '#9a3412', fontWeight: 600 }}>Link a bank account to enable withdrawals.</p>
+              </div>
+              <a href="/dashboard/settings" className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', textDecoration: 'none' }}>Settings</a>
+            </div>
+          )}
+          {summary.kycStatus !== 'verified' && (
+            <div style={{ padding: '16px 20px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                <p style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 600 }}>KYC Verification is required for payouts.</p>
+              </div>
+              <a href="/dashboard/kyc" className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', textDecoration: 'none' }}>Verify Now</a>
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <p style={{ color: 'var(--text-secondary)' }}>Loading wallet data...</p>
@@ -92,13 +127,13 @@ export default function WalletDashboard() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
                 gap: '24px',
               }}
             >
               <div
                 className="dash-stat-card glass"
-                style={{ borderTop: '4px solid var(--accent-primary)' }}
+                style={{ borderTop: '4px solid var(--accent-primary)', minWidth: '0' }}
               >
                 <p className="dash-stat-label">Total Raised</p>
                 <p className="dash-stat-value">₦{summary.totalRaised.toLocaleString()}</p>

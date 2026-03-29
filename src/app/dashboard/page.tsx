@@ -587,23 +587,38 @@ export default function DashboardPage() {
                         )}
 
                         {camp.status?.toLowerCase() === 'active' && (
-                          <button
-                            onClick={() => handleEndCampaign(camp.id)}
-                            style={{ 
-                              width: '100%', 
-                              padding: '12px', 
-                              borderRadius: '14px',
-                              border: '1px solid #ef4444',
-                              background: '#fff',
-                              color: '#ef4444',
-                              fontSize: '0.9rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              marginTop: '8px'
-                            }}
-                          >
-                            End Project Early
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                              onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
+                              className="btn-primary"
+                              style={{ 
+                                flex: 1,
+                                padding: '12px', 
+                                fontSize: '0.9rem',
+                                background: '#f1f5f9',
+                                color: '#475569',
+                                border: '1px solid #e2e8f0'
+                              }}
+                            >
+                              Edit Story
+                            </button>
+                            <button
+                              onClick={() => handleEndCampaign(camp.id)}
+                              style={{ 
+                                flex: 1,
+                                padding: '12px', 
+                                borderRadius: '14px',
+                                border: '1px solid #ef4444',
+                                background: '#fff',
+                                color: '#ef4444',
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              End Early
+                            </button>
+                          </div>
                         )}
                       </div>
                     );

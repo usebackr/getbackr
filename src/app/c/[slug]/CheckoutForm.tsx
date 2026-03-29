@@ -18,6 +18,7 @@ export default function CheckoutForm({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const currentPct = Math.floor(Math.min((raisedAmount / goalAmount) * 100, 100));
   const inputAmt = Number(amount) || 0;
@@ -191,9 +192,52 @@ export default function CheckoutForm({
               fontSize: '0.85rem',
               color: '#475569',
               marginBottom: '8px',
+              position: 'relative'
             }}
           >
-            Your Contribution <span style={{ color: '#fbbf24' }}>ⓘ</span>
+            Your Contribution 
+            <div 
+              style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <span style={{ color: '#fbbf24', fontSize: '1.1rem' }}>ⓘ</span>
+              {showTooltip && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    bottom: 'calc(100% + 10px)',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#0f172a',
+                    color: '#fff',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
+                    width: '200px',
+                    zIndex: 50,
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                    textAlign: 'center',
+                    pointerEvents: 'none',
+                    fontWeight: 500,
+                    lineHeight: 1.4
+                  }}
+                >
+                  There's a 1.5% processing fee that will be charged from the donation.
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      borderWidth: '6px',
+                      borderStyle: 'solid',
+                      borderColor: '#0f172a transparent transparent transparent'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </label>
           <div style={{ position: 'relative' }}>
             <span
@@ -224,9 +268,6 @@ export default function CheckoutForm({
               }}
             />
           </div>
-          <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>
-            Enter an amount to see conversion
-          </p>
         </div>
 
         <div>

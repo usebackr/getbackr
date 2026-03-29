@@ -1,13 +1,16 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { eq } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { users } from '@/db/schema/users';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { spendingLogs } from '@/db/schema/spendingLogs';
+import { contributions } from '@/db/schema/contributions';
 import CheckoutForm from './CheckoutForm';
 import ShareButton from './ShareButton';
+import TransparencyLedger from './TransparencyLedger';
+import BackersList from './BackersList';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
   const [campaign] = await db
@@ -35,6 +38,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .from(spendingLogs)
     .where(eq(spendingLogs.campaignId, campaign.id))
     .orderBy(spendingLogs.entryDate);
+
+  const campaignContributions = await db
+    .select()
+    .from(contributions)
+    .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
+    .orderBy(desc(contributions.createdAt));
+
+  const totalDonors = campaignContributions.length;
+  const latestBackers = campaignContributions.slice(0, 10);
 
   const goalAmount = parseFloat(campaign.goalAmount);
   const raisedAmount = parseFloat(wallet?.totalReceived || '0');
@@ -291,58 +303,11 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               See exactly how the creator is using the raised funds.
             </p>
 
-            {logs.length === 0 ? (
-              <div
-                style={{
-                  padding: '32px',
-                  background: '#f8fafc',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  textAlign: 'center',
-                }}
-              >
-                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                  No withdrawals have been made yet.
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    style={{
-                      padding: '24px',
-                      background: '#ffffff',
-                      borderRadius: '12px',
-                      border: '1px solid #e2e8f0',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                        {new Date(log.entryDate).toLocaleDateString()}
-                      </span>
-                      <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ef4444' }}>
-                        -₦{Number(log.amount).toLocaleString()}
-                      </span>
-                    </div>
-                    <p style={{ color: '#0f172a', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                      {log.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <TransparencyLedger logs={logs} />
           </div>
         </div>
 
-        {/* Right Column: Checkout Form & Leaderboard */}
+        {/* Right Column: Checkout Form & Latest Backers */}
         <div
           style={{
             flex: '1 1 400px',
@@ -358,53 +323,10 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             raisedAmount={raisedAmount}
           />
 
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '24px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '24px',
-              }}
-            >
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>
-                0 Total Donor(s)
-              </h4>
-              <button
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid #e2e8f0',
-                  background: 'transparent',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: '#475569',
-                }}
-              >
-                Top Donors
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <p
-                style={{
-                  color: '#475569',
-                  fontSize: '0.9rem',
-                  textAlign: 'center',
-                  padding: '16px 0',
-                }}
-              >
-                Be the first to back this project!
-              </p>
-            </div>
-          </div>
+          <BackersList 
+            backers={latestBackers as any} 
+            totalDonors={totalDonors} 
+          />
         </div>
       </main>
     </div>

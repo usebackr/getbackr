@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { withdrawals } from '@/db/schema/withdrawals';
 import { campaigns } from '@/db/schema/campaigns';
+import { users } from '@/db/schema/users';
+import { bankAccounts } from '@/db/schema/bankAccounts';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 
@@ -51,9 +53,20 @@ export async function GET(req: NextRequest) {
       .from(campaigns)
       .where(eq(campaigns.creatorId, userId));
 
-    // Precise live calculation rule
     const calcAvailable = totalRaised - totalFees - totalWithdrawn;
     const availableBalance = calcAvailable > 0 ? calcAvailable : 0;
+
+    const [user] = await db
+      .select({ kycStatus: users.kycStatus })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    const [bank] = await db
+      .select({ id: bankAccounts.id })
+      .from(bankAccounts)
+      .where(eq(bankAccounts.userId, userId))
+      .limit(1);
 
     return NextResponse.json({
       totalRaised,
@@ -61,6 +74,8 @@ export async function GET(req: NextRequest) {
       totalWithdrawn,
       availableBalance,
       campaigns: userCampaigns,
+      kycStatus: user?.kycStatus || 'pending',
+      hasBank: !!bank,
     });
   } catch (error: any) {
     console.error('[wallet-summary API Error]', error);

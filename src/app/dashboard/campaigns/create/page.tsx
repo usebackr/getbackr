@@ -21,6 +21,7 @@ function CreateCampaignForm() {
     goalAmount: '',
     endDate: '',
     coverImageUrl: '',
+    status: 'draft',
   });
 
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -41,6 +42,7 @@ function CreateCampaignForm() {
               goalAmount: c.goalAmount ? parseFloat(c.goalAmount).toString() : '',
               endDate: c.endDate ? new Date(c.endDate).toISOString().split('T')[0] : '',
               coverImageUrl: c.coverImageUrl || '',
+              status: c.status || 'draft',
             });
           } else if (data.error) {
             setError(data.error);
@@ -271,7 +273,27 @@ function CreateCampaignForm() {
               <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>Funding & Timeline</h2>
               <div>
                 <label className="input-label">Amount Needed (₦) *</label>
-                <input type="number" name="goalAmount" value={formData.goalAmount} onChange={handleChange} placeholder="e.g. 500000" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                <input 
+                  type="number" 
+                  name="goalAmount" 
+                  value={formData.goalAmount} 
+                  onChange={handleChange} 
+                  placeholder="e.g. 500000" 
+                  disabled={formData.status === 'active'}
+                  style={{ 
+                    width: '100%', 
+                    padding: '14px', 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0',
+                    background: formData.status === 'active' ? '#f1f5f9' : '#fff',
+                    cursor: formData.status === 'active' ? 'not-allowed' : 'text'
+                  }} 
+                />
+                {formData.status === 'active' && (
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px', fontWeight: 600 }}>
+                    Project is live. Funding goal cannot be changed to protect donor trust.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="input-label">End Date *</label>
