@@ -98,27 +98,27 @@ export default function WalletDashboard() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
       <main className="dash-main" style={{ flex: 1, padding: 'clamp(16px, 5vw, 40px)' }}>
-        <header style={{ marginBottom: '32px' }}>
-          <button
-            onClick={() => window.location.href = '/dashboard'}
-            style={{
-              background: '#fff', border: '1px solid #e2e8f0', color: 'var(--text-primary)', cursor: 'pointer',
-              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700,
-              padding: '10px 18px', fontSize: '0.85rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-              transition: 'all 0.2s'
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Dashboard
-          </button>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <header style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
             <div>
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                style={{
+                  background: '#fff', border: '1px solid #e2e8f0', color: 'var(--text-primary)', cursor: 'pointer',
+                  marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700,
+                  padding: '8px 16px', fontSize: '0.8rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  transition: 'all 0.2s', width: 'fit-content'
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Dashboard
+              </button>
               <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', marginBottom: '4px', fontWeight: 900 }}>Wallet</h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
                 Manage your creator earnings and payouts.
               </p>
             </div>
-            <div style={{ background: '#ecfdf5', color: '#059669', padding: '8px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 800 }}>
+            <div style={{ background: '#ecfdf5', color: '#059669', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                LIVE BALANCE
             </div>
           </div>
@@ -167,17 +167,17 @@ export default function WalletDashboard() {
                 { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', highlight: true },
               ].map((stat, i) => (
                 <div key={i} className="dash-card" style={{ 
-                  padding: '16px 12px', 
+                  padding: '12px 10px', 
                   borderTop: `4px solid ${stat.color}`,
                   background: stat.bg,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '4px',
-                  minHeight: '100px',
+                  gap: '2px',
+                  minHeight: '90px',
                   justifyContent: 'center'
                 }}>
-                  <p style={{ color: '#64748b', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
-                  <p style={{ fontSize: 'clamp(0.9rem, 4vw, 1.4rem)', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
+                  <p style={{ color: '#64748b', fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
