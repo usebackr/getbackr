@@ -102,12 +102,14 @@ export default function WalletDashboard() {
           <button
             onClick={() => window.location.href = '/dashboard'}
             style={{
-              background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
-              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600,
-              padding: '0', fontSize: '0.9rem'
+              background: '#fff', border: '1px solid #e2e8f0', color: 'var(--text-primary)', cursor: 'pointer',
+              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700,
+              padding: '10px 18px', fontSize: '0.85rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              transition: 'all 0.2s'
             }}
           >
-            ← Back to Dashboard
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Dashboard
           </button>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
@@ -152,10 +154,10 @@ export default function WalletDashboard() {
           <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading wallet data...</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {/* Summary Cards */}
+            {/* Summary Cards - 2x2 Grid on Mobile */}
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+              gridTemplateColumns: 'repeat(2, 1fr)', 
               gap: '12px' 
             }}>
               {[
@@ -165,16 +167,17 @@ export default function WalletDashboard() {
                 { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', highlight: true },
               ].map((stat, i) => (
                 <div key={i} className="dash-card" style={{ 
-                  padding: 'clamp(12px, 3vw, 24px)', 
+                  padding: '16px 12px', 
                   borderTop: `4px solid ${stat.color}`,
                   background: stat.bg,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '4px',
-                  minHeight: 'auto'
+                  minHeight: '100px',
+                  justifyContent: 'center'
                 }}>
-                  <p style={{ color: '#64748b', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
-                  <p style={{ fontSize: 'clamp(1rem, 4vw, 1.75rem)', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
+                  <p style={{ color: '#64748b', fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
+                  <p style={{ fontSize: 'clamp(0.9rem, 4vw, 1.4rem)', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
