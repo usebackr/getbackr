@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import fs from 'fs';
 import path from 'path';
 
@@ -35,6 +36,7 @@ const getS3Client = () => {
         secretAccessKey: secretAccessKey.trim(),
       },
       forcePathStyle: true, // Required for Supabase S3 and custom endpoints
+      requestHandler: new FetchHttpHandler({ keepAlive: false }), // Force using global fetch to bypass Node TLS SNI errors on Vercel
       ...(finalEndpoint ? { endpoint: finalEndpoint } : {}),
     });
   }
