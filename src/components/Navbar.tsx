@@ -186,53 +186,6 @@ export default function Navbar() {
           z-index: 2200;
         }
 
-        .nav-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: #ffffff;
-          z-index: 2100;
-          transform: translateX(100%);
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          display: flex;
-          flex-direction: column;
-        }
-        .nav-overlay.open { transform: translateX(0); }
-        
-        .nav-overlay-header {
-          padding: 20px 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid #f1f5f9;
-        }
-
-        .nav-overlay-content {
-          display: flex;
-          flex-direction: column;
-          padding: 32px 24px;
-          gap: 0;
-          width: 100%;
-        }
-        .nav-overlay-content a {
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: #0f172a;
-          text-decoration: none;
-          padding: 20px 0;
-          border-bottom: 1px solid #f8fafc;
-          display: block;
-        }
-        
-        .nav-overlay-footer {
-          margin-top: 40px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
         @media (max-width: 1024px) {
           .nav-links-desktop { display: none; }
           .nav-toggle { display: block; }
