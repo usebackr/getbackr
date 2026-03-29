@@ -20,8 +20,13 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .where(eq(campaigns.slug, params.slug))
     .limit(1);
 
-  if (!campaign) {
-    notFound();
+  // Increment view count in background - wrapped in try/catch for stability
+  try {
+    await db.update(campaigns)
+      .set({ views: sql`${campaigns.views} + 1` })
+      .where(eq(campaigns.id, campaign.id));
+  } catch (err) {
+    console.error('[Views] Column might be missing, skipping increment:', err);
   }
 
   const [creator] = await db
@@ -51,24 +56,13 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .orderBy(spendingLogs.entryDate);
 
   const campaignContributions = await db
-    .select({
-      id: contributions.id,
-      amount: contributions.amount,
-      isAnonymous: contributions.anonymous,
-      createdAt: contributions.createdAt,
-    })
+    .select()
     .from(contributions)
     .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
     .orderBy(desc(contributions.createdAt));
 
   const totalDonors = campaignContributions.length;
-  const latestBackers = campaignContributions.slice(0, 5).map(c => ({
-    id: c.id,
-    amount: c.amount,
-    isAnonymous: c.isAnonymous,
-    createdAt: c.createdAt,
-    backerName: 'A Supporter'
-  }));
+  const latestBackers = campaignContributions.slice(0, 5);
 
   const goalAmount = parseFloat(campaign.goalAmount);
   const raisedAmount = parseFloat(wallet?.totalReceived || '0');
