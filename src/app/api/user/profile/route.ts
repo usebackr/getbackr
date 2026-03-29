@@ -12,23 +12,30 @@ export async function GET(req: NextRequest) {
     const userId = payload.sub as string;
 
     const [user] = await db
-      .select({
-        id: users.id,
-        displayName: users.displayName,
-        email: users.email,
-        bio: users.bio,
-        category: users.category,
-        username: users.username,
-        avatarUrl: users.avatarUrl,
-        socialLinks: users.socialLinks,
-        kycStatus: users.kycStatus,
-        kycRejectionReason: users.kycRejectionReason,
-      })
+      .select()
       .from(users)
       .where(eq(users.id, userId))
       .limit(1);
 
-    return NextResponse.json({ user: user || null });
+    if (user) {
+      // Check if they actually have documents submitted
+      const { kycProfiles } = await import('@/db/schema/kycProfiles');
+      const [profile] = await db
+        .select({ id: kycProfiles.id, doc: kycProfiles.documentUrl, selfie: kycProfiles.selfieUrl })
+        .from(kycProfiles)
+        .where(eq(kycProfiles.userId, userId))
+        .limit(1);
+      
+      return NextResponse.json({ 
+        user: { 
+          ...user, 
+          // It's ONLY a valid submission if both document and selfie exist
+          hasKycSubmission: !!(profile && profile.doc && profile.selfie) 
+        } 
+      });
+    }
+
+    return NextResponse.json({ user: null });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
   }

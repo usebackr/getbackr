@@ -8,6 +8,8 @@ export default function IdentityPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [hasSubmission, setHasSubmission] = useState(false);
+  const [showIdForm, setShowIdForm] = useState(false);
   const [status, setStatus] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -29,21 +31,36 @@ export default function IdentityPage() {
     selfie: '',
   });
 
-  useEffect(() => {
-    async function checkStatus() {
-      try {
-        const res = await fetch('/api/user/profile');
-        const data = await res.json();
-        if (data.user) {
-          setStatus(data.user.kycStatus);
-          setRejectionReason(data.user.kycRejectionReason);
-        }
-      } finally {
-        setLoading(false);
+  async function checkStatus() {
+    try {
+      const res = await fetch('/api/user/profile');
+      const data = await res.json();
+      if (data.user) {
+        setStatus(data.user.kycStatus);
+        setRejectionReason(data.user.kycRejectionReason);
+        setHasSubmission(data.user.hasKycSubmission);
       }
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     checkStatus();
   }, []);
+
+  const handleReset = async () => {
+    if (!confirm('Are you sure you want to reset your verification? This will allow you to re-upload documents.')) return;
+    setLoading(true);
+    try {
+      await fetch('/api/user/kyc/reset', { method: 'POST' });
+      await checkStatus();
+    } catch (err) {
+      setError('Failed to reset verification');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const MAX_SIZE_MB = 2;
   const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -88,6 +105,8 @@ export default function IdentityPage() {
       if (res.ok) {
         setSuccess('Verification Submitted Successfully! Your identity is now under review.');
         setStatus('pending');
+        setHasSubmission(true);
+        setShowIdForm(false);
       } else {
         const data = await res.json();
         setError(data.error || 'Verification submission failed');
@@ -99,21 +118,38 @@ export default function IdentityPage() {
     }
   };
 
-  if (loading) return null;
+  if (loading) return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ fontWeight: 600, color: '#64748b' }}>Loading Profile...</p>
+    </div>
+  );
+
+  const shouldShowForm = status === 'unsubmitted' || status === 'rejected' || (status === 'pending' && !hasSubmission) || showIdForm;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
-        <header style={{ marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}>Identity Verification</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
-            Verify your identity to unlock withdrawals and premium campaign features.
-          </p>
+        <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}>Identity Verification</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+              Verify your identity to unlock withdrawals and premium campaign features.
+            </p>
+          </div>
+          {(status === 'pending' || status === 'rejected') && !shouldShowForm && (
+            <button 
+              onClick={() => setShowIdForm(true)}
+              className="btn-outline" 
+              style={{ padding: '10px 20px', fontSize: '0.9rem' }}
+            >
+              Re-upload Documents
+            </button>
+          )}
         </header>
 
         <div style={{ maxWidth: '800px' }}>
-          {status === 'pending' ? (
+          {!shouldShowForm && status === 'pending' ? (
             <div className="dash-card" style={{ textAlign: 'center', padding: '60px' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -123,8 +159,18 @@ export default function IdentityPage() {
                 We are currently reviewing your documents. This usually takes 24-48 hours. 
                 You'll receive an email as soon as your status is updated!
               </p>
+              
+              <div style={{ marginTop: '32px', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>Stuck? If you believe there was an error in your submission, you can reset it.</p>
+                <button 
+                  onClick={handleReset}
+                  style={{ background: 'none', border: 'none', color: '#6366f1', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}
+                >
+                  Reset & Re-upload
+                </button>
+              </div>
             </div>
-          ) : status === 'verified' ? (
+          ) : !shouldShowForm && status === 'verified' ? (
             <div className="dash-card" style={{ textAlign: 'center', padding: '60px', border: '2px solid #10b981' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
