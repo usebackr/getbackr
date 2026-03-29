@@ -70,14 +70,26 @@ export async function POST(req: NextRequest) {
         });
 
         // C. Update campaign's project wallet (atomic increment)
-        await tx
+        console.log(`[Paystack Webhook] Updating wallet for campaign: ${campaignId}`);
+        const walletUpdate = await tx
           .update(projectWallets)
           .set({
             balance: sql`${projectWallets.balance} + ${netAmount}::numeric`,
             totalReceived: sql`${projectWallets.totalReceived} + ${amountInMajor}::numeric`,
             updatedAt: new Date(),
           })
-          .where(eq(projectWallets.campaignId, campaignId));
+          .where(eq(projectWallets.campaignId, campaignId))
+          .returning({ id: projectWallets.id });
+
+        if (walletUpdate.length === 0) {
+          console.warn(`[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one...`);
+          await tx.insert(projectWallets).values({
+            campaignId,
+            balance: netAmount.toString(),
+            totalReceived: amountInMajor.toString(),
+            currency: data.currency || 'NGN',
+          });
+        }
 
         // D. Fetch campaign creator details and current wallet state
         const [campaignDetails] = await tx

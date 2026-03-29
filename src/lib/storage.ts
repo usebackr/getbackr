@@ -29,8 +29,18 @@ const getS3Client = () => {
       finalEndpoint = finalEndpoint.slice(0, -1);
     }
 
+    // Sanitize region: if it starts with http, it's actually an endpoint
+    let finalRegion = (region || 'us-east-1').trim();
+    if (finalRegion.startsWith('http')) {
+      // If endpoint is missing but region has a URL, treat it as endpoint
+      if (!finalEndpoint) {
+        finalEndpoint = finalRegion;
+      }
+      finalRegion = 'us-east-1'; // Reset to default region
+    }
+
     s3 = new S3Client({
-      region: (region || 'us-east-1').trim(),
+      region: finalRegion,
       credentials: {
         accessKeyId: accessKeyId.trim(),
         secretAccessKey: secretAccessKey.trim(),
