@@ -121,36 +121,40 @@ export async function POST(req: NextRequest) {
           });
 
           // F. Queue Emails via Workers
-          const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
+          try {
+            const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
 
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
 
-          // Email to Donor (Receipt)
-          await emailQueue.add({
-            type: 'donor_receipt',
-            backerEmail: data.customer.email,
-            backerName: backerName,
-            amount: amountInMajor,
-            currency: data.currency,
-            campaignTitle: campaignDetails.title,
-            contributionId: reference,
-            campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-          });
-
-          // Email to Creator (Alert)
-          if (campaignDetails.creatorEmail) {
+            // Email to Donor (Receipt)
             await emailQueue.add({
-              type: 'creator_alert',
-              backerEmail: campaignDetails.creatorEmail,
+              type: 'donor_receipt',
+              backerEmail: data.customer.email,
+              backerName: backerName,
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
-              creatorName: campaignDetails.creatorName,
-              backerName: backerName,
-              totalRaised: wallet?.totalReceived || netAmount,
-              goalAmount: campaignDetails.goalAmount,
+              contributionId: reference,
               campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
             });
+
+            // Email to Creator (Alert)
+            if (campaignDetails.creatorEmail) {
+              await emailQueue.add({
+                type: 'creator_alert',
+                backerEmail: campaignDetails.creatorEmail,
+                amount: amountInMajor,
+                currency: data.currency,
+                campaignTitle: campaignDetails.title,
+                creatorName: campaignDetails.creatorName,
+                backerName: backerName,
+                totalRaised: wallet?.totalReceived || netAmount,
+                goalAmount: campaignDetails.goalAmount,
+                campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
+              });
+            }
+          } catch (queueErr) {
+            console.error('[Paystack Webhook] Non-fatal error queueing emails:', queueErr);
           }
         }
       });
