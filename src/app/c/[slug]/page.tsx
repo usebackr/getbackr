@@ -56,7 +56,6 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
       amount: contributions.amount,
       isAnonymous: contributions.anonymous,
       createdAt: contributions.createdAt,
-      storedName: contributions.backerName,
     })
     .from(contributions)
     .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
@@ -68,7 +67,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     amount: c.amount,
     isAnonymous: c.isAnonymous,
     createdAt: c.createdAt,
-    backerName: c.storedName || 'A Supporter'
+    backerName: 'A Supporter'
   }));
 
   const goalAmount = parseFloat(campaign.goalAmount);
