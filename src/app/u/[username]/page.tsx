@@ -86,22 +86,82 @@ export default async function PublicProfilePage({ params }: { params: { username
           {/* Social Links */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
             {socialLinks.twitter && (
-              <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="social-pill">
+              <a 
+                href={socialLinks.twitter} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  padding: '10px 24px', 
+                  borderRadius: '100px', 
+                  background: '#f1f5f9', 
+                  color: '#475569', 
+                  fontWeight: 700, 
+                  fontSize: '0.9rem', 
+                  textDecoration: 'none', 
+                  transition: 'all 0.2s', 
+                  border: '1px solid #e2e8f0' 
+                }}
+              >
                 Twitter/X
               </a>
             )}
             {socialLinks.instagram && (
-              <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-pill">
+              <a 
+                href={socialLinks.instagram} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  padding: '10px 24px', 
+                  borderRadius: '100px', 
+                  background: '#f1f5f9', 
+                  color: '#475569', 
+                  fontWeight: 700, 
+                  fontSize: '0.9rem', 
+                  textDecoration: 'none', 
+                  transition: 'all 0.2s', 
+                  border: '1px solid #e2e8f0' 
+                }}
+              >
                 Instagram
               </a>
             )}
             {socialLinks.linkedin && (
-              <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="social-pill">
+              <a 
+                href={socialLinks.linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  padding: '10px 24px', 
+                  borderRadius: '100px', 
+                  background: '#f1f5f9', 
+                  color: '#475569', 
+                  fontWeight: 700, 
+                  fontSize: '0.9rem', 
+                  textDecoration: 'none', 
+                  transition: 'all 0.2s', 
+                  border: '1px solid #e2e8f0' 
+                }}
+              >
                 LinkedIn
               </a>
             )}
             {socialLinks.website && (
-              <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" className="social-pill" style={{ background: '#0f172a', color: '#fff' }}>
+              <a 
+                href={socialLinks.website} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  padding: '10px 24px', 
+                  borderRadius: '100px', 
+                  background: '#0f172a', 
+                  color: '#ffffff', 
+                  fontWeight: 700, 
+                  fontSize: '0.9rem', 
+                  textDecoration: 'none', 
+                  transition: 'all 0.2s', 
+                  border: '1px solid #e2e8f0' 
+                }}
+              >
                 Website
               </a>
             )}
@@ -164,26 +224,6 @@ export default async function PublicProfilePage({ params }: { params: { username
           })}
         </div>
       </div>
-      
-      <style jsx>{`
-        .social-pill {
-          padding: 10px 24px;
-          border-radius: 100px;
-          background: #f1f5f9;
-          color: #475569;
-          font-weight: 700;
-          font-size: 0.9rem;
-          text-decoration: none;
-          transition: all 0.2s;
-          border: 1px solid #e2e8f0;
-        }
-        .social-pill:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          border-color: var(--accent-primary);
-          color: var(--accent-primary);
-        }
-      `}</style>
     </div>
   );
 }
