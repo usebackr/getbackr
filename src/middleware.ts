@@ -5,7 +5,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/campaigns/new'];
+  const protectedPaths = ['/dashboard', '/campaigns/new', '/admin'];
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
 
   // Auth pages (Redirect to dashboard if already logged in)
@@ -26,5 +26,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/campaigns/new/:path*', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/campaigns/new/:path*', '/admin/:path*', '/admin', '/login', '/signup'],
 };
