@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Icons = {
   Menu: () => (
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Check session on mount
   useEffect(() => {
@@ -45,19 +47,40 @@ export default function Navbar() {
     }
   }, [isOpen]);
 
-  const AuthButtons = () => {
+  const AuthButtons = ({ isMobile = false }) => {
     if (loading) return null;
     if (isAuthenticated) {
       return (
-        <a href="/dashboard" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+        <a 
+          href="/dashboard" 
+          className="btn-primary" 
+          style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          onClick={() => isMobile && setIsOpen(false)}
+        >
           Back to Dashboard
         </a>
       );
     }
     return (
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginLeft: '12px' }}>
-        <a href="/login" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Log In</a>
-        <a href="/signup" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+        <a 
+          href="/login" 
+          style={{ 
+            color: 'var(--text-primary)', 
+            textDecoration: 'none', 
+            fontWeight: 600, 
+            fontSize: isMobile ? '1.5rem' : '0.95rem' 
+          }}
+          onClick={() => isMobile && setIsOpen(false)}
+        >
+          Log In
+        </a>
+        <a 
+          href="/signup" 
+          className="btn-primary" 
+          style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          onClick={() => isMobile && setIsOpen(false)}
+        >
           Get Started
         </a>
       </div>
@@ -94,7 +117,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop Links */}
-        <div className="nav-desktop">
+        <div className="nav-links-desktop">
           <a href="/explore">Explore</a>
           <a href="/how-it-works">How it Works</a>
           <AuthButtons />
@@ -105,7 +128,7 @@ export default function Navbar() {
           className="nav-toggle"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle Menu"
-          style={{ display: 'none', zIndex: 2100 }}
+          style={{ border: 'none', background: 'none' }}
         >
           {isOpen ? <Icons.Close /> : <Icons.Menu />}
         </button>
@@ -117,52 +140,32 @@ export default function Navbar() {
           <a href="/explore" onClick={() => setIsOpen(false)}>Explore</a>
           <a href="/how-it-works" onClick={() => setIsOpen(false)}>How it Works</a>
           <div className="nav-overlay-divider" />
-          {isAuthenticated ? (
-            <a href="/dashboard" className="btn-primary" onClick={() => setIsOpen(false)}>
-              Back to Dashboard
-            </a>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', alignItems: 'center' }}>
-              <a href="/login" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 600 }}>Log In</a>
-              <a href="/signup" className="btn-primary" onClick={() => setIsOpen(false)} style={{ width: '100%', textAlign: 'center' }}>
-                Get Started
-              </a>
-            </div>
-          )}
+          <AuthButtons isMobile />
         </nav>
       </div>
 
       <style jsx>{`
-        .nav-desktop {
+        .nav-links-desktop {
           display: flex;
           align-items: center;
           gap: 32px;
         }
-        .nav-desktop > a {
+        .nav-links-desktop a {
           color: var(--text-primary);
           text-decoration: none;
           font-weight: 600;
           font-size: 0.95rem;
           transition: opacity 0.2s;
         }
-        .nav-desktop > a:hover {
+        .nav-links-desktop a:hover {
           opacity: 0.7;
         }
         .nav-toggle {
-          background: none;
-          border: none;
+          display: none;
           cursor: pointer;
           color: var(--text-primary);
           padding: 8px;
-        }
-
-        @media (max-width: 1024px) {
-          .nav-desktop {
-            display: none !important;
-          }
-          .nav-toggle {
-            display: block !important;
-          }
+          z-index: 2100;
         }
         .nav-overlay {
           position: fixed;
