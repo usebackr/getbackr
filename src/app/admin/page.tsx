@@ -10,68 +10,58 @@ import { GrowthChart } from '@/components/admin/GrowthChart';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  // Aggregate Metrics in parallel
-  const [userCountResp] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
-  const [betaCountResp] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(users)
-    .where(eq(users.isBeta, true));
-  
-  const [dauCountResp] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(users)
-    .where(sql`${users.lastLoginAt} > now() - interval '24 hours'`);
+  // Run all queries in parallel, each independently fault-tolerant.
+  // If the DB migration hasn't been applied yet, individual queries fail
+  // gracefully without crashing the whole dashboard.
+  const [
+    userCountResult,
+    betaCountResult,
+    dauCountResult,
+    campaignCountResult,
+    financialResult,
+    topCampaignsResult,
+    recentLogsResult,
+  ] = await Promise.allSettled([
+    db.select({ count: sql<number>`count(*)::int` }).from(users),
+    db.select({ count: sql<number>`count(*)::int` }).from(users).where(sql`is_beta = true`),
+    db.select({ count: sql<number>`count(*)::int` }).from(users).where(sql`last_login_at > now() - interval '24 hours'`),
+    db.select({ count: sql<number>`count(*)::int` }).from(campaigns),
+    db
+      .select({
+        totalVolume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+        totalRevenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
+      })
+      .from(contributions)
+      .where(eq(contributions.status, 'confirmed')),
+    db
+      .select({
+        id: campaigns.id,
+        title: campaigns.title,
+        revenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
+        volume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+      })
+      .from(campaigns)
+      .leftJoin(contributions, and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')))
+      .groupBy(campaigns.id)
+      .orderBy(desc(sql`COALESCE(SUM(${contributions.amount}), 0)`))
+      .limit(5),
+    db
+      .select({ id: auditLogs.id, eventType: auditLogs.eventType, actorEmail: users.email, createdAt: auditLogs.createdAt })
+      .from(auditLogs)
+      .leftJoin(users, eq(auditLogs.actorId, users.id))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(8),
+  ]);
 
-  const [campaignCountResp] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(campaigns);
-
-  const [financialStats] = await db
-    .select({
-      totalVolume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
-      totalRevenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
-    })
-    .from(contributions)
-    .where(eq(contributions.status, 'confirmed'));
-
-  const topCampaigns = await db
-    .select({
-      id: campaigns.id,
-      title: campaigns.title,
-      revenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
-      volume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
-    })
-    .from(campaigns)
-    .leftJoin(
-      contributions, 
-      and(
-        eq(campaigns.id, contributions.campaignId),
-        eq(contributions.status, 'confirmed')
-      )
-    )
-    .groupBy(campaigns.id)
-    .orderBy(desc(sql`SUM(${contributions.amount})`))
-    .limit(5);
-
-  const recentLogs = await db
-    .select({
-      id: auditLogs.id,
-      eventType: auditLogs.eventType,
-      actorEmail: users.email,
-      createdAt: auditLogs.createdAt,
-    })
-    .from(auditLogs)
-    .leftJoin(users, eq(auditLogs.actorId, users.id))
-    .orderBy(desc(auditLogs.createdAt))
-    .limit(8)
-    .catch(() => []); // Fail-safe if table doesn't exist yet
-
-  const userCount = userCountResp?.count || 0;
-  const betaCount = betaCountResp?.count || 0;
-  const dauCount = dauCountResp?.count || 0;
-  const campaignCount = campaignCountResp?.count || 0;
+  const userCount = userCountResult.status === 'fulfilled' ? (userCountResult.value[0]?.count || 0) : 0;
+  const betaCount = betaCountResult.status === 'fulfilled' ? (betaCountResult.value[0]?.count || 0) : 0;
+  const dauCount = dauCountResult.status === 'fulfilled' ? (dauCountResult.value[0]?.count || 0) : 0;
+  const campaignCount = campaignCountResult.status === 'fulfilled' ? (campaignCountResult.value[0]?.count || 0) : 0;
+  const financialStats = financialResult.status === 'fulfilled' ? financialResult.value[0] : null;
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
+  const topCampaigns = topCampaignsResult.status === 'fulfilled' ? topCampaignsResult.value : [];
+  const recentLogs = recentLogsResult.status === 'fulfilled' ? recentLogsResult.value : [];
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto' }}>

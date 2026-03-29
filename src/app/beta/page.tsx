@@ -73,20 +73,20 @@ export default function BetaSignupPage() {
   return (
     <main style={{ 
       minHeight: '100vh', 
-      background: '#0a0f1e', 
-      color: '#f8fafc',
+      background: '#f8fafc', 
+      color: '#0f172a',
       fontFamily: "'Inter', sans-serif",
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Animated Background Orbs — Emerald Glow */}
+      {/* Animated Background Orbs — Emerald Glow (Adjusted for light mode) */}
       <div style={{
         position: 'absolute',
         top: '-10%',
         left: '-10%',
         width: '50vw',
         height: '50vw',
-        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
         borderRadius: '50%',
         zIndex: 0
       }} />
@@ -96,7 +96,7 @@ export default function BetaSignupPage() {
         right: '-10%',
         width: '40vw',
         height: '40vw',
-        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.03) 0%, transparent 70%)',
         borderRadius: '50%',
         zIndex: 0
       }} />
@@ -114,19 +114,21 @@ export default function BetaSignupPage() {
               fontSize: '1.8rem', 
               fontWeight: 900, 
               fontFamily: "'Outfit', sans-serif",
-              background: 'linear-gradient(to right, #10b981, #34d399)',
+              background: 'linear-gradient(to right, #10b981, #059669)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
-            }}>Backr<span style={{ color: '#fff' }}>.beta</span></h2>
+            }}>Backr<span style={{ color: '#0f172a' }}>.beta</span></h2>
           </a>
           <a href="/login" style={{ 
-            color: '#94a3b8', 
+            color: '#64748b', 
             textDecoration: 'none', 
             fontSize: '0.9rem', 
-            fontWeight: 500,
-            padding: '8px 16px',
+            fontWeight: 600,
+            padding: '8px 20px',
             borderRadius: '99px',
-            border: '1px solid #1e293b',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             transition: 'all 0.2s'
           }}>Login</a>
         </nav>
@@ -139,12 +141,12 @@ export default function BetaSignupPage() {
           <div style={{
             display: 'inline-block',
             padding: '6px 16px',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.2)',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.15)',
             borderRadius: '99px',
-            color: '#10b981',
-            fontSize: '0.8rem',
-            fontWeight: 700,
+            color: '#059669',
+            fontSize: '0.75rem',
+            fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.1em',
             marginBottom: '24px'
@@ -158,14 +160,15 @@ export default function BetaSignupPage() {
             fontFamily: "'Outfit', sans-serif",
             lineHeight: 1.1,
             marginBottom: '24px',
-            letterSpacing: '-0.03em'
+            letterSpacing: '-0.04em',
+            color: '#0f172a'
           }}>
             The Future of <span style={{ color: '#10b981' }}>Crowdfunding</span> starts here.
           </h1>
           
           <p style={{ 
             fontSize: '1.15rem', 
-            color: '#94a3b8', 
+            color: '#475569', 
             lineHeight: 1.6, 
             marginBottom: '48px',
             maxWidth: '520px',
@@ -175,17 +178,16 @@ export default function BetaSignupPage() {
           </p>
 
           <div style={{
-            background: 'rgba(15, 23, 42, 0.6)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
             borderRadius: '32px',
             padding: '40px',
             textAlign: 'left',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)'
           }}>
             {step === 1 ? (
               <div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: "'Outfit', sans-serif", marginBottom: '8px' }}>Step 1: Your Profile</h3>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif", marginBottom: '8px', color: '#0f172a' }}>Step 1: Your Profile</h3>
                 <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '32px' }}>Choose how you'll participate in the Backr ecosystem.</p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
@@ -199,9 +201,9 @@ export default function BetaSignupPage() {
                       style={{
                         padding: '20px',
                         borderRadius: '16px',
-                        background: role === r.id ? 'rgba(16, 185, 129, 0.08)' : '#111827',
+                        background: role === r.id ? '#f0fdf4' : '#f8fafc',
                         border: '2px solid',
-                        borderColor: role === r.id ? '#10b981' : 'rgba(255,255,255,0.03)',
+                        borderColor: role === r.id ? '#10b981' : '#f1f5f9',
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         display: 'flex',
@@ -210,27 +212,27 @@ export default function BetaSignupPage() {
                       }}
                     >
                       <span style={{ fontSize: '1.5rem' }}>{r.icon}</span>
-                      <span style={{ fontWeight: 600, fontSize: '1rem', color: role === r.id ? '#fff' : '#94a3b8' }}>{r.title}</span>
+                      <span style={{ fontWeight: 700, fontSize: '1rem', color: role === r.id ? '#065f46' : '#475569' }}>{r.title}</span>
                     </div>
                   ))}
                 </div>
 
-                <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '16px', color: '#94a3b8' }}>Areas of interest</p>
+                <p style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '16px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Areas of interest</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '40px' }}>
                   {categories.map(cat => (
                     <button
                       key={cat.id}
                       onClick={() => toggleInterest(cat.id)}
                       style={{
-                        padding: '8px 16px',
+                        padding: '8px 18px',
                         borderRadius: '99px',
-                        background: interests.includes(cat.id) ? '#10b981' : 'rgba(255,255,255,0.05)',
+                        background: interests.includes(cat.id) ? '#10b981' : '#f1f5f9',
                         border: 'none',
-                        color: '#fff',
+                        color: interests.includes(cat.id) ? '#ffffff' : '#475569',
                         fontSize: '0.85rem',
-                        fontWeight: 600,
+                        fontWeight: 700,
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.15s'
                       }}
                     >
                       {cat.label}
@@ -242,16 +244,16 @@ export default function BetaSignupPage() {
                   onClick={() => setStep(2)}
                   style={{
                     width: '100%',
-                    padding: '16px',
+                    padding: '18px',
                     borderRadius: '16px',
                     background: '#10b981',
                     color: '#fff',
                     border: 'none',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     fontSize: '1rem',
                     fontFamily: "'Outfit', sans-serif",
                     cursor: 'pointer',
-                    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
+                    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.25)',
                     transition: 'all 0.2s'
                   }}
                   onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -262,19 +264,19 @@ export default function BetaSignupPage() {
               </div>
             ) : (
               <form onSubmit={handleSignup}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: "'Outfit', sans-serif", marginBottom: '8px' }}>Step 2: Security</h3>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif", marginBottom: '8px', color: '#0f172a' }}>Step 2: Security</h3>
                 <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '32px' }}>Finalize your secure beta credentials.</p>
 
                 {error && (
                   <div style={{ 
                     padding: '12px', 
-                    background: 'rgba(239, 68, 68, 0.1)', 
+                    background: '#fef2f2', 
                     color: '#ef4444', 
                     borderRadius: '12px', 
                     marginBottom: '24px',
                     fontSize: '0.9rem',
                     textAlign: 'center',
-                    border: '1px solid rgba(239, 68, 68, 0.2)'
+                    border: '1px solid #fee2e2'
                   }}>
                     {error}
                   </div>
@@ -282,47 +284,55 @@ export default function BetaSignupPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Full Name</label>
+                    <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Full Name</label>
                     <input 
                       type="text" 
                       required
                       placeholder="Enter legal name"
-                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#0f172a', border: '1px solid #1e293b', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', outline: 'none', transition: 'border-color 0.2s' }}
                       value={formData.displayName}
                       onChange={e => setFormData({...formData, displayName: e.target.value})}
+                      onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Work Email</label>
+                    <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Work Email</label>
                     <input 
                       type="email" 
                       required
                       placeholder="name@company.com"
-                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#0f172a', border: '1px solid #1e293b', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', outline: 'none', transition: 'border-color 0.2s' }}
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
+                      onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Create Secure Password</label>
+                    <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Create Secure Password</label>
                     <input 
                       type="password" 
                       required
                       placeholder="••••••••"
-                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#0f172a', border: '1px solid #1e293b', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', outline: 'none', transition: 'border-color 0.2s' }}
                       value={formData.password}
                       onChange={e => setFormData({...formData, password: e.target.value})}
+                      onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Confirm Password</label>
+                    <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Confirm Password</label>
                     <input 
                       type="password" 
                       required
                       placeholder="••••••••"
-                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#0f172a', border: '1px solid #1e293b', color: '#fff', outline: 'none' }}
+                      style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', outline: 'none', transition: 'border-color 0.2s' }}
                       value={formData.confirmPassword}
                       onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                      onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                     />
                   </div>
                 </div>
@@ -331,7 +341,7 @@ export default function BetaSignupPage() {
                   <button 
                     type="button"
                     onClick={() => setStep(1)}
-                    style={{ flex: 1, padding: '16px', borderRadius: '16px', background: 'transparent', color: '#94a3b8', border: '1px solid #1e293b', fontWeight: 600, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '16px', borderRadius: '16px', background: '#ffffff', color: '#64748b', border: '1px solid #e2e8f0', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
                   >
                     Back
                   </button>
@@ -345,12 +355,12 @@ export default function BetaSignupPage() {
                       background: '#10b981', 
                       color: '#fff', 
                       border: 'none', 
-                      fontWeight: 700, 
+                      fontWeight: 800, 
                       fontFamily: "'Outfit', sans-serif",
                       cursor: 'pointer',
                       opacity: loading ? 0.7 : 1,
                       transition: 'all 0.2s',
-                      boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)'
+                      boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.25)'
                     }}
                   >
                     {loading ? 'Processing...' : 'Secure Access'}
@@ -361,7 +371,7 @@ export default function BetaSignupPage() {
           </div>
         </div>
 
-        <footer style={{ marginTop: '80px', textAlign: 'center', color: '#475569', fontSize: '0.85rem' }}>
+        <footer style={{ marginTop: '80px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
           &copy; 2026 Backr Collective. All rights reserved. Beta Phase 1.0
         </footer>
       </div>
