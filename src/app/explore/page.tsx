@@ -121,7 +121,7 @@ export default async function ExplorePage() {
         </header>
 
         {/* Search and Sort */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+        <div className="search-sort-container">
           <div style={{ flex: 1, position: 'relative' }}>
             <div style={{ position: 'absolute', left: '16px', top: '14px' }}>
               <Icons.Search />
@@ -129,31 +129,50 @@ export default async function ExplorePage() {
             <input
               type="text"
               placeholder="Search campaigns..."
-              style={{
-                width: '100%',
-                padding: '14px 16px 14px 44px',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                fontSize: '0.95rem',
-              }}
+              className="search-input"
             />
           </div>
-          <button
-            style={{
-              padding: '0 24px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              background: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
+          <button className="sort-button">
             <Icons.Sort /> Sort
           </button>
         </div>
+
+        <style jsx>{`
+          .search-sort-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+          }
+          .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+          }
+          .sort-button {
+            padding: 0 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            fontWeight: 600;
+            cursor: pointer;
+            height: 48px;
+          }
+
+          @media (max-width: 640px) {
+            .search-sort-container {
+              flex-direction: column;
+            }
+            .sort-button {
+              width: 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
 
         {/* Category Pills */}
         <div

@@ -94,7 +94,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop Links */}
-        <div className="nav-links-desktop">
+        <div className="nav-desktop">
           <a href="/explore">Explore</a>
           <a href="/how-it-works">How it Works</a>
           <AuthButtons />
@@ -105,6 +105,7 @@ export default function Navbar() {
           className="nav-toggle"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle Menu"
+          style={{ display: 'none', zIndex: 2100 }}
         >
           {isOpen ? <Icons.Close /> : <Icons.Menu />}
         </button>
@@ -121,40 +122,47 @@ export default function Navbar() {
               Back to Dashboard
             </a>
           ) : (
-            <>
-              <a href="/login" onClick={() => setIsOpen(false)}>Log In</a>
-              <a href="/signup" className="btn-primary" onClick={() => setIsOpen(false)}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', alignItems: 'center' }}>
+              <a href="/login" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 600 }}>Log In</a>
+              <a href="/signup" className="btn-primary" onClick={() => setIsOpen(false)} style={{ width: '100%', textAlign: 'center' }}>
                 Get Started
               </a>
-            </>
+            </div>
           )}
         </nav>
       </div>
 
       <style jsx>{`
-        .nav-links-desktop {
+        .nav-desktop {
           display: flex;
           align-items: center;
           gap: 32px;
         }
-        .nav-links-desktop > a {
+        .nav-desktop > a {
           color: var(--text-primary);
           text-decoration: none;
           font-weight: 600;
           font-size: 0.95rem;
           transition: opacity 0.2s;
         }
-        .nav-links-desktop > a:hover {
+        .nav-desktop > a:hover {
           opacity: 0.7;
         }
         .nav-toggle {
-          display: none;
           background: none;
           border: none;
           cursor: pointer;
           color: var(--text-primary);
           padding: 8px;
-          z-index: 2100;
+        }
+
+        @media (max-width: 1024px) {
+          .nav-desktop {
+            display: none !important;
+          }
+          .nav-toggle {
+            display: block !important;
+          }
         }
         .nav-overlay {
           position: fixed;
