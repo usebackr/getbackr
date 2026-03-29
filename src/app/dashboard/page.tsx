@@ -54,57 +54,108 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
       .catch(() => setLoading(false));
   }, [campaignId]);
 
+  const handleDownloadCSV = () => {
+    if (backers.length === 0) return;
+    const headers = ['Name', 'Email', 'Amount', 'Currency', 'Date', 'Anonymous'];
+    const rows = backers.map(b => [
+      b.backerName || 'Guest Contributor',
+      b.backerEmail,
+      b.amount,
+      b.currency,
+      new Date(b.createdAt).toLocaleDateString(),
+      b.anonymous ? 'Yes' : 'No'
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `backers_${campaignId}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)',
       zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
     }}>
       <div style={{
-        background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '32px',
+        background: '#fff', width: '100%', maxWidth: '800px', borderRadius: '32px',
         maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       }}>
-        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Backer List</h2>
             <p style={{ fontSize: '0.9rem', color: '#64748b' }}>{backers.length} people supported this project</p>
           </div>
-          <button onClick={onClose} style={{
-            width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            ✕
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {backers.length > 0 && (
+              <button 
+                onClick={handleDownloadCSV}
+                style={{
+                  padding: '10px 20px', borderRadius: '14px', border: '1px solid #e2e8f0',
+                  background: '#fff', color: '#0f172a', fontWeight: 700, fontSize: '0.85rem',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+              >
+                📥 Export CSV
+              </button>
+            )}
+            <button onClick={onClose} style={{
+              width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              ✕
+            </button>
+          </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>Loading backers...</div>
+            <div style={{ textAlign: 'center', padding: '60px' }}>Loading backers...</div>
           ) : backers.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No backers yet.</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>No backers yet.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {backers.map((b: any) => (
-                <div key={b.id} style={{
-                  padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                }}>
-                  <div>
-                    <p style={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {b.backerName || 'Guest Contributor'}
-                      {b.anonymous && <span style={{ fontSize: '0.7rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: '10px', color: '#64748b' }}>Anonymous</span>}
-                    </p>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{b.backerEmail}</p>
-                    <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(b.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: 900, color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
-                      {b.currency} {Number(b.amount).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <th style={{ padding: '12px' }}>Name</th>
+                  <th style={{ padding: '12px' }}>Email</th>
+                  <th style={{ padding: '12px' }}>Amount</th>
+                  <th style={{ padding: '12px' }}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {backers.map((b: any) => (
+                  <tr key={b.id} style={{ background: '#f8fafc', borderRadius: '12px', transition: 'transform 0.2s' }}>
+                    <td style={{ padding: '16px 12px', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
+                      <p style={{ fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                        {b.backerName || 'Guest'}
+                        {b.anonymous && (
+                          <span style={{ marginLeft: '8px', fontSize: '0.65rem', background: '#fff', padding: '2px 6px', borderRadius: '8px', color: '#64748b', border: '1px solid #e2e8f0' }}>Anon</span>
+                        )}
+                      </p>
+                    </td>
+                    <td style={{ padding: '16px 12px' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>{b.backerEmail}</p>
+                    </td>
+                    <td style={{ padding: '16px 12px' }}>
+                      <p style={{ fontWeight: 800, color: 'var(--accent-primary)', margin: 0 }}>
+                        {b.currency} {Number(b.amount).toLocaleString()}
+                      </p>
+                    </td>
+                    <td style={{ padding: '16px 12px', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>{new Date(b.createdAt).toLocaleDateString()}</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
@@ -610,20 +661,20 @@ export default function DashboardPage() {
                               </h4>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
                                 <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <span>👥 <b>{camp.backers || 0}</b></span>
-                                  <span style={{ fontWeight: 700, color: 'var(--accent-primary)', marginLeft: '8px' }}>{pct}%</span>
-                                </div>
+                                <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
                               </div>
                               
                               <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
                                 <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
                               </div>
 
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                                 <div>
                                   <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Raised</p>
                                   <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>₦{raised.toLocaleString()}</p>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>👥 <b>{camp.backers || 0}</b> backers</span>
+                                  </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                   <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Goal</p>
@@ -660,11 +711,12 @@ export default function DashboardPage() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                width: '48px'
                               }}
                               title="Delete Draft"
                             >
-                              <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <Icons.Trash />
                             </button>
                           </div>
                         )}
@@ -677,48 +729,63 @@ export default function DashboardPage() {
                               style={{ 
                                 flex: 2,
                                 padding: '12px', 
-                                fontSize: '0.95rem',
+                                fontSize: '0.9rem',
                                 background: 'var(--accent-primary)',
                                 color: '#fff',
                                 border: 'none',
-                                fontWeight: 700
+                                fontWeight: 700,
+                                borderRadius: '14px',
+                                cursor: 'pointer'
                               }}
                             >
                               View Backers
                             </button>
                             <button
                               onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
-                              className="btn-primary"
                               style={{ 
-                                flex: 1,
+                                flex: 2,
                                 padding: '12px', 
-                                fontSize: '0.9rem',
-                                background: '#f1f5f9',
-                                color: '#475569',
+                                borderRadius: '14px',
                                 border: '1px solid #e2e8f0',
-                                fontWeight: 600
+                                background: '#fff',
+                                color: '#0f172a',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                                cursor: 'pointer'
                               }}
                             >
-                              Story
+                              Edit Project
                             </button>
                             <button
-                              onClick={() => handleEndCampaign(camp.id)}
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to end this campaign? This cannot be undone.')) {
+                                  try {
+                                    const res = await fetch(`/api/campaigns/${camp.id}/status`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ status: 'closed' }),
+                                    });
+                                    if (res.ok) fetchStatsAndBank(filter);
+                                  } catch (err) {
+                                    console.error(err);
+                                  }
+                                }
+                              }}
                               style={{ 
-                                width: '45px', 
-                                height: '45px',
+                                padding: '12px', 
                                 borderRadius: '14px',
                                 border: '1px solid #fee2e2',
-                                background: '#fff',
+                                background: '#fff5f5',
                                 color: '#ef4444',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                fontSize: '1.2rem'
+                                width: '48px'
                               }}
-                              title="End Early"
+                              title="End Campaign"
                             >
-                              ✕
+                              <Icons.Trash />
                             </button>
                           </div>
                         )}
