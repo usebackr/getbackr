@@ -123,9 +123,12 @@ export async function POST(req: NextRequest) {
           await emailQueue.add({
             type: 'donor_receipt',
             backerEmail: data.customer.email,
+            backerName: backerName,
             amount: amountInMajor,
             currency: data.currency,
             campaignTitle: campaignDetails.title,
+            contributionId: reference,
+            campaignUrl: `https://backr.app/c/${campaignDetails.slug}`,
           });
 
           // Email to Creator (Alert)

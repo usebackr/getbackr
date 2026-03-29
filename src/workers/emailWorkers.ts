@@ -152,31 +152,40 @@ export function registerEmailReceiptWorker(): void {
     const to = backerEmail;
     if (!to) throw new Error('Missing backerEmail for receipt');
 
+    const dateStr = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    });
+
     await sgMail.send({
       to,
       from: FROM_EMAIL,
-      subject: `Thanks for backing "${campaignTitle}"! ✨`,
+      subject: `Thanks for supporting "${campaignTitle}"! ✨`,
       html: `
         <div style="${emailWrapperStyle}">
           <div style="${emailCardStyle}">
-            <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Your receipt is here.</h2>
-            <p>Thank you for supporting <strong>${campaignTitle}</strong>. Your contribution has been processed successfully.</p>
-            <div style="margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding-bottom: 12px; color: #64748b; font-size: 0.9rem;">Campaign</td>
-                  <td style="padding-bottom: 12px; text-align: right; font-weight: 700;">${campaignTitle}</td>
-                </tr>
-                <tr>
-                  <td style="border-top: 1px solid #e2e8f0; padding-top: 12px; color: #64748b; font-size: 0.9rem;">Amount Backed</td>
-                  <td style="border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: right; font-weight: 700; color: ${BRAND_COLOR}; font-size: 1.1rem;">${currency} ${Number(amount).toLocaleString()}</td>
-                </tr>
-              </table>
-            </div>
-            <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6;">Your support directly helps the creator bring their vision to life. Thank you for being a part of this creative journey.</p>
-            <div style="margin-top: 40px; text-align: center; font-size: 0.85rem; color: #94a3b8;">
-              &copy; 2026 Backr.app — The Future of Creative Funding
-            </div>
+            <p>Hi ${backerName || 'A Supporter'},</p>
+            <p>Thank you for supporting <strong>"${campaignTitle}"</strong>.</p>
+            <p>Your contribution has been successfully received.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
+            <p><strong>Date:</strong> ${dateStr}</p>
+            <p><strong>Reference:</strong> ${data.contributionId || 'N/A'}</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p>You’re now part of this project. You can follow its progress, updates, and how funds are used.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p>
+              <a href="${campaignUrl || 'https://backr.app/dashboard'}" 
+                 style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                View campaign
+              </a>
+            </p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p>Creators on Backr can share updates and log how funds are used so you can stay informed as the project develops.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p>If you created an account, you’ll receive updates automatically. If not, you can revisit the campaign anytime using the link above.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <p>Thanks again for your support.</p>
+            <p>— Backr Team</p>
           </div>
         </div>
       `,
