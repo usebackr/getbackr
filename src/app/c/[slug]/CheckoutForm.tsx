@@ -15,6 +15,8 @@ export default function CheckoutForm({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [shareDetails, setShareDetails] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,7 +48,9 @@ export default function CheckoutForm({
           campaignId, 
           amount,
           email,
-          name
+          name,
+          isAnonymous,
+          shareDetails
         }), 
       });
       const data = await res.json();
@@ -369,6 +373,8 @@ export default function CheckoutForm({
         >
           <input
             type="checkbox"
+            checked={isAnonymous}
+            onChange={(e) => setIsAnonymous(e.target.checked)}
             style={{ width: '16px', height: '16px', accentColor: 'var(--accent-primary)' }}
           />
           Make my contribution anonymous.
@@ -385,6 +391,8 @@ export default function CheckoutForm({
         >
           <input
             type="checkbox"
+            checked={shareDetails}
+            onChange={(e) => setShareDetails(e.target.checked)}
             style={{ width: '16px', height: '16px', accentColor: 'var(--accent-primary)' }}
           />
           Securely share my contact details with the organizer.

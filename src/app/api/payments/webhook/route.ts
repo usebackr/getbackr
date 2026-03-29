@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
 
         // B. Insert confirmed contribution
         console.log(`[Paystack Webhook] Recording contribution in database...`);
+        const isAnonymous = !!metadata.anonymous;
+        
         await tx.insert(contributions).values({
           campaignId,
           backerId: backerId || null,
@@ -69,6 +71,7 @@ export async function POST(req: NextRequest) {
           platformFee: platformFee.toString(),
           netAmount: netAmount.toString(),
           currency: data.currency || 'NGN',
+          anonymous: isAnonymous,
           paymentReference: reference,
           paymentMethod: data.channel || 'paystack',
           status: 'confirmed',

@@ -12,6 +12,8 @@ const checkoutSchema = z.object({
   amount: z.number().min(100),
   email: z.string().email().optional(),
   name: z.string().optional(),
+  isAnonymous: z.boolean().optional(),
+  shareDetails: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {

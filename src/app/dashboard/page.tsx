@@ -40,6 +40,78 @@ const Icons = {
   ),
 };
 
+const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: () => void }) => {
+  const [backers, setBackers] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch(`/api/campaigns/${campaignId}/backers`)
+      .then(res => res.json())
+      .then(data => {
+        setBackers(data.backers || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [campaignId]);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)',
+      zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
+    }}>
+      <div style={{
+        background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '32px',
+        maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+      }}>
+        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Backer List</h2>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>{backers.length} people supported this project</p>
+          </div>
+          <button onClick={onClose} style={{
+            width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            ✕
+          </button>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading backers...</div>
+          ) : backers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No backers yet.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {backers.map((b: any) => (
+                <div key={b.id} style={{
+                  padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                  <div>
+                    <p style={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {b.backerName || 'Guest Contributor'}
+                      {b.anonymous && <span style={{ fontSize: '0.7rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: '10px', color: '#64748b' }}>Anonymous</span>}
+                    </p>
+                    <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{b.backerEmail}</p>
+                    <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(b.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: 900, color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
+                      {b.currency} {Number(b.amount).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -56,6 +128,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [hasBank, setHasBank] = React.useState(false);
   const [showBankError, setShowBankError] = React.useState(false);
+  const [selectedCampaignForBackers, setSelectedCampaignForBackers] = React.useState<string | null>(null);
 
   const fetchStatsAndBank = async (currentFilter: string) => {
     setLoading(true);
@@ -159,6 +232,13 @@ export default function DashboardPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
+
+      {selectedCampaignForBackers && (
+        <BackersModal 
+          campaignId={selectedCampaignForBackers} 
+          onClose={() => setSelectedCampaignForBackers(null)} 
+        />
+      )}
 
       {showBankError && (
         <div
@@ -581,13 +661,28 @@ export default function DashboardPage() {
                               }}
                               title="Delete Draft"
                             >
-                              <Icons.Trash />
+                              <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                             </button>
                           </div>
                         )}
 
-                        {camp.status?.toLowerCase() === 'active' && (
+                        {!isDraft && (
                           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                              onClick={() => setSelectedCampaignForBackers(camp.id)}
+                              className="btn-primary"
+                              style={{ 
+                                flex: 2,
+                                padding: '12px', 
+                                fontSize: '0.95rem',
+                                background: 'var(--accent-primary)',
+                                color: '#fff',
+                                border: 'none',
+                                fontWeight: 700
+                              }}
+                            >
+                              View Backers
+                            </button>
                             <button
                               onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
                               className="btn-primary"
@@ -597,26 +692,30 @@ export default function DashboardPage() {
                                 fontSize: '0.9rem',
                                 background: '#f1f5f9',
                                 color: '#475569',
-                                border: '1px solid #e2e8f0'
+                                border: '1px solid #e2e8f0',
+                                fontWeight: 600
                               }}
                             >
-                              Edit Story
+                              Story
                             </button>
                             <button
                               onClick={() => handleEndCampaign(camp.id)}
                               style={{ 
-                                flex: 1,
-                                padding: '12px', 
+                                width: '45px', 
+                                height: '45px',
                                 borderRadius: '14px',
-                                border: '1px solid #ef4444',
+                                border: '1px solid #fee2e2',
                                 background: '#fff',
                                 color: '#ef4444',
-                                fontSize: '0.9rem',
-                                fontWeight: 700,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 cursor: 'pointer',
+                                fontSize: '1.2rem'
                               }}
+                              title="End Early"
                             >
-                              End Early
+                              ✕
                             </button>
                           </div>
                         )}
