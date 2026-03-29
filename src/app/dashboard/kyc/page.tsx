@@ -41,12 +41,22 @@ export default function KYCPage() {
     checkStatus();
   }, []);
 
+  const MAX_SIZE_MB = 2;
+  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, name: 'idDoc' | 'selfie') => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFiles({ ...files, [name]: file });
-      setPreviews({ ...previews, [name]: URL.createObjectURL(file) });
+    if (!file) return;
+
+    if (file.size > MAX_SIZE_BYTES) {
+      setError(`${name === 'idDoc' ? 'ID document' : 'Selfie'} must be under ${MAX_SIZE_MB}MB. Please use a smaller or compressed image.`);
+      e.target.value = '';
+      return;
     }
+
+    setError('');
+    setFiles({ ...files, [name]: file });
+    setPreviews({ ...previews, [name]: URL.createObjectURL(file) });
   };
 
   const handleSubmit = async () => {
@@ -171,7 +181,7 @@ export default function KYCPage() {
 
                 {/* Upload Areas */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>ID Document (Front)</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>ID Document — Front Page <span style={{ color: '#94a3b8', fontWeight: 400 }}>(max 2MB)</span></label>
                   <div 
                     onClick={() => document.getElementById('id-upload')?.click()}
                     style={{ 
@@ -181,13 +191,19 @@ export default function KYCPage() {
                       cursor: 'pointer', transition: 'border-color 0.2s'
                     }}
                   >
-                    {!previews.idDoc && <><span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Select ID Document</span></>}
+                    {!previews.idDoc && (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>🪪</div>
+                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to upload ID</span>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Passport, NIN, License or Voters Card</div>
+                      </div>
+                    )}
                   </div>
                   <input type="file" id="id-upload" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleFileChange(e, 'idDoc')} />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Selfie (Holding ID)</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Selfie — Holding Your ID <span style={{ color: '#94a3b8', fontWeight: 400 }}>(max 2MB)</span></label>
                   <div 
                     onClick={() => document.getElementById('selfie-upload')?.click()}
                     style={{ 
@@ -197,7 +213,13 @@ export default function KYCPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    {!previews.selfie && <><span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Upload Selfie</span></>}
+                    {!previews.selfie && (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>🤳</div>
+                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</span>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Hold your ID next to your face</div>
+                      </div>
+                    )}
                   </div>
                   <input type="file" id="selfie-upload" style={{ display: 'none' }} accept="image/*" capture="user" onChange={(e) => handleFileChange(e, 'selfie')} />
                 </div>

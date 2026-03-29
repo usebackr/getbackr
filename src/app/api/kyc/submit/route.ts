@@ -4,8 +4,9 @@ import { uploadFile } from '@/lib/storage';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { kycProfiles } from '@/db/schema/kycProfiles';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 import { eq } from 'drizzle-orm';
+
+const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB per file
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const auth = requireAuth(req);
@@ -29,45 +30,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const selfieFile = formData.get('selfie');
 
   if (!legalName || !idType || !idNumber || !(idDocumentFile instanceof File) || !(selfieFile instanceof File)) {
-    return NextResponse.json(
-      { error: 'All fields and documents are required' },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: 'All fields and both documents are required' }, { status: 422 });
+  }
+
+  // Enforce file size limits (2 MB each)
+  if (idDocumentFile.size > MAX_FILE_SIZE_BYTES) {
+    return NextResponse.json({ error: 'ID document must be under 2 MB. Please compress before uploading.' }, { status: 413 });
+  }
+  if (selfieFile.size > MAX_FILE_SIZE_BYTES) {
+    return NextResponse.json({ error: 'Selfie photo must be under 2 MB. Please compress before uploading.' }, { status: 413 });
   }
 
   const idDocumentBuffer = Buffer.from(await idDocumentFile.arrayBuffer());
   const selfieBuffer = Buffer.from(await selfieFile.arrayBuffer());
 
-  const idDocumentKey = `kyc/${userId}/id_document_${Date.now()}`;
-  const selfieKey = `kyc/${userId}/selfie_${Date.now()}`;
+  const ts = Date.now();
+  const idDocumentKey = `kyc/${userId}/id_document_${ts}`;
+  const selfieKey = `kyc/${userId}/selfie_${ts}`;
 
   try {
-    await uploadFile(
-      idDocumentBuffer,
-      idDocumentKey,
-      idDocumentFile.type || 'application/octet-stream',
-    );
-    await uploadFile(selfieBuffer, selfieKey, selfieFile.type || 'application/octet-stream');
+    await uploadFile(idDocumentBuffer, idDocumentKey, idDocumentFile.type || 'image/jpeg');
+    await uploadFile(selfieBuffer, selfieKey, selfieFile.type || 'image/jpeg');
   } catch (err) {
     console.error('[KYC Submit] Upload Error:', err);
-    return NextResponse.json(
-      { error: 'Document upload failed. Please try again.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Document upload failed. Please try again.' }, { status: 500 });
   }
 
-  // Update or insert into kycProfiles
+  // Upsert kycProfiles — store BOTH image URLs
   try {
     await db.transaction(async (tx) => {
-      // Check if profile exists
-      const [existing] = await tx.select().from(kycProfiles).where(eq(kycProfiles.userId, userId)).limit(1);
-      
+      const [existing] = await tx.select({ id: kycProfiles.id }).from(kycProfiles).where(eq(kycProfiles.userId, userId)).limit(1);
+
       if (existing) {
         await tx.update(kycProfiles).set({
           legalName,
           idType,
           idNumber,
           documentUrl: idDocumentKey,
+          selfieUrl: selfieKey,
+          rejectionReason: null,     // Clear old rejection on re-submission
           updatedAt: new Date(),
         }).where(eq(kycProfiles.userId, userId));
       } else {
@@ -77,23 +78,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           idType,
           idNumber,
           documentUrl: idDocumentKey,
+          selfieUrl: selfieKey,
         });
       }
 
-      await tx.update(users).set({ kycStatus: 'pending' }).where(eq(users.id, userId));
+      await tx.update(users).set({ kycStatus: 'pending', kycRejectionReason: null }).where(eq(users.id, userId));
     });
 
-    // Trigger background process if queue exists
-    try {
-      const kycQueue = getQueue(QUEUE_NAMES.KYC_PROCESS);
-      await kycQueue.add({ userId, idDocumentKey, selfieKey });
-    } catch {
-      // Ignore queue if local dev doesn't have Redis
-    }
-
-    return NextResponse.json({ message: 'KYC submission received' }, { status: 200 });
+    return NextResponse.json({ message: 'KYC submission received. You will be notified within 24-48 hours.' }, { status: 200 });
   } catch (err: any) {
     console.error('[KYC Submit] DB Error:', err);
-    return NextResponse.json({ error: 'Failed to update KYC status' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save KYC details' }, { status: 500 });
   }
 }

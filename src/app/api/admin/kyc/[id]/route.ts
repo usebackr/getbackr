@@ -62,18 +62,48 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     } else if (action === 'reject') {
       if (!reason)
         return NextResponse.json(
-          { error: 'Rejection reason is strictly required' },
+          { error: 'Rejection reason is required' },
           { status: 400 },
         );
+
+      const [user] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
 
       await db
         .update(users)
         .set({ kycStatus: 'rejected', kycRejectionReason: reason })
         .where(eq(users.id, userId));
 
-      return NextResponse.json({
-        message: 'User KYC rejected. They must strictly re-upload documents.',
-      });
+      // Store reason in kycProfiles too so it appears in the admin DB view
+      try {
+        const { kycProfiles } = await import('@/db/schema/kycProfiles');
+        await db.update(kycProfiles).set({ rejectionReason: reason }).where(eq(kycProfiles.userId, userId));
+      } catch { /* kycProfiles may not have the column yet pre-migration */ }
+
+      // Notify user via email with the reason
+      try {
+        if (user?.email) {
+          await db.insert(notifications).values({
+            userId,
+            type: 'kyc_status_updated',
+            title: 'Verification Update',
+            message: `Your KYC submission was not approved. Reason: ${reason}`,
+          });
+
+          import('@/workers/emailWorkers').then(({ sendEmail }) => {
+            sendEmail({ type: 'kyc_rejected', email: user.email, rejectionReason: reason }).catch(
+              (e) => console.error('[Admin KYC] Rejection email failed:', e)
+            );
+          });
+        }
+      } catch (notifyErr) {
+        console.error('[Admin KYC] Rejection notification failed:', notifyErr);
+      }
+
+      return NextResponse.json({ message: 'KYC rejected. User has been notified with the reason.' });
     } else {
       return NextResponse.json({ error: 'Invalid operation payload' }, { status: 400 });
     }

@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const kycProfiles = pgTable('kyc_profiles', {
@@ -8,9 +8,11 @@ export const kycProfiles = pgTable('kyc_profiles', {
     .notNull()
     .unique(),
   legalName: varchar('legal_name', { length: 255 }).notNull(),
-  idType: varchar('id_type', { length: 50 }).notNull(), // e.g. Passport, NIN, Drivers License
+  idType: varchar('id_type', { length: 50 }).notNull(),
   idNumber: varchar('id_number', { length: 100 }).notNull(),
-  documentUrl: varchar('document_url', { length: 1024 }),
+  documentUrl: varchar('document_url', { length: 1024 }),   // ID document
+  selfieUrl: varchar('selfie_url', { length: 1024 }),       // Selfie photo
+  rejectionReason: text('rejection_reason'),                // Populated on admin reject
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
