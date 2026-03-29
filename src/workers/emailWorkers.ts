@@ -48,9 +48,10 @@ export interface ReceiptJobData {
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected';
+  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email';
   userId?: string;
   email?: string;
+  displayName?: string;
   otp?: string;
   rejectionReason?: string;
   // Extra data for creator alert
@@ -68,7 +69,7 @@ export async function sendEmail(data: ReceiptJobData) {
   const { 
     type, amount, currency, campaignTitle, backerEmail, email, otp,
     creatorName, backerName, totalRaised, goalAmount, campaignUrl,
-    rejectionReason
+    rejectionReason, displayName
   } = data;
 
   if (!SENDGRID_API_KEY) {
@@ -236,7 +237,60 @@ export async function sendEmail(data: ReceiptJobData) {
       return { sent: true, type, messageId: response.headers['x-message-id'] };
     }
 
-    // 5. Creator Alert
+    // 4c. Welcome Email
+    if (type === 'welcome_email') {
+      const to = email;
+      if (!to) throw new Error('Missing email for Welcome Email');
+      const firstName = displayName ? displayName.split(' ')[0] : 'there';
+      const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'https://backr.app/dashboard';
+      const supportEmail = 'Usebackr@gmail.com';
+      const founderName = 'Babatunde Lawal';
+
+      const [response] = await sgMail.send({
+        to,
+        from: FROM_EMAIL,
+        subject: 'Welcome to Backr! 🚀',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <p>Hi ${firstName},</p>
+              <p>I’m glad you’re here.</p>
+              <p>Backr was built for a simple reason — creators need a better way to raise money, and supporters need a better way to trust where that money goes.</p>
+              <p>Right now, a lot of creative projects depend on scattered links, direct transfers, and one-off requests. It works sometimes, but it’s not structured, and it’s hard to follow what actually happens after people contribute.</p>
+              <p>Backr is our attempt to fix that.</p>
+              <p>Here, you can raise funds, share updates, and show how money is being used — all in one place.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p><strong>If you’re a creator:</strong></p>
+              <ul>
+                <li>Start a campaign</li>
+                <li>Share it with your audience</li>
+                <li>Keep people updated as you build</li>
+              </ul>
+              <p><strong>If you’re here to support:</strong></p>
+              <ul>
+                <li>Explore projects</li>
+                <li>Back what you believe in</li>
+                <li>Follow the journey as it develops</li>
+              </ul>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>This is still early, and we’re building it with people like you in mind. If anything feels unclear or doesn’t work the way it should, we want to hear it.</p>
+              <p>You can always reach us at <a href="mailto:${supportEmail}" style="color: ${BRAND_COLOR}; text-decoration: none;">${supportEmail}</a>.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${dashboardUrl}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                  Go to your dashboard
+                </a>
+              </div>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>Thanks for being part of this.</p>
+              <p style="margin: 0;">— ${founderName}</p>
+              <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Founder, Backr</p>
+            </div>
+          </div>
+        `,
+      });
+      return { sent: true, type, messageId: response.headers['x-message-id'] };
+    }
     if (type === 'creator_alert') {
       const to = backerEmail;
       if (!to) throw new Error('Missing creator email');

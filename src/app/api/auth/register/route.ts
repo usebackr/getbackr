@@ -63,6 +63,14 @@ export async function POST(req: NextRequest) {
     const { trackEvent } = await import('@/lib/analytics');
     await trackEvent(beta ? 'beta_signup' : 'user_login', user.id, { email: user.email });
 
+    // Send Welcome Email
+    const { sendEmail } = await import('@/workers/emailWorkers');
+    await sendEmail({
+      type: 'welcome_email',
+      email: user.email,
+      displayName: displayName,
+    });
+
     return NextResponse.json(
       {
         message:
