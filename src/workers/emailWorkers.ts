@@ -51,6 +51,12 @@ interface ReceiptJobData {
   userId?: string;
   email?: string;
   otp?: string;
+  // Extra data for creator alert
+  creatorName?: string;
+  backerName?: string;
+  totalRaised?: string | number;
+  goalAmount?: string | number;
+  campaignUrl?: string;
 }
 
 export function registerEmailReceiptWorker(): void {
@@ -58,7 +64,10 @@ export function registerEmailReceiptWorker(): void {
 
   queue.process(async (job: { data: ReceiptJobData }) => {
     const data = job.data;
-    const { type, amount, currency, campaignTitle, backerEmail, email, otp } = data;
+    const { 
+      type, amount, currency, campaignTitle, backerEmail, email, otp,
+      creatorName, backerName, totalRaised, goalAmount, campaignUrl 
+    } = data;
 
     // A. Withdrawal OTP
     if (type === 'withdrawal_otp') {
@@ -93,24 +102,45 @@ export function registerEmailReceiptWorker(): void {
       const to = backerEmail; // In this job type, backerEmail is the creator's address
       if (!to) throw new Error('Missing creator email for alert');
 
+      const dateStr = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+      });
+
       await sgMail.send({
         to,
         from: FROM_EMAIL,
-        subject: `🎉 New Donation Received: ${currency} ${Number(amount).toLocaleString()}`,
+        subject: `🎉 New Contribution for "${campaignTitle}"`,
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
-              <div style="font-size: 3rem; margin-bottom: 24px;">💰</div>
-              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 16px;">Boom! You have new funding.</h2>
-              <p>Someone just backed your project! Your campaign is moving forward.</p>
-              <div style="background: #fdf2f2; border-left: 4px solid ${BRAND_COLOR}; padding: 24px; margin: 24px 0;">
-                <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Project Title</p>
-                <h3 style="margin: 4px 0 16px 0; color: #0f172a;">${campaignTitle}</h3>
-                <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Amount Received</p>
-                <h2 style="margin: 4px 0 0 0; color: ${BRAND_COLOR};">${currency} ${Number(amount).toLocaleString()}</h2>
-              </div>
-              <p style="font-size: 0.9rem;">Log in to your dashboard to see your updated balance and track your goals.</p>
-              <a href="https://backr.app/dashboard" style="display: inline-block; background: ${BRAND_COLOR}; color: white; padding: 14px 28px; border-radius: 12px; font-weight: 700; text-decoration: none; margin-top: 24px;">Open Dashboard</a>
+              <p>Hi ${creatorName || 'Creator'},</p>
+              <p>You just received a new contribution for your campaign:</p>
+              <p><strong>"${campaignTitle}"</strong></p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
+              <p><strong>From:</strong> ${backerName || 'A Supporter'}</p>
+              <p><strong>Date:</strong> ${dateStr}</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>Your campaign is now at:</p>
+              <p><strong>₦${Number(totalRaised).toLocaleString()} raised of ₦${Number(goalAmount).toLocaleString()}</strong></p>
+              <p>Keep the momentum going — every update helps build trust and attract more support.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p><strong>What to do next:</strong></p>
+              <ul>
+                <li>Share an update with your supporters</li>
+                <li>Log how funds are being used</li>
+                <li>Share your campaign link again</li>
+              </ul>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>
+                <a href="${campaignUrl || 'https://backr.app/dashboard'}" 
+                   style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                  View your campaign
+                </a>
+              </p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p>You're building something people believe in. Keep going.</p>
+              <p>— Backr Team</p>
             </div>
           </div>
         `,

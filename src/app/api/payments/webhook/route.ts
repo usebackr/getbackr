@@ -75,17 +75,36 @@ export async function POST(req: NextRequest) {
           })
           .where(eq(projectWallets.campaignId, campaignId));
 
-        // D. Fetch campaign creator details
+        // D. Fetch campaign creator details and current wallet state
         const [campaignDetails] = await tx
           .select({
             title: campaigns.title,
+            slug: campaigns.slug,
+            goalAmount: campaigns.goalAmount,
             creatorId: campaigns.creatorId,
             creatorEmail: users.email,
+            creatorName: users.displayName,
           })
           .from(campaigns)
           .leftJoin(users, eq(users.id, campaigns.creatorId))
           .where(eq(campaigns.id, campaignId))
           .limit(1);
+
+        const [wallet] = await tx
+          .select({ totalReceived: projectWallets.totalReceived })
+          .from(projectWallets)
+          .where(eq(projectWallets.campaignId, campaignId))
+          .limit(1);
+
+        let backerName = 'A Supporter';
+        if (backerId) {
+          const [backer] = await tx
+            .select({ displayName: users.displayName })
+            .from(users)
+            .where(eq(users.id, backerId))
+            .limit(1);
+          if (backer) backerName = backer.displayName;
+        }
 
         if (campaignDetails) {
           // E. Create internal notification for creator
@@ -117,6 +136,11 @@ export async function POST(req: NextRequest) {
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
+              creatorName: campaignDetails.creatorName,
+              backerName: backerName,
+              totalRaised: wallet?.totalReceived || netAmount,
+              goalAmount: campaignDetails.goalAmount,
+              campaignUrl: `https://backr.app/c/${campaignDetails.slug}`,
             });
           }
         }
