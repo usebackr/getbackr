@@ -23,6 +23,8 @@ function CreateCampaignForm() {
     coverImageUrl: '',
   });
 
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   // Fetch campaign data if in edit mode
   useEffect(() => {
     if (editId) {
@@ -58,34 +60,61 @@ function CreateCampaignForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1MB Limit check
+    if (file.size > 1024 * 1024) {
+      setError('File size exceeds 1MB limit. Please upload a smaller image.');
+      return;
+    }
+
     setUploading(true);
+    setUploadProgress(0);
     setError('');
 
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('type', 'campaign');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('type', 'campaign');
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: fd,
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload', true);
 
-      const data = await res.json();
-      if (res.ok && data.url) {
-        setFormData({ ...formData, coverImageUrl: data.url });
-      } else {
-        setError(data.error || 'Upload failed');
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percentComplete);
       }
-    } catch (err) {
-      setError('Upload failed. Check network connection.');
-    } finally {
+    };
+
+    xhr.onload = () => {
       setUploading(false);
-    }
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.url) {
+            setFormData({ ...formData, coverImageUrl: data.url });
+          }
+        } catch (e) {
+          setError('Failed to parse upload response');
+        }
+      } else {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          setError(data.error || 'Upload failed');
+        } catch (e) {
+          setError(`Upload failed with status ${xhr.status}`);
+        }
+      }
+    };
+
+    xhr.onerror = () => {
+      setUploading(false);
+      setError('Upload failed. Check network connection.');
+    };
+
+    xhr.send(fd);
   };
 
   const handleSubmit = async () => {
@@ -128,10 +157,12 @@ function CreateCampaignForm() {
   if (fetching) {
     return (
       <div style={{ padding: '60px', textAlign: 'center', fontWeight: 800, color: 'var(--accent-secondary)' }}>
-        Loading venture details...
+        Loading project details...
       </div>
     );
   }
+
+  const isStep1Valid = formData.title.length > 5 && formData.description.length >= 100;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', padding: 'clamp(20px, 5vw, 60px) 24px' }}>
@@ -147,7 +178,7 @@ function CreateCampaignForm() {
         </button>
 
         <h1 style={{ fontSize: '2rem', marginBottom: '8px', fontWeight: 900 }}>
-          {editId ? 'Finalize Your Venture' : 'Launch a Venture'}
+          {editId ? 'Finalize Your Project' : 'Launch a Project'}
         </h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontWeight: 500 }}>Step {step} of 3</p>
 
@@ -161,9 +192,9 @@ function CreateCampaignForm() {
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>Basic Venture Details</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>Basic Project Details</h2>
               <div>
-                <label className="input-label">Campaign Title *</label>
+                <label className="input-label">Project Title *</label>
                 <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. My Next Indie Film" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
               </div>
               <div>
@@ -181,11 +212,19 @@ function CreateCampaignForm() {
                 </select>
               </div>
               <div>
-                <label className="input-label">Short Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="What are you building?" rows={4} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', resize: 'vertical' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label className="input-label" style={{ marginBottom: 0 }}>Short Description *</label>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: formData.description.length < 100 ? '#ef4444' : '#059669' }}>
+                    {formData.description.length} / 100 min characters
+                  </span>
+                </div>
+                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe your project in detail (min 100 characters)..." rows={5} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: `1px solid ${formData.description.length < 100 && formData.description.length > 0 ? '#ef4444' : '#e2e8f0'}`, resize: 'vertical' }} />
+                {formData.description.length > 0 && formData.description.length < 100 && (
+                  <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>Please add {100 - formData.description.length} more characters to continue.</p>
+                )}
               </div>
               <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button onClick={handleNext} disabled={!formData.title} className="btn-primary" style={{ padding: '14px 40px' }}>Next</button>
+                <button onClick={handleNext} disabled={!isStep1Valid} className="btn-primary" style={{ padding: '14px 40px', opacity: !isStep1Valid ? 0.5 : 1 }}>Next</button>
               </div>
             </div>
           )}
@@ -212,28 +251,44 @@ function CreateCampaignForm() {
           {/* Step 3: Media */}
           {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>Visual Identity</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Visual Identity</h2>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Max size: 1MB</span>
+              </div>
               <div>
-                <label className="input-label">Venture Cover Image</label>
+                <label className="input-label">Project Cover Image *</label>
                 <div 
-                  onClick={() => document.getElementById('cover-upload')?.click()}
+                  onClick={() => !uploading && document.getElementById('cover-upload')?.click()}
                   style={{ 
                     height: '240px', border: '2px dashed #cbd5e1', borderRadius: '24px', 
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     background: formData.coverImageUrl ? `url(${formData.coverImageUrl}) center/cover no-repeat` : '#f8fafc',
-                    cursor: 'pointer', overflow: 'hidden', position: 'relative'
+                    cursor: uploading ? 'not-allowed' : 'pointer', overflow: 'hidden', position: 'relative'
                   }}
                 >
-                  {!formData.coverImageUrl && !uploading && <><span style={{ fontSize: '2rem', marginBottom: '12px' }}>🎞️</span><span style={{ fontWeight: 600, color: '#64748b' }}>Upload Campaign Cover</span></>}
-                  {uploading && <div style={{ background: 'rgba(255,255,255,0.8)', padding: '12px 24px', borderRadius: '99px', fontWeight: 800 }}>Uploading...</div>}
+                  {!formData.coverImageUrl && !uploading && <><span style={{ fontSize: '2rem', marginBottom: '12px' }}>🎞️</span><span style={{ fontWeight: 600, color: '#64748b' }}>Upload Project Cover</span></>}
+                  
+                  {uploading && (
+                    <div style={{ background: 'rgba(255,255,255,0.9)', padding: '24px', borderRadius: '20px', width: '80%', textAlign: 'center' }}>
+                      <p style={{ fontWeight: 800, marginBottom: '12px', color: 'var(--accent-primary)' }}>Uploading... {uploadProgress}%</p>
+                      <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent-primary)', transition: 'width 0.2s' }}></div>
+                      </div>
+                    </div>
+                  )}
+                  {formData.coverImageUrl && !uploading && (
+                    <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
+                      Change Image
+                    </div>
+                  )}
                 </div>
                 <input type="file" id="cover-upload" style={{ display: 'none' }} accept="image/*" onChange={handleFileUpload} />
               </div>
 
               <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'space-between' }}>
                 <button onClick={handlePrev} className="btn-secondary" style={{ padding: '14px 40px', background: '#f1f5f9', border: 'none' }} disabled={loading}>Back</button>
-                <button onClick={handleSubmit} className="btn-primary" style={{ padding: '14px 40px' }} disabled={loading || uploading}>
-                  {loading ? 'Processing...' : editId ? 'Publish Changes' : 'Launch Campaign'}
+                <button onClick={handleSubmit} className="btn-primary" style={{ padding: '14px 40px' }} disabled={loading || uploading || !formData.coverImageUrl}>
+                  {loading ? 'Processing...' : editId ? 'Publish Changes' : 'Launch Project'}
                 </button>
               </div>
             </div>

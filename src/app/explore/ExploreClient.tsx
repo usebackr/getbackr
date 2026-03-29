@@ -81,23 +81,23 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
           <a href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', marginBottom: '16px' }}>
             ← Back to Dashboard
           </a>
-          <h1 style={{ fontSize: '2rem', marginBottom: '8px', color: '#0f172a', fontWeight: 800 }}>Explore</h1>
-          <p style={{ color: '#475569', fontSize: '0.95rem' }}>Find and back the next big African creative venture.</p>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', color: '#0f172a', fontWeight: 900 }}>Explore Projects</h1>
+          <p style={{ color: '#475569', fontSize: '1rem', fontWeight: 500 }}>Find and back any creative project on the platform.</p>
         </header>
 
         {/* Search and Sort */}
-        <div className="search-sort-container" style={{ marginBottom: '24px', display: 'flex', gap: '16px' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <div style={{ position: 'absolute', left: '16px', top: '14px' }}>
+        <div className="search-sort-container" style={{ marginBottom: '32px', display: 'flex', gap: '16px', flexDirection: 'row', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, position: 'relative', minWidth: '280px' }}>
+            <div style={{ position: 'absolute', left: '16px', top: '16px' }}>
               <Icons.Search />
             </div>
             <input
               type="text"
-              placeholder="Search by title or description..."
+              placeholder="Search for any project by name or keywords..."
               className="search-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ paddingLeft: '48px', width: '100%', height: '48px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+              style={{ paddingLeft: '48px', width: '100%', height: '56px', borderRadius: '16px', border: '1px solid #e2e8f0', fontSize: '1rem', fontWeight: 500, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
             />
           </div>
           <select 
@@ -105,8 +105,8 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             style={{ 
-              height: '48px', padding: '0 16px', borderRadius: '12px', border: '1px solid #e2e8f0', 
-              background: '#fff', fontWeight: 600, cursor: 'pointer' 
+              height: '56px', padding: '0 20px', borderRadius: '16px', border: '1px solid #e2e8f0', 
+              background: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
             }}
           >
             <option value="newest">Newest First</option>
