@@ -92,8 +92,11 @@ export default function BetaSignupPage() {
             We're putting the final touches on the platform. We'll reach out to you personally as soon as it's ready — you'll be among the very first to get in.
           </p>
           <div style={{ padding: '20px 24px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', marginBottom: '32px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.04)' }}>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b' }}>
-              We've sent a welcome note to <strong style={{ color: '#0f172a' }}>{formData.email}</strong>. Keep an eye on your inbox.
+            <p style={{ margin: '0 0 6px', fontSize: '0.9rem', color: '#64748b' }}>
+              We've sent a welcome note to <strong style={{ color: '#0f172a' }}>{formData.email}</strong>.
+            </p>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#94a3b8' }}>
+              Can't find it? Check your <strong style={{ color: '#475569' }}>spam / junk folder</strong> — it may have landed there.
             </p>
           </div>
           <a href="/" style={{ display: 'inline-block', padding: '14px 32px', background: '#0f172a', color: '#fff', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontFamily: "'Outfit', sans-serif", fontSize: '0.95rem' }}>

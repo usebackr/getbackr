@@ -14,6 +14,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false);
 
   const message = searchParams.get('message');
+  const registered = searchParams.get('registered');
   const sessionError = searchParams.get('error');
 
   React.useEffect(() => {
@@ -71,19 +72,26 @@ function LoginForm() {
         </p>
       </div>
 
-      {message && !error && (
+      {(message || registered) && !error && (
         <div
           style={{
-            padding: '12px',
+            padding: '14px 16px',
             background: '#ecfdf5',
-            color: '#059669',
-            borderRadius: '8px',
+            color: '#065f46',
+            borderRadius: '10px',
             marginBottom: '24px',
             fontSize: '0.9rem',
             textAlign: 'center',
+            border: '1px solid #a7f3d0',
+            lineHeight: 1.5,
           }}
         >
-          {message}
+          {registered ? (
+            <>
+              ✅ Account created! We sent you a welcome email.<br />
+              <span style={{ fontSize: '0.82rem', color: '#047857' }}>Can't find it? Check your <strong>spam / junk folder</strong>.</span>
+            </>
+          ) : message}
         </div>
       )}
 
