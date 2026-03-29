@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminWithdrawalsPage() {
   // Fetch pending payouts along with bank details and user context
-  const pendingPayouts = await db
+  const allPayouts = await db
     .select({
       withdrawalId: withdrawals.id,
       amount: withdrawals.amount,
@@ -25,7 +25,6 @@ export default async function AdminWithdrawalsPage() {
     .from(withdrawals)
     .innerJoin(users, eq(withdrawals.creatorId, users.id))
     .leftJoin(bankAccounts, eq(withdrawals.creatorId, bankAccounts.userId))
-    .where(eq(withdrawals.status, 'processing'))
     .orderBy(desc(withdrawals.createdAt));
 
   return (
@@ -40,14 +39,14 @@ export default async function AdminWithdrawalsPage() {
             fontFamily: 'Outfit, sans-serif',
           }}
         >
-          Transfer Payouts
+          Withdrawal History
         </h1>
         <p style={{ color: '#64748b', fontSize: '1.05rem', fontWeight: 500 }}>
-          Review requested creator withdrawals and confirm bank transfers.
+          Full history of creator withdrawal requests.
         </p>
       </div>
 
-      {pendingPayouts.length === 0 ? (
+      {allPayouts.length === 0 ? (
         <div
           style={{
             padding: '64px',
@@ -58,12 +57,12 @@ export default async function AdminWithdrawalsPage() {
           }}
         >
           <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 600 }}>
-            Zero pending withdrawal requests. Good job!
+            No withdrawal requests yet.
           </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {pendingPayouts.map((payout) => (
+          {allPayouts.map((payout) => (
             <div
               key={payout.withdrawalId}
               style={{
@@ -94,9 +93,22 @@ export default async function AdminWithdrawalsPage() {
                     </h3>
                     <p style={{ color: '#64748b', fontSize: '0.95rem' }}>{payout.creatorEmail}</p>
                   </div>
-                  <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ef4444' }}>
-                    ₦{Number(payout.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>
+                      ₦{Number(payout.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </span>
+                    <span style={{
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase' as const,
+                      background: payout.status === 'completed' ? '#dcfce7' : payout.status === 'expired' ? '#fee2e2' : '#fef3c7',
+                      color: payout.status === 'completed' ? '#166534' : payout.status === 'expired' ? '#991b1b' : '#92400e',
+                    }}>
+                      {payout.status.replace('_', ' ')}
+                    </span>
+                  </div>
                 </div>
 
                 <div
@@ -161,7 +173,12 @@ export default async function AdminWithdrawalsPage() {
                   minWidth: '250px',
                 }}
               >
-                <PayoutActionButtons withdrawalId={payout.withdrawalId} />
+                {payout.status === 'processing' && <PayoutActionButtons withdrawalId={payout.withdrawalId} />}
+                {payout.status !== 'processing' && (
+                  <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>No action required</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}

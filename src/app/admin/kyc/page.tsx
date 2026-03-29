@@ -9,11 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminKycPage() {
   // Fetch pending users and their corresponding KYC submitted documents
-  const pendingRequests = await db
+  const allRequests = await db
     .select({
       userId: users.id,
       email: users.email,
       displayName: users.displayName,
+      kycStatus: users.kycStatus,
       submittedAt: kycProfiles.createdAt,
       legalName: kycProfiles.legalName,
       idType: kycProfiles.idType,
@@ -22,7 +23,7 @@ export default async function AdminKycPage() {
     })
     .from(kycProfiles)
     .innerJoin(users, eq(users.id, kycProfiles.userId))
-    .where(eq(users.kycStatus, 'pending'));
+    .orderBy(kycProfiles.createdAt);
 
   return (
     <div>
@@ -36,14 +37,14 @@ export default async function AdminKycPage() {
             fontFamily: 'Outfit, sans-serif',
           }}
         >
-          KYC Approvals
+          KYC Submissions
         </h1>
         <p style={{ color: '#64748b', fontSize: '1.05rem', fontWeight: 500 }}>
-          Review identity documents to unlock creator withdrawals.
+          Full history of identity verification submissions.
         </p>
       </div>
 
-      {pendingRequests.length === 0 ? (
+      {allRequests.length === 0 ? (
         <div
           style={{
             padding: '64px',
@@ -54,12 +55,12 @@ export default async function AdminKycPage() {
           }}
         >
           <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 600 }}>
-            Zero pending KYC requests. You're all caught up!
+            No KYC submissions yet.
           </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {pendingRequests.map((req) => (
+          {allRequests.map((req) => (
             <div
               key={req.userId}
               style={{
@@ -77,9 +78,22 @@ export default async function AdminKycPage() {
               <div
                 style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '8px' }}
               >
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                  {req.displayName}
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+                    {req.displayName}
+                  </h3>
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    background: req.kycStatus === 'verified' ? '#dcfce7' : req.kycStatus === 'rejected' ? '#fee2e2' : '#fef3c7',
+                    color: req.kycStatus === 'verified' ? '#166534' : req.kycStatus === 'rejected' ? '#991b1b' : '#92400e',
+                  }}>
+                    {req.kycStatus}
+                  </span>
+                </div>
                 <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Account: {req.email}</p>
 
                 <div
@@ -131,7 +145,12 @@ export default async function AdminKycPage() {
                   minWidth: '250px',
                 }}
               >
-                <KycActionButtons userId={req.userId} />
+                {req.kycStatus === 'pending' && <KycActionButtons userId={req.userId} />}
+                {req.kycStatus !== 'pending' && (
+                  <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>No action required</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}
