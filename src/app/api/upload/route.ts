@@ -53,9 +53,9 @@ export async function POST(req: NextRequest) {
       key: resultKey,
     });
   } catch (err: any) {
-    console.error('[Upload API] Error:', err);
+    console.error('[Upload API] Fatal Error:', err);
     return NextResponse.json(
-      { error: 'Upload failed. Please check S3 configuration.' },
+      { error: `Upload failed: ${err.message || 'Unknown error'}. Please check S3/Local configuration.` },
       { status: 500 },
     );
   }

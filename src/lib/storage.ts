@@ -24,18 +24,29 @@ export async function uploadFile(
   contentType: string,
 ): Promise<string> {
   if (isDev) {
+    console.log(`[Storage] Dev mode detected. Key: ${key}`);
     // Local fallback
     const localDir = path.join(process.cwd(), 'public', 'uploads');
-    const fullPath = path.join(localDir, path.basename(key));
+    const filename = path.basename(key);
+    const fullPath = path.join(localDir, filename);
 
-    // Ensure directory exists
-    if (!fs.existsSync(localDir)) {
-      fs.mkdirSync(localDir, { recursive: true });
+    console.log(`[Storage] Target Dir: ${localDir}`);
+    console.log(`[Storage] Target File: ${fullPath}`);
+
+    try {
+      // Ensure directory exists
+      if (!fs.existsSync(localDir)) {
+        console.log(`[Storage] Creating directory: ${localDir}`);
+        fs.mkdirSync(localDir, { recursive: true });
+      }
+
+      await fs.promises.writeFile(fullPath, buffer);
+      console.log(`[Storage] Successfully saved locally to: ${fullPath}`);
+      return `local:${filename}`;
+    } catch (err: any) {
+      console.error(`[Storage] Local write failed:`, err);
+      throw new Error(`Local storage failed: ${err.message}`);
     }
-
-    await fs.promises.writeFile(fullPath, buffer);
-    console.log(`[Storage] Saved locally to: ${fullPath}`);
-    return `local:${path.basename(key)}`;
   }
 
   // S3 Production
