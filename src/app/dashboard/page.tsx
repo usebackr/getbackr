@@ -78,15 +78,6 @@ export default function DashboardPage() {
     fetchStatsAndBank(filter);
   }, [filter]);
 
-  const handleWithdrawClick = () => {
-    if (!hasBank) {
-      setShowBankError(true);
-    } else {
-      // Trigger normal withdrawal modal (Implementation for another phase)
-      alert('Withdrawal flow initiating...');
-    }
-  };
-
   const statCards = [
     {
       label: 'Total Raised',
@@ -246,7 +237,7 @@ export default function DashboardPage() {
                 color: card.color,
                 border: card.border || 'none',
                 boxShadow: card.bg.includes('gradient')
-                  ? '0 20px 40px rgba(255, 122, 0, 0.15)'
+                  ? '0 20px 40px rgba(16, 185, 129, 0.15)'
                   : 'none',
                 position: 'relative',
                 overflow: 'hidden',
@@ -254,21 +245,6 @@ export default function DashboardPage() {
             >
               <span className="dash-stat-label">{card.label}</span>
               <span className="dash-stat-value">{loading ? '...' : card.value}</span>
-              {card.bg.includes('gradient') && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    right: '-10px',
-                    bottom: '-10px',
-                    opacity: 0.1,
-                    transform: 'rotate(-15deg)',
-                  }}
-                >
-                  <svg width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
-                </div>
-              )}
             </div>
           ))}
         </section>
@@ -370,9 +346,10 @@ export default function DashboardPage() {
               >
                 {(() => {
                   const filtered = campaigns.filter(c => {
+                    const status = c.status?.toLowerCase() || 'draft';
                     if (statusFilter === 'all') return true;
-                    if (statusFilter === 'completed') return c.status === 'closed';
-                    return c.status === statusFilter;
+                    if (statusFilter === 'completed') return status === 'closed';
+                    return status === statusFilter.toLowerCase();
                   });
 
                   if (filtered.length === 0) {
@@ -387,8 +364,8 @@ export default function DashboardPage() {
                         color: 'var(--text-secondary)',
                         fontWeight: 600
                       }}>
-                        <p style={{ fontSize: '1.1rem' }}>None</p>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 500, opacity: 0.7 }}>No {statusFilter} campaigns found.</p>
+                        <p style={{ fontSize: '1.1rem' }}>No {statusFilter} campaigns yet.</p>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 500, opacity: 0.7 }}>Start a new journey today.</p>
                       </div>
                     );
                   }
@@ -400,124 +377,147 @@ export default function DashboardPage() {
                     const daysLeft = Math.ceil(
                       (new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000,
                     );
+                    const isDraft = camp.status?.toLowerCase() === 'draft';
+
                     return (
-                      <a key={camp.id} href={`/c/${camp.slug}`} style={{ textDecoration: 'none' }}>
-                        <div
-                          className="dash-card"
-                          style={{
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                            padding: '0',
-                            overflow: 'hidden',
-                          }}
-                        >
+                      <div key={camp.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <a href={`/c/${camp.slug}`} style={{ textDecoration: 'none', flex: 1 }}>
                           <div
+                            className="dash-card"
                             style={{
-                              height: '160px',
-                              background: '#f1f5f9',
-                              position: 'relative',
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s, box-shadow 0.2s',
+                              padding: '0',
                               overflow: 'hidden',
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column'
                             }}
                           >
-                            {camp.coverImageUrl ? (
-                              <img
-                                src={camp.coverImageUrl}
-                                alt={camp.title}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '3rem',
-                                }}
-                              >
-                                🎬
-                              </div>
-                            )}
-                            {camp.category && (
+                            <div
+                              style={{
+                                height: '160px',
+                                background: '#f1f5f9',
+                                position: 'relative',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {camp.coverImageUrl ? (
+                                <img
+                                  src={camp.coverImageUrl}
+                                  alt={camp.title}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '3rem',
+                                  }}
+                                >
+                                  🎬
+                                </div>
+                              )}
+                              {camp.category && (
+                                <span
+                                  style={{
+                                    position: 'absolute',
+                                    top: '12px',
+                                    left: '12px',
+                                    background: 'rgba(255,255,255,0.95)',
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    color: '#0f172a',
+                                  }}
+                                >
+                                  {camp.category}
+                                </span>
+                              )}
                               <span
                                 style={{
                                   position: 'absolute',
                                   top: '12px',
-                                  left: '12px',
-                                  background: 'rgba(255,255,255,0.95)',
+                                  right: '12px',
+                                  background:
+                                    camp.status === 'active'
+                                      ? '#10b981'
+                                      : camp.status === 'closed'
+                                      ? '#3b82f6'
+                                      : '#64748b',
+                                  color: '#fff',
                                   padding: '4px 12px',
                                   borderRadius: '20px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  color: '#0f172a',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 800,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                 }}
                               >
-                                {camp.category}
+                                {camp.status}
                               </span>
-                            )}
-                            <span
-                              style={{
-                                position: 'absolute',
-                                top: '12px',
-                                right: '12px',
-                                background:
-                                  camp.status === 'active'
-                                    ? '#10b981'
-                                    : camp.status === 'closed'
-                                    ? '#3b82f6'
-                                    : '#64748b',
-                                color: '#fff',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                                fontSize: '0.7rem',
-                                fontWeight: 800,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                              }}
-                            >
-                              {camp.status}
-                            </span>
-                          </div>
-
-                          <div style={{ padding: '20px' }}>
-                            <h4
-                              style={{
-                                fontSize: '1.1rem',
-                                fontWeight: 800,
-                                marginBottom: '8px',
-                                color: '#0f172a',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {camp.title}
-                            </h4>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
-                              <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
-                              <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
-                            </div>
-                            
-                            <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
                             </div>
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                              <div>
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Raised</p>
-                                <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>₦{raised.toLocaleString()}</p>
+                            <div style={{ padding: '20px' }}>
+                              <h4
+                                style={{
+                                  fontSize: '1.1rem',
+                                  fontWeight: 800,
+                                  marginBottom: '8px',
+                                  color: '#0f172a',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {camp.title}
+                              </h4>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
+                                <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
+                                <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
                               </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Goal</p>
-                                <p style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>₦{goal.toLocaleString()}</p>
+                              
+                              <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <div>
+                                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Raised</p>
+                                  <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>₦{raised.toLocaleString()}</p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Goal</p>
+                                  <p style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>₦{goal.toLocaleString()}</p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </a>
+                        </a>
+                        
+                        {isDraft && (
+                          <button
+                            onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
+                            className="btn-primary"
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              fontSize: '0.9rem',
+                              background: 'var(--accent-secondary)',
+                              color: '#fff'
+                            }}
+                          >
+                            Edit & Publish
+                          </button>
+                        )}
+                      </div>
                     );
                   });
                 })()}
