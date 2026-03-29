@@ -11,7 +11,10 @@ export async function verifyAdmin() {
   const cookieStore = cookies();
   const token = cookieStore.get('accessToken')?.value;
 
-  if (!token) return false;
+  if (!token) {
+    console.warn('[Admin Auth] No accessToken cookie found');
+    return false;
+  }
 
   try {
     const payload = verifyAccessToken(token);
@@ -23,11 +26,17 @@ export async function verifyAdmin() {
       .where(eq(users.id, userId))
       .limit(1);
 
+    console.log('[Admin Auth] User email from DB:', user?.email);
+    console.log('[Admin Auth] Allowed emails:', ADMIN_EMAILS);
+
     if (user && ADMIN_EMAILS.includes(user.email)) {
+      console.log('[Admin Auth] Access GRANTED');
       return true;
     }
+    console.warn('[Admin Auth] Access DENIED — email not in admin list');
     return false;
   } catch (err) {
+    console.error('[Admin Auth] Token error:', err);
     return false;
   }
 }
