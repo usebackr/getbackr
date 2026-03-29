@@ -167,17 +167,17 @@ export default function WalletDashboard() {
                 { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', highlight: true },
               ].map((stat, i) => (
                 <div key={i} className="dash-card" style={{ 
-                  padding: '12px 10px', 
-                  borderTop: `4px solid ${stat.color}`,
+                  padding: '10px 8px', 
+                  borderTop: `3px solid ${stat.color}`,
                   background: stat.bg,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '2px',
-                  minHeight: '90px',
+                  minHeight: '75px',
                   justifyContent: 'center'
                 }}>
-                  <p style={{ color: '#64748b', fontSize: '0.55rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
+                  <p style={{ color: '#64748b', fontSize: '0.5rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{stat.label}</p>
+                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: stat.color, margin: 0 }}>₦{stat.value.toLocaleString()}</p>
                 </div>
               ))}
             </div>
