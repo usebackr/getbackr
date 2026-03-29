@@ -246,17 +246,32 @@ export default function IdentityPage() {
                   <div 
                     onClick={() => document.getElementById('id-upload')?.click()}
                     style={{ 
-                      flex: 1, height: '180px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
+                      flex: 1, height: '180px', border: previews.idDoc ? '2px solid #10b981' : '2px dashed #e2e8f0', borderRadius: '20px', 
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      background: previews.idDoc ? `url(${previews.idDoc}) center/cover no-repeat` : '#f8fafc',
-                      cursor: 'pointer', transition: 'border-color 0.2s', textAlign: 'center'
+                      background: previews.idDoc ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.idDoc}) center/cover no-repeat` : '#f8fafc',
+                      cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center', position: 'relative', overflow: 'hidden'
                     }}
                   >
-                    {!previews.idDoc && (
+                    {!previews.idDoc ? (
                       <div style={{ padding: '0 16px' }}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                         <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to upload ID</div>
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Clear photo of front page</div>
+                      </div>
+                    ) : (
+                      <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' }}>
+                         <div style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Attached
+                         </div>
+                         <div style={{ background: 'rgba(255,255,255,0.9)', color: '#1e293b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                            Change
+                         </div>
+                      </div>
+                    )}
+                    {previews.idDoc && (
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '48px', height: '48px', borderRadius: '24px', background: 'rgba(16,185,129,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(16,185,129,0.4)' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                     )}
                   </div>
@@ -271,17 +286,32 @@ export default function IdentityPage() {
                   <div 
                     onClick={() => document.getElementById('selfie-upload')?.click()}
                     style={{ 
-                      flex: 1, height: '180px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
+                      flex: 1, height: '180px', border: previews.selfie ? '2px solid #10b981' : '2px dashed #e2e8f0', borderRadius: '20px', 
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      background: previews.selfie ? `url(${previews.selfie}) center/cover no-repeat` : '#f8fafc',
-                      cursor: 'pointer', textAlign: 'center'
+                      background: previews.selfie ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.selfie}) center/cover no-repeat` : '#f8fafc',
+                      cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center', position: 'relative', overflow: 'hidden'
                     }}
                   >
-                    {!previews.selfie && (
+                    {!previews.selfie ? (
                       <div style={{ padding: '0 16px' }}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</div>
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Hold ID next to your face</div>
+                      </div>
+                    ) : (
+                      <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' }}>
+                         <div style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Attached
+                         </div>
+                         <div style={{ background: 'rgba(255,255,255,0.9)', color: '#1e293b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                            Change
+                         </div>
+                      </div>
+                    )}
+                    {previews.selfie && (
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '48px', height: '48px', borderRadius: '24px', background: 'rgba(16,185,129,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(16,185,129,0.4)' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                     )}
                   </div>
