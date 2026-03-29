@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
-import { projectWallets } from '@/db/schema/projectWallets';
+import { contributions } from '@/db/schema/contributions';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { getPublicUrl } from '@/lib/storage';
 
@@ -23,12 +23,17 @@ export async function GET(req: NextRequest) {
         goalAmount: campaigns.goalAmount,
         endDate: campaigns.endDate,
         createdAt: campaigns.createdAt,
-        raised: projectWallets.totalReceived,
+        raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+        backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
         status: campaigns.status,
       })
       .from(campaigns)
-      .leftJoin(projectWallets, eq(projectWallets.campaignId, campaigns.id))
+      .leftJoin(
+        contributions,
+        sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
+      )
       .where(eq(campaigns.creatorId, userId))
+      .groupBy(campaigns.id)
       .orderBy(desc(campaigns.createdAt));
 
     // Cleanup URLs

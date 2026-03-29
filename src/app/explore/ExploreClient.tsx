@@ -161,8 +161,13 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
 
                     <div style={{ padding: '24px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px', lineHeight: 1.3 }}>{camp.title}</h3>
-                      <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '20px', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{camp.description}</p>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '16px', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{camp.description}</p>
                       
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '16px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>👥</div>
+                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}><b>{camp.backers || 0}</b> backers</span>
+                      </div>
+
                       <div style={{ marginTop: 'auto' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700 }}>
                           <span style={{ color: '#0f172a' }}>₦{raised.toLocaleString()} <span style={{ fontWeight: 500, color: '#94a3b8' }}>raised</span></span>

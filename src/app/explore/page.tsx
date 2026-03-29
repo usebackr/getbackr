@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { users } from '@/db/schema/users';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, sql } from 'drizzle-orm';
+import { contributions } from '@/db/schema/contributions';
 import ExploreClient from './ExploreClient';
 import { getPublicUrl } from '@/lib/storage';
 
@@ -24,12 +25,17 @@ export default async function ExplorePage() {
       status: campaigns.status,
       createdAt: campaigns.createdAt,
       creatorName: users.displayName,
-      raised: projectWallets.totalReceived,
+      raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+      backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
     })
     .from(campaigns)
     .leftJoin(users, eq(users.id, campaigns.creatorId))
-    .leftJoin(projectWallets, eq(projectWallets.campaignId, campaigns.id))
+    .leftJoin(
+      contributions,
+      sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
+    )
     .where(and(eq(campaigns.status, 'active')))
+    .groupBy(campaigns.id, users.displayName)
     .orderBy(desc(campaigns.createdAt))
     .limit(40);
 

@@ -610,7 +610,10 @@ export default function DashboardPage() {
                               </h4>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
                                 <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
-                                <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <span>👥 <b>{camp.backers || 0}</b></span>
+                                  <span style={{ fontWeight: 700, color: 'var(--accent-primary)', marginLeft: '8px' }}>{pct}%</span>
+                                </div>
                               </div>
                               
                               <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>

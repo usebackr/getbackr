@@ -55,7 +55,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .orderBy(desc(contributions.createdAt));
 
   const totalDonors = campaignContributions.length;
-  const latestBackers = campaignContributions.slice(0, 10);
+  const latestBackers = campaignContributions.slice(0, 5);
 
   const goalAmount = parseFloat(campaign.goalAmount);
   const raisedAmount = parseFloat(wallet?.totalReceived || '0');
