@@ -18,6 +18,11 @@ const isDev =
 let s3: S3Client | null = null;
 const getS3Client = () => {
   if (!s3) {
+    let finalEndpoint = process.env.S3_ENDPOINT || '';
+    if (finalEndpoint && !finalEndpoint.startsWith('http')) {
+      finalEndpoint = `https://${finalEndpoint}`;
+    }
+
     s3 = new S3Client({
       region,
       credentials: {
@@ -25,7 +30,7 @@ const getS3Client = () => {
         secretAccessKey,
       },
       forcePathStyle: true, // Required for Supabase S3 and custom endpoints
-      ...(process.env.S3_ENDPOINT ? { endpoint: process.env.S3_ENDPOINT } : {}),
+      ...(finalEndpoint ? { endpoint: finalEndpoint } : {}),
     });
   }
   return s3;
