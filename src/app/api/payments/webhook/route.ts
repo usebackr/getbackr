@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const netAmount = amountInMajor - platformFee;
 
     try {
-      await db.transaction(async (tx) => {
+      const txResult = await db.transaction(async (tx) => {
         // A. Idempotency: skip if already processed
         const existing = await tx
           .select({ id: contributions.id })
@@ -119,45 +119,55 @@ export async function POST(req: NextRequest) {
             message: `You received a donation of ${data.currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
             metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
           });
+        }
+        
+        return {
+          campaignDetails,
+          wallet,
+          backerName
+        };
+      });
 
-          // F. Queue Emails via Workers
-          try {
-            const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
+      // F. Queue Emails via Workers (OUTSIDE THE DB TRANSACTION!)
+      // If we are on Vercel without a configured Redis URL, this could hang.
+      // Doing it outside the transaction ensures the payment is safely recorded.
+      if (txResult && txResult.campaignDetails && process.env.REDIS_URL) {
+        try {
+          const { campaignDetails, wallet, backerName } = txResult;
+          const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
 
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+          // Email to Donor (Receipt)
+          await emailQueue.add({
+            type: 'donor_receipt',
+            backerEmail: data.customer.email,
+            backerName: backerName,
+            amount: amountInMajor,
+            currency: data.currency,
+            campaignTitle: campaignDetails.title,
+            contributionId: reference,
+            campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
+          }, { timeout: 5000 }); // strict timeout
 
-            // Email to Donor (Receipt)
+          // Email to Creator (Alert)
+          if (campaignDetails.creatorEmail) {
             await emailQueue.add({
-              type: 'donor_receipt',
-              backerEmail: data.customer.email,
-              backerName: backerName,
+              type: 'creator_alert',
+              backerEmail: campaignDetails.creatorEmail,
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
-              contributionId: reference,
+              creatorName: campaignDetails.creatorName,
+              backerName: backerName,
+              totalRaised: wallet?.totalReceived || netAmount,
+              goalAmount: campaignDetails.goalAmount,
               campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-            });
-
-            // Email to Creator (Alert)
-            if (campaignDetails.creatorEmail) {
-              await emailQueue.add({
-                type: 'creator_alert',
-                backerEmail: campaignDetails.creatorEmail,
-                amount: amountInMajor,
-                currency: data.currency,
-                campaignTitle: campaignDetails.title,
-                creatorName: campaignDetails.creatorName,
-                backerName: backerName,
-                totalRaised: wallet?.totalReceived || netAmount,
-                goalAmount: campaignDetails.goalAmount,
-                campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-              });
-            }
-          } catch (queueErr) {
-            console.error('[Paystack Webhook] Non-fatal error queueing emails:', queueErr);
+            }, { timeout: 5000 });
           }
+        } catch (queueErr) {
+          console.error('[Paystack Webhook] Non-fatal error queueing emails:', queueErr);
         }
-      });
+      }
 
       console.log(`[Paystack Webhook] Successfully processed donation for campaign ${campaignId}`);
       return NextResponse.json({ status: 'success' });
