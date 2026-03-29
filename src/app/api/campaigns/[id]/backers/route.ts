@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { campaigns } from '@/db/schema/campaigns';
@@ -39,7 +39,7 @@ export async function GET(
       anonymous: contributions.anonymous,
       createdAt: contributions.createdAt,
       backerEmail: contributions.backerEmail,
-      backerName: users.displayName,
+      backerName: sql<string>`COALESCE(${users.displayName}, ${contributions.backerName}, 'A Supporter')`,
     })
     .from(contributions)
     .leftJoin(users, eq(users.id, contributions.backerId))

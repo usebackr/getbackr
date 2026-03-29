@@ -6,7 +6,7 @@ import { campaigns } from '@/db/schema/campaigns';
 import { notifications } from '@/db/schema/notifications';
 import { users } from '@/db/schema/users';
 import { verifyWebhookSignature } from '@/lib/payments/paystack';
-import { eq, sql } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { sendEmail } from '@/workers/emailWorkers';
 
 export async function POST(req: NextRequest) {
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
           netAmount: netAmount.toString(),
           currency: data.currency || 'NGN',
           anonymous: isAnonymous,
+          backerName: metadata.backerName || null,
           paymentReference: reference,
           paymentMethod: data.channel || 'paystack',
           status: 'confirmed',
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
             .from(users)
             .where(eq(users.id, backerId))
             .limit(1);
-          if (backer) backerName = backer.displayName;
+          if (backer && backer.displayName) backerName = backer.displayName;
         }
 
         if (campaignDetails) {
@@ -148,7 +149,7 @@ export async function POST(req: NextRequest) {
         return {
           campaignDetails,
           wallet,
-          backerName
+          backerName: backerName as string
         };
       });
 
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
           await sendEmail({
             type: 'donor_receipt',
             backerEmail: data.customer.email,
-            backerName: backerName,
+            backerName: backerName || 'A Supporter',
             amount: amountInMajor,
             currency: data.currency,
             campaignTitle: campaignDetails.title,
@@ -179,8 +180,8 @@ export async function POST(req: NextRequest) {
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
-              creatorName: campaignDetails.creatorName,
-              backerName: backerName,
+              creatorName: campaignDetails.creatorName || 'Campaign Organizer',
+              backerName: backerName || 'A Supporter',
               totalRaised: wallet?.totalReceived || netAmount,
               goalAmount: campaignDetails.goalAmount,
               campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,

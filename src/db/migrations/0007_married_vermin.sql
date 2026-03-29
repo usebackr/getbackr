@@ -1,0 +1,1 @@
+ALTER TABLE "contributions" ADD COLUMN "backer_name" varchar(255);

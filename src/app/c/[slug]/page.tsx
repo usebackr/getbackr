@@ -56,8 +56,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .orderBy(spendingLogs.entryDate);
 
   const campaignContributions = await db
-    .select()
+    .select({
+      id: contributions.id,
+      backerName: sql<string>`COALESCE(${users.displayName}, ${contributions.backerName}, 'A Supporter')`,
+      amount: contributions.amount,
+      isAnonymous: contributions.anonymous,
+      createdAt: contributions.createdAt,
+    })
     .from(contributions)
+    .leftJoin(users, eq(users.id, contributions.backerId))
     .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
     .orderBy(desc(contributions.createdAt));
 

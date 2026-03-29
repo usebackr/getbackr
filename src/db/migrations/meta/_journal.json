@@ -50,6 +50,13 @@
       "when": 1774797998113,
       "tag": "0006_rainy_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774803649197,
+      "tag": "0007_married_vermin",
+      "breakpoints": true
     }
   ]
 }
