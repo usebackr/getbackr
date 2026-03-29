@@ -345,12 +345,12 @@ export default function DashboardPage() {
                 }}
               >
                 {(() => {
-                  const filtered = campaigns.filter(c => {
-                    const status = c.status?.toLowerCase() || 'draft';
-                    if (statusFilter === 'all') return true;
-                    // Robust mapping: 'completed' filter matches 'closed' status
-                    if (statusFilter === 'completed') return status === 'closed';
-                    return status === statusFilter.toLowerCase();
+                  const filtered = campaigns.filter((c) => {
+                    const status = (c.status || 'draft').toLowerCase();
+                    const filter = statusFilter.toLowerCase();
+                    if (filter === 'all') return true;
+                    if (filter === 'completed') return status === 'closed';
+                    return status === filter;
                   });
 
                   if (filtered.length === 0) {

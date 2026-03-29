@@ -80,6 +80,7 @@ function CreateCampaignForm() {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
+    xhr.withCredentials = true; // Send the accessToken cookie
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {

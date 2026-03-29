@@ -47,7 +47,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
 
     // Filter by Category
     if (activeCategory !== 'All') {
-      list = list.filter((c) => c.category === activeCategory);
+      list = list.filter((c) => c.category?.toLowerCase() === activeCategory.toLowerCase());
     }
 
     // Sort

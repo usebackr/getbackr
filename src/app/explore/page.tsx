@@ -28,7 +28,7 @@ export default async function ExplorePage() {
     .from(campaigns)
     .leftJoin(users, eq(users.id, campaigns.creatorId))
     .leftJoin(projectWallets, eq(projectWallets.campaignId, campaigns.id))
-    .where(eq(campaigns.status, 'active'))
+    .where(and(eq(campaigns.status, 'active')))
     .orderBy(desc(campaigns.createdAt))
     .limit(40);
 
