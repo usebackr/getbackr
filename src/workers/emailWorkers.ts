@@ -6,7 +6,7 @@ import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
 // Initialise SendGrid with API key
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY ?? '';
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL ?? 'noreply@backr.app';
+const FROM_EMAIL = process.env.EMAIL_FROM ?? 'noreply@backr.app';
 
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
@@ -20,25 +20,26 @@ if (SENDGRID_API_KEY) {
 // ---------------------------------------------------------------------------
 // Email Template Styling (Customise styles here)
 // ---------------------------------------------------------------------------
-const BRAND_COLOR = '#ff7a00';
-const BG_COLOR = '#f8fafc';
+const BRAND_COLOR = '#10b981';
+const BG_COLOR = '#f1f5f9';
 const CARD_BG = '#ffffff';
 
 const emailWrapperStyle = `
   background-color: ${BG_COLOR}; 
-  padding: 40px 20px; 
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #1e293b;
-  line-height: 1.5;
+  padding: 40px 10px; 
+  font-family: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif;
+  color: #0f172a;
+  line-height: 1.6;
 `;
 
 const emailCardStyle = `
-  max-width: 580px; 
+  max-width: 540px; 
   margin: 0 auto; 
   background-color: ${CARD_BG}; 
-  border-radius: 16px; 
-  padding: 40px; 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  border-radius: 20px; 
+  padding: 48px 32px; 
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
 `;
 
 interface ReceiptJobData {
@@ -109,7 +110,7 @@ export function registerEmailReceiptWorker(): void {
       await sgMail.send({
         to,
         from: FROM_EMAIL,
-        subject: `🎉 New Contribution for "${campaignTitle}"`,
+        subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
