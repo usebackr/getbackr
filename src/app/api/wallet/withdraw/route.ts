@@ -45,39 +45,7 @@ export async function POST(req: NextRequest) {
 
     // Atomic transaction for accurate live evaluation
     return await db.transaction(async (tx) => {
-      // Evaluate maximum possible withdrawal using aggregate formulas
-      const [contribStats] = await tx
-        .select({
-          totalAmount: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
-          totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
-        })
-        .from(contributions)
-        .innerJoin(campaigns, eq(campaigns.id, contributions.campaignId))
-        .where(and(eq(campaigns.creatorId, userId), eq(contributions.status, 'confirmed')));
-
-      const totalRaised = Number(contribStats?.totalAmount || 0);
-      const totalFees = Number(contribStats?.totalPlatformFee || 0);
-
-      const [withdrawalStats] = await tx
-        .select({
-          totalWithdrawn: sql<number>`COALESCE(SUM(${withdrawals.amount}), 0)::numeric`,
-        })
-        .from(withdrawals)
-        .where(
-          and(
-            eq(withdrawals.creatorId, userId),
-            inArray(withdrawals.status, ['processing', 'completed', 'pending_otp']),
-          ),
-        );
-
-      const totalWithdrawn = Number(withdrawalStats?.totalWithdrawn || 0);
-      const availableBalance = Math.max(0, totalRaised - totalFees - totalWithdrawn);
-
-      if (withdrawAmount > availableBalance) {
-        return NextResponse.json({ error: 'Insufficient funds' }, { status: 400 });
-      }
-
-      // 2. Validate selected campaign belongs to this user and fetch wallet
+      // 1. Fetch wallet associated with this specific campaign
       const [campaignWallet] = await tx
         .select({ walletId: projectWallets.id })
         .from(projectWallets)
@@ -92,7 +60,45 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 3. Securely record the withdrawal request (no manual balances updated)
+      // 2. Evaluate project-specific balance
+      const [contribStats] = await tx
+        .select({
+          totalAmount: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+          totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
+        })
+        .from(contributions)
+        .where(and(eq(contributions.campaignId, campaignId), eq(contributions.status, 'confirmed')));
+
+      const projectRaised = Number(contribStats?.totalAmount || 0);
+      const projectFees = Number(contribStats?.totalPlatformFee || 0);
+
+      const [withdrawalStats] = await tx
+        .select({
+          totalWithdrawn: sql<number>`COALESCE(SUM(${withdrawals.amount}), 0)::numeric`,
+        })
+        .from(withdrawals)
+        .where(
+          and(
+            eq(withdrawals.walletId, campaignWallet.walletId),
+            inArray(withdrawals.status, ['processing', 'completed', 'pending_otp']),
+          ),
+        );
+
+      const projectWithdrawn = Number(withdrawalStats?.totalWithdrawn || 0);
+      const availableBalance = Math.max(0, projectRaised - projectFees - projectWithdrawn);
+
+      // 3. Precise Validations
+      if (projectRaised === 0 || availableBalance <= 0) {
+        return NextResponse.json({ error: 'This project wallet is currently empty.' }, { status: 400 });
+      }
+
+      if (withdrawAmount > availableBalance) {
+        return NextResponse.json({ 
+          error: `Insufficient funds in this project's wallet. (Available: ₦${availableBalance.toLocaleString()})` 
+        }, { status: 400 });
+      }
+
+      // 4. Securely record the withdrawal request
       await tx.insert(withdrawals).values({
         walletId: campaignWallet.walletId,
         creatorId: userId,
