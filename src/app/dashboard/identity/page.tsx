@@ -9,6 +9,7 @@ export default function IdentityPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<any>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -33,7 +34,10 @@ export default function IdentityPage() {
       try {
         const res = await fetch('/api/user/profile');
         const data = await res.json();
-        if (data.user) setStatus(data.user.kycStatus);
+        if (data.user) {
+          setStatus(data.user.kycStatus);
+          setRejectionReason(data.user.kycRejectionReason);
+        }
       } finally {
         setLoading(false);
       }
@@ -141,6 +145,14 @@ export default function IdentityPage() {
                 <div style={{ gridColumn: '1 / -1' }}>
                    {error && <div style={{ padding: '12px', background: '#fef2f2', color: '#ef4444', borderRadius: '8px', marginBottom: '16px', fontWeight: 600 }}>{error}</div>}
                    {success && <div style={{ padding: '12px', background: '#ecfdf5', color: '#10b981', borderRadius: '8px', marginBottom: '16px', fontWeight: 600 }}>{success}</div>}
+                   
+                   {status === 'rejected' && rejectionReason && (
+                     <div style={{ padding: '16px', background: '#fff1f2', border: '1px solid #fda4af', borderRadius: '12px', marginBottom: '24px' }}>
+                       <h4 style={{ margin: '0 0 4px', fontSize: '0.85rem', fontWeight: 800, color: '#be123c', textTransform: 'uppercase' }}>Verification Update: Rejected</h4>
+                       <p style={{ margin: 0, fontSize: '0.95rem', color: '#9f1239', fontWeight: 500 }}>Reason: {rejectionReason}</p>
+                       <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#e11d48', opacity: 0.8 }}>Please re-upload clearer documents to continue.</p>
+                     </div>
+                   )}
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>

@@ -10,7 +10,7 @@ import {
   jsonb,
 } from 'drizzle-orm/pg-core';
 
-export const kycStatusEnum = pgEnum('kyc_status', ['pending', 'verified', 'rejected']);
+export const kycStatusEnum = pgEnum('kyc_status', ['unsubmitted', 'pending', 'verified', 'rejected']);
 export const premiumStatusEnum = pgEnum('premium_status', ['none', 'active', 'grace']);
 
 export const users = pgTable('users', {
@@ -24,7 +24,7 @@ export const users = pgTable('users', {
   category: varchar('category', { length: 50 }),
   socialLinks: jsonb('social_links'),
   emailVerified: boolean('email_verified').notNull().default(false),
-  kycStatus: kycStatusEnum('kyc_status').notNull().default('pending'),
+  kycStatus: kycStatusEnum('kyc_status').notNull().default('unsubmitted'),
   kycRejectionReason: text('kyc_rejection_reason'),
   totpSecret: text('totp_secret'),
   sms2faPhone: varchar('sms_2fa_phone', { length: 20 }),

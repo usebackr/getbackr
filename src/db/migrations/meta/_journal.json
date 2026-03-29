@@ -43,6 +43,13 @@
       "when": 1774796769443,
       "tag": "0005_flowery_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774797998113,
+      "tag": "0006_rainy_swordsman",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
         avatarUrl: users.avatarUrl,
         socialLinks: users.socialLinks,
         kycStatus: users.kycStatus,
+        kycRejectionReason: users.kycRejectionReason,
       })
       .from(users)
       .where(eq(users.id, userId))
