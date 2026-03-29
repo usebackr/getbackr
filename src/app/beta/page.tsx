@@ -18,6 +18,8 @@ export default function BetaSignupPage() {
 
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [registeredName, setRegisteredName] = React.useState('');
 
   const categories = [
     { id: 'theatre', label: 'Theatre' },
@@ -62,13 +64,45 @@ export default function BetaSignupPage() {
         return;
       }
 
-      router.push(`/login?registered=true&beta=true`);
+      // Show success screen instead of redirecting
+      setRegisteredName(formData.displayName.split(' ')[0]);
+      setSuccess(true);
     } catch (err) {
       setError('Failed to connect to the server');
     } finally {
       setLoading(false);
     }
   };
+
+  // ── Success Screen ──────────────────────────────────────────────────────────
+  if (success) {
+    return (
+      <main style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ maxWidth: '520px', width: '100%', textAlign: 'center' }}>
+          <div style={{ width: '80px', height: '80px', background: '#f0fdf4', border: '2px solid #10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', fontSize: '2.5rem' }}>
+            🎉
+          </div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.04em', marginBottom: '16px' }}>
+            You're in, {registeredName}!
+          </h1>
+          <p style={{ fontSize: '1.1rem', color: '#475569', lineHeight: 1.6, marginBottom: '12px' }}>
+            Thank you for joining the Backr Beta.
+          </p>
+          <p style={{ fontSize: '1rem', color: '#64748b', lineHeight: 1.6, marginBottom: '40px' }}>
+            We're putting the final touches on the platform. We'll reach out to you personally as soon as it's ready — you'll be among the very first to get in.
+          </p>
+          <div style={{ padding: '20px 24px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', marginBottom: '32px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.04)' }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b' }}>
+              We've sent a welcome note to <strong style={{ color: '#0f172a' }}>{formData.email}</strong>. Keep an eye on your inbox.
+            </p>
+          </div>
+          <a href="/" style={{ display: 'inline-block', padding: '14px 32px', background: '#0f172a', color: '#fff', borderRadius: '12px', textDecoration: 'none', fontWeight: 700, fontFamily: "'Outfit', sans-serif", fontSize: '0.95rem' }}>
+            Back to Home
+          </a>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main style={{ 
