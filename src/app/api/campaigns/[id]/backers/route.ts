@@ -39,12 +39,23 @@ export async function GET(
       anonymous: contributions.anonymous,
       createdAt: contributions.createdAt,
       backerEmail: contributions.backerEmail,
-      backerName: sql<string>`COALESCE(${users.displayName}, ${contributions.backerName}, 'A Supporter')`,
+      storedName: contributions.backerName,
+      userDisplayName: users.displayName,
     })
     .from(contributions)
     .leftJoin(users, eq(users.id, contributions.backerId))
     .where(and(eq(contributions.campaignId, id), eq(contributions.status, 'confirmed')))
     .orderBy(contributions.createdAt);
 
-  return NextResponse.json({ backers: backerList });
+  const backerListResult = backerList.map(b => ({
+    id: b.id,
+    amount: b.amount,
+    currency: b.currency,
+    anonymous: b.anonymous,
+    createdAt: b.createdAt,
+    backerEmail: b.backerEmail,
+    backerName: b.userDisplayName || b.storedName || 'A Supporter'
+  }));
+
+  return NextResponse.json({ backers: backerListResult });
 }
