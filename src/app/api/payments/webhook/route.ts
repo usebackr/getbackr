@@ -15,10 +15,14 @@ export async function POST(req: NextRequest) {
   const secret = process.env.PAYSTACK_SECRET_KEY || '';
 
   // 1. Verify Signature
+  console.log('[Paystack Webhook] Incoming Request Received at:', new Date().toISOString());
+
   if (!verifyWebhookSignature(rawBody, signature, secret)) {
-    console.error('[Paystack Webhook] Invalid Signature');
+    console.error('[Paystack Webhook] Invalid Signature—Authentication failed.');
     return new NextResponse('Invalid Signature', { status: 401 });
   }
+
+  console.log('[Paystack Webhook] Signature Verified. Processing event...');
 
   const event = JSON.parse(rawBody);
 

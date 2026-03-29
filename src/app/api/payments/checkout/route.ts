@@ -71,8 +71,10 @@ export async function POST(req: NextRequest) {
       .limit(1);
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = 'https://dirty-bushes-listen.loca.lt';
     const callbackUrl = `${appUrl}/c/${campaign.slug}/success`;
+
+    console.log(`[Checkout API] Redirecting to: ${callbackUrl}`);
 
     const metadata = {
       campaignId,
