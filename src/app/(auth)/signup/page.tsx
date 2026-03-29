@@ -326,7 +326,7 @@ export default function SignupPage() {
                   >
                     Phone number
                   </label>
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     <div
                       style={{
                         padding: '16px',

@@ -99,6 +99,29 @@ export default function DashboardPage() {
     }
   };
 
+  const handleEndCampaign = async (id: string) => {
+    if (!window.confirm('Are you sure you want to end this project? It will be moved to "Completed" and will no longer accept donations.')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/campaigns/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'closed' }),
+      });
+      if (res.ok) {
+        // Refresh local data
+        setCampaigns(campaigns.map((c) => (c.id === id ? { ...c, status: 'closed' } : c)));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to end campaign');
+      }
+    } catch (err) {
+      alert('A network error occurred');
+    }
+  };
+
   React.useEffect(() => {
     fetchStatsAndBank(filter);
   }, [filter]);
@@ -561,6 +584,26 @@ export default function DashboardPage() {
                               <Icons.Trash />
                             </button>
                           </div>
+                        )}
+
+                        {camp.status?.toLowerCase() === 'active' && (
+                          <button
+                            onClick={() => handleEndCampaign(camp.id)}
+                            style={{ 
+                              width: '100%', 
+                              padding: '12px', 
+                              borderRadius: '14px',
+                              border: '1px solid #ef4444',
+                              background: '#fff',
+                              color: '#ef4444',
+                              fontSize: '0.9rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              marginTop: '8px'
+                            }}
+                          >
+                            End Project Early
+                          </button>
                         )}
                       </div>
                     );
