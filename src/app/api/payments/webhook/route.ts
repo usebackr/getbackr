@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
           .where(eq(projectWallets.campaignId, campaignId))
           .limit(1);
 
-        let backerName = 'A Supporter';
+        let backerName = metadata.backerName || 'A Supporter';
         if (backerId) {
           const [backer] = await tx
             .select({ displayName: users.displayName })

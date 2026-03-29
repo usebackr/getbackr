@@ -41,7 +41,12 @@ export default function CheckoutForm({
       const res = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaignId, amount }), // MVP uses the base checkout endpoint
+        body: JSON.stringify({ 
+          campaignId, 
+          amount,
+          email,
+          name
+        }), 
       });
       const data = await res.json();
 

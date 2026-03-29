@@ -10,23 +10,36 @@ import { verifyAccessToken } from '@/lib/auth/jwt';
 const checkoutSchema = z.object({
   campaignId: z.string().uuid(),
   amount: z.number().min(100),
+  email: z.string().email().optional(),
+  name: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
-    if (!token)
-      return NextResponse.json(
-        { error: 'You must be logged in to back a project' },
-        { status: 401 },
-      );
+    let userId: string | null = null;
+    let email: string | null = null;
+    let name: string | null = null;
 
-    let userId: string;
-    try {
-      const payload = verifyAccessToken(token);
-      userId = payload.sub as string;
-    } catch {
-      return NextResponse.json({ error: 'Session expired' }, { status: 401 });
+    if (token) {
+      try {
+        const payload = verifyAccessToken(token);
+        userId = payload.sub as string;
+        
+        // Fetch user email from DB if logged in
+        const [user] = await db
+          .select({ email: users.email, displayName: users.displayName })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        if (user) {
+          email = user.email;
+          name = user.displayName;
+        }
+      } catch (err) {
+        console.error('[Checkout API] Token verification failed:', err);
+        // Fallback to guest if token is invalid or expired
+      }
     }
 
     const body = await req.json();
@@ -36,14 +49,19 @@ export async function POST(req: NextRequest) {
     }
 
     const { campaignId, amount } = parsed.data;
+    
+    // If not logged in, we must have an email from the body
+    if (!userId) {
+      email = parsed.data.email || null;
+      name = parsed.data.name || null;
+      if (!email) {
+        return NextResponse.json({ error: 'Email is required for guest checkout' }, { status: 400 });
+      }
+    }
 
-    // Fetch user email
-    const [user] = await db
-      .select({ email: users.email })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!email) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 404 });
+    }
 
     // Fetch campaign details to verify it exists
     const [campaign] = await db
@@ -57,12 +75,16 @@ export async function POST(req: NextRequest) {
 
     const metadata = {
       campaignId,
-      backerId: userId,
+      backerId: userId, // null for guests
+      backerName: name || 'A Supporter',
+      backerEmail: email,
       type: 'contribution',
     };
+    
+    console.log(`[Checkout API] Initializing for ${email} (${name || 'Guest'})`);
 
     const transaction = await initializeTransaction(
-      user.email,
+      email,
       amount,
       'NGN',
       metadata,
