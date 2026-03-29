@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await hashPassword(password);
 
-    // Insert user — auto-verify in development so signup works without SendGrid
+    // Insert user
     const [user] = await db
       .insert(users)
       .values({
@@ -55,9 +55,13 @@ export async function POST(req: NextRequest) {
         passwordHash,
         displayName,
         isBeta: !!beta,
-        emailVerified: process.env.NODE_ENV !== 'production', // auto-verify locally
+        emailVerified: process.env.NODE_ENV !== 'production',
       })
       .returning({ id: users.id, email: users.email });
+
+    // Track event for analytics
+    const { trackEvent } = await import('@/lib/analytics');
+    await trackEvent(beta ? 'beta_signup' : 'user_login', user.id, { email: user.email });
 
     return NextResponse.json(
       {

@@ -54,12 +54,16 @@ export async function POST(req: NextRequest) {
     const accessToken = signAccessToken(dbUser.id);
     const refreshToken = signRefreshToken(dbUser.id);
 
-    // Update last login timestamp
+    // Update last login timestamp for quick DB lookups
     await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, dbUser.id));
 
     const response = NextResponse.json({
       user: { id: dbUser.id, email: dbUser.email, displayName: dbUser.displayName },
     });
+
+    // Track login event for analytics
+    const { trackEvent } = await import('@/lib/analytics');
+    await trackEvent('user_login', dbUser.id, { email: dbUser.email });
 
     // Set secure cookies for middleware
     const sevenDays = 7 * 24 * 60 * 60;
