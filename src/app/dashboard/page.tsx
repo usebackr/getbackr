@@ -33,6 +33,11 @@ const Icons = {
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
     </svg>
   ),
+  Trash: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    </svg>
+  ),
 };
 
 export default function DashboardPage() {
@@ -71,6 +76,26 @@ export default function DashboardPage() {
       console.error('Failed to fetch dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteDraft = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/campaigns/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setCampaigns(campaigns.filter((c) => c.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete draft');
+      }
+    } catch (err) {
+      alert('A network error occurred');
     }
   };
 
@@ -504,19 +529,38 @@ export default function DashboardPage() {
                         </a>
                         
                         {isDraft && (
-                          <button
-                            onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
-                            className="btn-primary"
-                            style={{ 
-                              width: '100%', 
-                              padding: '12px', 
-                              fontSize: '0.9rem',
-                              background: 'var(--accent-secondary)',
-                              color: '#fff'
-                            }}
-                          >
-                            Edit & Publish
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
+                              className="btn-primary"
+                              style={{ 
+                                flex: 1,
+                                padding: '12px', 
+                                fontSize: '0.9rem',
+                                background: 'var(--accent-secondary)',
+                                color: '#fff'
+                              }}
+                            >
+                              Edit & Publish
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDraft(camp.id)}
+                              style={{ 
+                                padding: '12px', 
+                                borderRadius: '14px',
+                                border: '1px solid #fee2e2',
+                                background: '#fff5f5',
+                                color: '#ef4444',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer'
+                              }}
+                              title="Delete Draft"
+                            >
+                              <Icons.Trash />
+                            </button>
+                          </div>
                         )}
                       </div>
                     );

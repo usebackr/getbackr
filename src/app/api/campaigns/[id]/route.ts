@@ -124,3 +124,56 @@ export async function PUT(
     endDate: updated.endDate,
   });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+): Promise<NextResponse> {
+  const auth = requireAuth(req);
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { userId } = auth;
+  const { id } = params;
+
+  // 1. Fetch current state
+  const campaign = await db.query.campaigns.findFirst({
+    where: eq(campaigns.id, id),
+  });
+
+  if (!campaign) {
+    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+  }
+
+  // 2. Security Check: Only creator can delete
+  if (campaign.creatorId !== userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // 3. Security Check: Only draft campaigns can be deleted
+  if (campaign.status?.toLowerCase() !== 'draft') {
+    return NextResponse.json(
+      { error: 'Only draft campaigns can be deleted. Active campaigns are protected.' },
+      { status: 403 },
+    );
+  }
+
+  try {
+    // 4. Perform deletion in transaction
+    await db.transaction(async (tx) => {
+      // First delete associated wallets (or other dependencies)
+      // project_wallets refers to campaigns.id
+      const { projectWallets } = await import('@/db/schema/projectWallets');
+      await tx.delete(projectWallets).where(eq(projectWallets.campaignId, id));
+      
+      // Then delete the campaign itself
+      await tx.delete(campaigns).where(eq(campaigns.id, id));
+    });
+
+    return NextResponse.json({ message: 'Campaign deleted successfully' });
+  } catch (err: any) {
+    console.error('[Delete Campaign] Error:', err);
+    return NextResponse.json({ error: 'Failed to delete campaign' }, { status: 500 });
+  }
+}

@@ -51,7 +51,42 @@ function CreateCampaignForm() {
     }
   }, [editId]);
 
-  const handleNext = () => setStep((s) => s + 1);
+  const handleNext = async () => {
+    // Auto-save after Step 1 if it's a new campaign
+    if (step === 1 && !editId) {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch('/api/campaigns/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: formData.title,
+            category: formData.category,
+            description: formData.description,
+            status: 'draft',
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.campaign) {
+          // Update URL with newly created campaign ID without reloading
+          const newUrl = `${window.location.pathname}?id=${data.campaign.id}`;
+          window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+          // We can't use router.replace easily without a potential re-fetch flash, 
+          // but updating the ID in state or URL ensures next steps use PUT.
+          setStep(2);
+        } else {
+          setError(data.error || 'Failed to auto-save draft. Please try again.');
+        }
+      } catch (err) {
+        setError('Connection error. Failed to save draft.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    setStep((s) => s + 1);
+  };
   const handlePrev = () => setStep((s) => s - 1);
 
   const handleChange = (

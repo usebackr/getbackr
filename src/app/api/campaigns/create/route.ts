@@ -20,9 +20,10 @@ const createCampaignSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(200),
   description: z.string().optional(),
   category: z.string().optional(),
-  goalAmount: z.number().min(1000, 'Minimum goal is 1000').positive(),
-  endDate: z.string().refine((val) => !isNaN(Date.parse(val)), 'Invalid date format'),
+  goalAmount: z.number().min(0, 'Minimum goal is 0').optional().default(0),
+  endDate: z.string().optional().refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
   coverImageUrl: z.string().url().optional().or(z.literal('')),
+  status: z.enum(['draft', 'active']).optional().default('active'),
 });
 
 export async function POST(req: NextRequest) {
@@ -45,7 +46,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { title, description, category, goalAmount, endDate, coverImageUrl } = parsed.data;
+    const { title, description, category, goalAmount, endDate, coverImageUrl, status } = parsed.data;
+
+    // Default values for drafts
+    const finalGoal = goalAmount?.toString() || '0';
+    const finalEndDate = endDate 
+      ? new Date(endDate).toISOString() 
+      : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+    const finalStatus = status || 'draft';
 
     // Generate unique slug
     const baseSlug = slugify(title);
@@ -77,11 +85,11 @@ export async function POST(req: NextRequest) {
           title,
           description: description || null,
           category: category || null,
-          goalAmount: goalAmount.toString(),
+          goalAmount: finalGoal,
           currency: 'NGN',
-          endDate: new Date(endDate).toISOString(),
+          endDate: finalEndDate,
           coverImageUrl: coverImageUrl || null,
-          status: 'active',
+          status: finalStatus as any,
         })
         .returning();
 
