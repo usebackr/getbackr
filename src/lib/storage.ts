@@ -30,7 +30,7 @@ const getS3Client = () => {
   return s3;
 };
 
-const BUCKET = process.env.S3_BUCKET ?? '';
+const BUCKET = process.env.S3_BUCKET || process.env.AWS_BUCKET || '';
 
 /**
  * Uploads a file to S3 or local disk (in dev) and returns the key.
@@ -62,8 +62,16 @@ export async function uploadFile(
       return `local:${filename}`;
     } catch (err: any) {
       console.error(`[Storage] Local write failed:`, err);
+      // On platforms like Vercel with read-only file systems, we shouldn't attempt local writes
+      if (err.code === 'EROFS') {
+        throw new Error(`Cloud deployment detected but S3 credentials missing. Please set S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, and S3_BUCKET in your environment variables.`);
+      }
       throw new Error(`Local storage failed: ${err.message}`);
     }
+  }
+
+  if (!BUCKET) {
+    throw new Error('S3_BUCKET environment variable is missing. Please configure your AWS/S3 bucket name in Vercel settings.');
   }
 
   // S3 Production
