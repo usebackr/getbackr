@@ -74,6 +74,14 @@ export default function Sidebar() {
     const checkNotifications = async () => {
       try {
         const res = await fetch('/api/notifications');
+        
+        // Handle session expiry during background poll
+        if (res.status === 401) {
+          console.warn('[Sidebar] Session expired during poll');
+          window.location.href = '/login?error=session_expired';
+          return;
+        }
+
         const data = await res.json();
         if (data.notifications) {
           const unread = data.notifications.filter((n: any) => !n.isRead);
