@@ -18,16 +18,21 @@ const isDev =
 let s3: S3Client | null = null;
 const getS3Client = () => {
   if (!s3) {
-    let finalEndpoint = process.env.S3_ENDPOINT || '';
+    let finalEndpoint = (process.env.S3_ENDPOINT || '').trim();
     if (finalEndpoint && !finalEndpoint.startsWith('http')) {
       finalEndpoint = `https://${finalEndpoint}`;
     }
+    
+    // Crucial: remove trailing slashes otherwise AWS SDK corrupts the SNI Host
+    while(finalEndpoint && finalEndpoint.endsWith('/')) {
+      finalEndpoint = finalEndpoint.slice(0, -1);
+    }
 
     s3 = new S3Client({
-      region,
+      region: (region || 'us-east-1').trim(),
       credentials: {
-        accessKeyId,
-        secretAccessKey,
+        accessKeyId: accessKeyId.trim(),
+        secretAccessKey: secretAccessKey.trim(),
       },
       forcePathStyle: true, // Required for Supabase S3 and custom endpoints
       ...(finalEndpoint ? { endpoint: finalEndpoint } : {}),
