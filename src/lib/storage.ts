@@ -32,14 +32,16 @@ const getS3Client = () => {
     // Sanitize region: if it starts with http, it's actually an endpoint
     let finalRegion = (region || 'us-east-1').trim();
     if (finalRegion.startsWith('http')) {
-      console.log(`[Storage] Detected URL in S3_REGION (${finalRegion}). Resetting to us-east-1 and using as endpoint if missing.`);
+      console.log(`[Storage] Detected URL in S3_REGION (${finalRegion}). Resetting to default for S3 client.`);
       if (!finalEndpoint) {
         finalEndpoint = finalRegion;
       }
-      finalRegion = 'us-east-1';
+      // If we are on Supabase, eu-west-1 or us-east-1 is common. 
+      // We will fallback to eu-west-1 if that's what we saw in the screenshot.
+      finalRegion = 'eu-west-1'; 
     }
 
-    console.log(`[Storage] Initializing S3 Client with:`, {
+    console.log(`[Storage] Final S3 Config:`, {
       region: finalRegion,
       endpoint: finalEndpoint,
       bucket: BUCKET,
@@ -52,7 +54,7 @@ const getS3Client = () => {
         accessKeyId: accessKeyId.trim(),
         secretAccessKey: secretAccessKey.trim(),
       },
-      forcePathStyle: true, // Required for Supabase S3 and custom endpoints
+      forcePathStyle: true, // Required for Supabase S3
       requestHandler: new FetchHttpHandler({ keepAlive: false }), // Force using global fetch to bypass Node TLS SNI errors on Vercel
       ...(finalEndpoint ? { endpoint: finalEndpoint } : {}),
     });
@@ -60,7 +62,7 @@ const getS3Client = () => {
   return s3;
 };
 
-const BUCKET = process.env.S3_BUCKET || process.env.AWS_BUCKET || '';
+const BUCKET = (process.env.S3_BUCKET || process.env.AWS_BUCKET || '').trim().replace(/\s+/g, '-');
 
 /**
  * Uploads a file to S3 or local disk (in dev) and returns the key.
