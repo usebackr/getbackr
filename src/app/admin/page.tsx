@@ -4,7 +4,7 @@ import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
 import { auditLogs } from '@/db/schema/auditLogs';
-import { sql, eq, desc } from 'drizzle-orm';
+import { sql, eq, desc, and } from 'drizzle-orm';
 import { GrowthChart } from '@/components/admin/GrowthChart';
 
 export const dynamic = 'force-dynamic';
@@ -42,8 +42,13 @@ export default async function AdminDashboardPage() {
       volume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
     })
     .from(campaigns)
-    .leftJoin(contributions, eq(campaigns.id, contributions.campaignId))
-    .where(eq(contributions.status, 'confirmed'))
+    .leftJoin(
+      contributions, 
+      and(
+        eq(campaigns.id, contributions.campaignId),
+        eq(contributions.status, 'confirmed')
+      )
+    )
     .groupBy(campaigns.id)
     .orderBy(desc(sql`SUM(${contributions.amount})`))
     .limit(5);
@@ -58,7 +63,8 @@ export default async function AdminDashboardPage() {
     .from(auditLogs)
     .leftJoin(users, eq(auditLogs.actorId, users.id))
     .orderBy(desc(auditLogs.createdAt))
-    .limit(8);
+    .limit(8)
+    .catch(() => []); // Fail-safe if table doesn't exist yet
 
   const userCount = userCountResp?.count || 0;
   const betaCount = betaCountResp?.count || 0;
