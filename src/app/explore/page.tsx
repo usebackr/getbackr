@@ -121,7 +121,7 @@ export default async function ExplorePage() {
         </header>
 
         {/* Search and Sort */}
-        <div className="search-sort-container">
+        <div className="search-sort-container" style={{ marginBottom: '24px' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <div style={{ position: 'absolute', left: '16px', top: '14px' }}>
               <Icons.Search />
@@ -130,9 +130,10 @@ export default async function ExplorePage() {
               type="text"
               placeholder="Search campaigns..."
               className="search-input"
+              style={{ paddingLeft: '48px' }}
             />
           </div>
-          <button className="sort-button">
+          <button className="sort-button" style={{ height: '48px' }}>
             <Icons.Sort /> Sort
           </button>
         </div>
@@ -180,8 +181,8 @@ export default async function ExplorePage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))',
-            gap: '32px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))',
+            gap: '24px',
           }}
         >
           {activeCampaigns.map((camp) => {

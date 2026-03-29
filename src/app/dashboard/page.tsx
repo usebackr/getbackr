@@ -368,158 +368,163 @@ export default function DashboardPage() {
                   gap: '32px',
                 }}
               >
-                {campaigns
-                  .filter(c => statusFilter === 'all' || c.status === statusFilter)
-                  .map((camp: any) => {
-                const goal = parseFloat(camp.goalAmount || '0');
-                const raised = parseFloat(camp.raised || '0');
-                const pct = goal > 0 ? Math.floor(Math.min((raised / goal) * 100, 100)) : 0;
-                const daysLeft = Math.ceil(
-                  (new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000,
-                );
-                return (
-                  <a key={camp.id} href={`/c/${camp.slug}`} style={{ textDecoration: 'none' }}>
-                    <div
-                      className="dash-card"
-                      style={{
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        padding: '0',
-                        overflow: 'hidden',
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
-                        (e.currentTarget as HTMLElement).style.boxShadow =
-                          '0 12px 32px rgba(0,0,0,0.08)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = '';
-                        (e.currentTarget as HTMLElement).style.boxShadow = '';
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: '160px',
-                          background: '#f1f5f9',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {camp.coverImageUrl ? (
-                          <img
-                            src={camp.coverImageUrl}
-                            alt={camp.title}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          <div
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '3rem',
-                            }}
-                          >
-                            🎬
-                          </div>
-                        )}
-                        {camp.category && (
-                          <span
-                            style={{
-                              position: 'absolute',
-                              top: '12px',
-                              left: '12px',
-                              background: 'rgba(255,255,255,0.95)',
-                              padding: '4px 12px',
-                              borderRadius: '20px',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              color: '#0f172a',
-                            }}
-                          >
-                            {camp.category}
-                          </span>
-                        )}
-                        <span
-                          style={{
-                            position: 'absolute',
-                            top: '12px',
-                            right: '12px',
-                            background:
-                              camp.status === 'active'
-                                ? '#10b981'
-                                : camp.status === 'completed'
-                                ? '#3b82f6'
-                                : '#64748b',
-                            color: '#fff',
-                            padding: '4px 12px',
-                            borderRadius: '20px',
-                            fontSize: '0.7rem',
-                            fontWeight: 800,
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {camp.status || 'Draft'}
-                        </span>
+                {(() => {
+                  const filtered = campaigns.filter(c => {
+                    if (statusFilter === 'all') return true;
+                    if (statusFilter === 'completed') return c.status === 'closed';
+                    return c.status === statusFilter;
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{ 
+                        gridColumn: '1 / -1', 
+                        padding: '60px 0', 
+                        textAlign: 'center', 
+                        background: '#f8fafc', 
+                        borderRadius: '24px',
+                        border: '2px dashed #e2e8f0',
+                        color: 'var(--text-secondary)',
+                        fontWeight: 600
+                      }}>
+                        <p style={{ fontSize: '1.1rem' }}>None</p>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 500, opacity: 0.7 }}>No {statusFilter} campaigns found.</p>
                       </div>
-                      <div style={{ padding: '24px' }}>
-                        <h4
-                          style={{
-                            fontWeight: 800,
-                            fontSize: '1.1rem',
-                            marginBottom: '8px',
-                            color: '#0f172a',
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {camp.title}
-                        </h4>
+                    );
+                  }
+
+                  return filtered.map((camp: any) => {
+                    const goal = parseFloat(camp.goalAmount || '0');
+                    const raised = parseFloat(camp.raised || '0');
+                    const pct = goal > 0 ? Math.floor(Math.min((raised / goal) * 100, 100)) : 0;
+                    const daysLeft = Math.ceil(
+                      (new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000,
+                    );
+                    return (
+                      <a key={camp.id} href={`/c/${camp.slug}`} style={{ textDecoration: 'none' }}>
                         <div
+                          className="dash-card"
                           style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginBottom: '8px',
-                          }}
-                        >
-                          <p style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                            Raised ₦{raised.toLocaleString()}
-                          </p>
-                          <p style={{ fontSize: '0.85rem', color: '#0f172a', fontWeight: 800 }}>
-                            {pct}%
-                          </p>
-                        </div>
-                        <div
-                          style={{
-                            width: '100%',
-                            height: '8px',
-                            background: '#f1f5f9',
-                            borderRadius: '4px',
-                            marginBottom: '16px',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            padding: '0',
                             overflow: 'hidden',
                           }}
                         >
                           <div
                             style={{
-                              width: `${pct}%`,
-                              height: '100%',
-                              background: 'var(--accent-primary)',
+                              height: '160px',
+                              background: '#f1f5f9',
+                              position: 'relative',
+                              overflow: 'hidden',
                             }}
-                          />
+                          >
+                            {camp.coverImageUrl ? (
+                              <img
+                                src={camp.coverImageUrl}
+                                alt={camp.title}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '3rem',
+                                }}
+                              >
+                                🎬
+                              </div>
+                            )}
+                            {camp.category && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  top: '12px',
+                                  left: '12px',
+                                  background: 'rgba(255,255,255,0.95)',
+                                  padding: '4px 12px',
+                                  borderRadius: '20px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  color: '#0f172a',
+                                }}
+                              >
+                                {camp.category}
+                              </span>
+                            )}
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                background:
+                                  camp.status === 'active'
+                                    ? '#10b981'
+                                    : camp.status === 'closed'
+                                    ? '#3b82f6'
+                                    : '#64748b',
+                                color: '#fff',
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              }}
+                            >
+                              {camp.status}
+                            </span>
+                          </div>
+
+                          <div style={{ padding: '20px' }}>
+                            <h4
+                              style={{
+                                fontSize: '1.1rem',
+                                fontWeight: 800,
+                                marginBottom: '8px',
+                                color: '#0f172a',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {camp.title}
+                            </h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
+                              <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
+                              <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
+                            </div>
+                            
+                            <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                              <div>
+                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Raised</p>
+                                <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>₦{raised.toLocaleString()}</p>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Goal</p>
+                                <p style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>₦{goal.toLocaleString()}</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
-                          Created {new Date(camp.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-          </section>
-        )}
-      </main>
-    </div>
-  );
+                      </a>
+                    );
+                  });
+                })()}
+              </div>
+            </section>
+          )}
+        </main>
+      </div>
+    );
 }
