@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { cookies } from 'next/headers';
 
 // Master Admin List (replace with actual safe emails in production)
-const ADMIN_EMAILS = ['mac@example.com', 'admin@backr.com'];
+const ADMIN_EMAILS = ['usebackr@gmail.com', 'mac@example.com', 'admin@backr.com'];
 
 export async function verifyAdmin() {
   const cookieStore = cookies();
