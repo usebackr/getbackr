@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
 
           // Email to Donor (Receipt)
           await emailQueue.add({
+            type: 'donor_receipt',
             backerEmail: data.customer.email,
             amount: amountInMajor,
             currency: data.currency,
@@ -111,10 +112,11 @@ export async function POST(req: NextRequest) {
           // Email to Creator (Alert)
           if (campaignDetails.creatorEmail) {
             await emailQueue.add({
+              type: 'creator_alert',
               backerEmail: campaignDetails.creatorEmail,
               amount: amountInMajor,
               currency: data.currency,
-              campaignTitle: `New Funding for "${campaignDetails.title}"`,
+              campaignTitle: campaignDetails.title,
             });
           }
         }

@@ -17,14 +17,37 @@ if (SENDGRID_API_KEY) {
 // Handles contribution receipts and withdrawal OTP emails.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Email Template Styling (Customise styles here)
+// ---------------------------------------------------------------------------
+const BRAND_COLOR = '#ff7a00';
+const BG_COLOR = '#f8fafc';
+const CARD_BG = '#ffffff';
+
+const emailWrapperStyle = `
+  background-color: ${BG_COLOR}; 
+  padding: 40px 20px; 
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+  line-height: 1.5;
+`;
+
+const emailCardStyle = `
+  max-width: 580px; 
+  margin: 0 auto; 
+  background-color: ${CARD_BG}; 
+  border-radius: 16px; 
+  padding: 40px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+`;
+
 interface ReceiptJobData {
   contributionId?: string;
   backerEmail?: string;
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  // Withdrawal OTP variant
-  type?: 'withdrawal_otp';
+  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp';
   userId?: string;
   email?: string;
   otp?: string;
@@ -35,62 +58,101 @@ export function registerEmailReceiptWorker(): void {
 
   queue.process(async (job: { data: ReceiptJobData }) => {
     const data = job.data;
+    const { type, amount, currency, campaignTitle, backerEmail, email, otp } = data;
 
-    if (data.type === 'withdrawal_otp') {
-      // Withdrawal OTP email
-      const to = data.email;
+    // A. Withdrawal OTP
+    if (type === 'withdrawal_otp') {
+      const to = email;
       if (!to) throw new Error('Missing email for withdrawal OTP');
 
       await sgMail.send({
         to,
         from: FROM_EMAIL,
-        subject: 'Your Backr withdrawal OTP',
-        text: [
-          `Your one-time withdrawal code for campaign "${data.campaignTitle ?? 'your campaign'}" is:`,
-          '',
-          `  ${data.otp}`,
-          '',
-          'This code expires in 10 minutes. Do not share it with anyone.',
-          '',
-          '— The Backr Team',
-        ].join('\n'),
+        subject: '🔒 Your Backr Withdrawal security code',
         html: `
-          <p>Your one-time withdrawal code for campaign <strong>${data.campaignTitle ?? 'your campaign'}</strong> is:</p>
-          <h2 style="letter-spacing:4px;">${data.otp}</h2>
-          <p>This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-          <p>— The Backr Team</p>
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Confirm Your Withdrawal</h2>
+              <p>Your one-time security code for campaign <strong>${campaignTitle ?? 'your campaign'}</strong> is:</p>
+              <div style="background: #f1f5f9; padding: 24px; text-align: center; border-radius: 12px; margin: 32px 0;">
+                <h1 style="letter-spacing: 12px; font-size: 2.5rem; margin: 0; color: ${BRAND_COLOR};">${otp}</h1>
+              </div>
+              <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 Backr.app
+              </div>
+            </div>
+          </div>
         `,
       });
-
-      return { sent: true, type: 'withdrawal_otp' };
+      return { sent: true, type };
     }
 
-    // Contribution receipt email
-    const to = data.backerEmail;
+    // B. Creator Alert (New Funding Received)
+    if (type === 'creator_alert') {
+      const to = backerEmail; // In this job type, backerEmail is the creator's address
+      if (!to) throw new Error('Missing creator email for alert');
+
+      await sgMail.send({
+        to,
+        from: FROM_EMAIL,
+        subject: `🎉 New Donation Received: ${currency} ${Number(amount).toLocaleString()}`,
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <div style="font-size: 3rem; margin-bottom: 24px;">💰</div>
+              <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 16px;">Boom! You have new funding.</h2>
+              <p>Someone just backed your project! Your campaign is moving forward.</p>
+              <div style="background: #fdf2f2; border-left: 4px solid ${BRAND_COLOR}; padding: 24px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Project Title</p>
+                <h3 style="margin: 4px 0 16px 0; color: #0f172a;">${campaignTitle}</h3>
+                <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Amount Received</p>
+                <h2 style="margin: 4px 0 0 0; color: ${BRAND_COLOR};">${currency} ${Number(amount).toLocaleString()}</h2>
+              </div>
+              <p style="font-size: 0.9rem;">Log in to your dashboard to see your updated balance and track your goals.</p>
+              <a href="https://backr.app/dashboard" style="display: inline-block; background: ${BRAND_COLOR}; color: white; padding: 14px 28px; border-radius: 12px; font-weight: 700; text-decoration: none; margin-top: 24px;">Open Dashboard</a>
+            </div>
+          </div>
+        `,
+      });
+      return { sent: true, type };
+    }
+
+    // C. Donor Receipt (Default)
+    const to = backerEmail;
     if (!to) throw new Error('Missing backerEmail for receipt');
 
     await sgMail.send({
       to,
       from: FROM_EMAIL,
-      subject: `Your contribution to ${data.campaignTitle ?? 'a campaign'}`,
-      text: [
-        `Thank you for backing "${data.campaignTitle ?? 'this campaign'}"!`,
-        '',
-        `Amount: ${data.currency ?? ''} ${data.amount ?? ''}`,
-        '',
-        'Your support means the world to the creator.',
-        '',
-        '— The Backr Team',
-      ].join('\n'),
+      subject: `Thanks for backing "${campaignTitle}"! ✨`,
       html: `
-        <p>Thank you for backing <strong>${data.campaignTitle ?? 'this campaign'}</strong>!</p>
-        <p>Amount: <strong>${data.currency ?? ''} ${data.amount ?? ''}</strong></p>
-        <p>Your support means the world to the creator.</p>
-        <p>— The Backr Team</p>
+        <div style="${emailWrapperStyle}">
+          <div style="${emailCardStyle}">
+            <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Your receipt is here.</h2>
+            <p>Thank you for supporting <strong>${campaignTitle}</strong>. Your contribution has been processed successfully.</p>
+            <div style="margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding-bottom: 12px; color: #64748b; font-size: 0.9rem;">Campaign</td>
+                  <td style="padding-bottom: 12px; text-align: right; font-weight: 700;">${campaignTitle}</td>
+                </tr>
+                <tr>
+                  <td style="border-top: 1px solid #e2e8f0; padding-top: 12px; color: #64748b; font-size: 0.9rem;">Amount Backed</td>
+                  <td style="border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: right; font-weight: 700; color: ${BRAND_COLOR}; font-size: 1.1rem;">${currency} ${Number(amount).toLocaleString()}</td>
+                </tr>
+              </table>
+            </div>
+            <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6;">Your support directly helps the creator bring their vision to life. Thank you for being a part of this creative journey.</p>
+            <div style="margin-top: 40px; text-align: center; font-size: 0.85rem; color: #94a3b8;">
+              &copy; 2026 Backr.app — The Future of Creative Funding
+            </div>
+          </div>
+        </div>
       `,
     });
 
-    return { sent: true, type: 'receipt', contributionId: data.contributionId };
+    return { sent: true, type: 'donor_receipt', contributionId: data.contributionId };
   });
 }
 
