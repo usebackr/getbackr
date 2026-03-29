@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
           currency: 'NGN',
           endDate: new Date(endDate).toISOString(),
           coverImageUrl: coverImageUrl || null,
-          status: 'draft',
+          status: 'active',
         })
         .returning();
 

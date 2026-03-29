@@ -17,6 +17,24 @@ const Icons = {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check session on mount
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (err) {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkSession();
+  }, []);
 
   // Prevent scroll when menu is open
   useEffect(() => {
@@ -26,6 +44,25 @@ export default function Navbar() {
       document.body.style.overflow = 'unset';
     }
   }, [isOpen]);
+
+  const AuthButtons = () => {
+    if (loading) return null;
+    if (isAuthenticated) {
+      return (
+        <a href="/dashboard" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+          Back to Dashboard
+        </a>
+      );
+    }
+    return (
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginLeft: '12px' }}>
+        <a href="/login" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>Log In</a>
+        <a href="/signup" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+          Get Started
+        </a>
+      </div>
+    );
+  };
 
   return (
     <header
@@ -60,12 +97,7 @@ export default function Navbar() {
         <div className="nav-links-desktop">
           <a href="/explore">Explore</a>
           <a href="/how-it-works">How it Works</a>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginLeft: '12px' }}>
-            <a href="/login">Log In</a>
-            <a href="/signup" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
-              Get Started
-            </a>
-          </div>
+          <AuthButtons />
         </div>
 
         {/* Mobile Toggle */}
@@ -84,27 +116,35 @@ export default function Navbar() {
           <a href="/explore" onClick={() => setIsOpen(false)}>Explore</a>
           <a href="/how-it-works" onClick={() => setIsOpen(false)}>How it Works</a>
           <div className="nav-overlay-divider" />
-          <a href="/login" onClick={() => setIsOpen(false)}>Log In</a>
-          <a href="/signup" className="btn-primary" onClick={() => setIsOpen(false)}>
-            Get Started
-          </a>
+          {isAuthenticated ? (
+            <a href="/dashboard" className="btn-primary" onClick={() => setIsOpen(false)}>
+              Back to Dashboard
+            </a>
+          ) : (
+            <>
+              <a href="/login" onClick={() => setIsOpen(false)}>Log In</a>
+              <a href="/signup" className="btn-primary" onClick={() => setIsOpen(false)}>
+                Get Started
+              </a>
+            </>
+          )}
         </nav>
       </div>
 
       <style jsx>{`
         .nav-links-desktop {
           display: flex;
-          alignItems: center;
+          align-items: center;
           gap: 32px;
         }
-        .nav-links-desktop a {
+        .nav-links-desktop > a {
           color: var(--text-primary);
-          textDecoration: none;
-          fontWeight: 600;
-          fontSize: 0.95rem;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 0.95rem;
           transition: opacity 0.2s;
         }
-        .nav-links-desktop a:hover {
+        .nav-links-desktop > a:hover {
           opacity: 0.7;
         }
         .nav-toggle {
