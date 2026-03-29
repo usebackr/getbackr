@@ -47,6 +47,7 @@ export default function DashboardPage() {
     currency: '₦',
   });
   const [filter, setFilter] = React.useState('all');
+  const [statusFilter, setStatusFilter] = React.useState('all');
   const [loading, setLoading] = React.useState(true);
   const [hasBank, setHasBank] = React.useState(false);
   const [showBankError, setShowBankError] = React.useState(false);
@@ -325,24 +326,51 @@ export default function DashboardPage() {
           </section>
         ) : (
           <section>
-            <h3
-              style={{
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                marginBottom: '20px',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              {campaigns.length} Campaign{campaigns.length !== 1 ? 's' : ''}
-            </h3>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
-                gap: '32px',
-              }}
-            >
-              {campaigns.map((camp: any) => {
+              <h3
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  marginBottom: '20px',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {campaigns.length} Campaign{campaigns.length !== 1 ? 's' : ''}
+              </h3>
+
+              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginBottom: '10px' }} className="hide-scrollbar">
+                {['all', 'draft', 'active', 'completed'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      background: statusFilter === s ? 'var(--accent-primary)' : '#f1f5f9',
+                      color: statusFilter === s ? '#fff' : '#64748b',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+                  gap: '32px',
+                }}
+              >
+                {campaigns
+                  .filter(c => statusFilter === 'all' || c.status === statusFilter)
+                  .map((camp: any) => {
                 const goal = parseFloat(camp.goalAmount || '0');
                 const raised = parseFloat(camp.raised || '0');
                 const pct = goal > 0 ? Math.floor(Math.min((raised / goal) * 100, 100)) : 0;

@@ -19,8 +19,8 @@ export default function Hero() {
             fontWeight: 900,
           }}
         >
-          Funding that is <br />
-          <span className="text-gradient">built on Trust.</span>
+          Get Backed By <br />
+          <span className="text-gradient">People Who Trust You</span>
         </h1>
         <p
           style={{

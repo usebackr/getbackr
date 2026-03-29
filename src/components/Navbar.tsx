@@ -13,6 +13,11 @@ const Icons = {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
     </svg>
+  ),
+  ChevronRight: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
   )
 };
 
@@ -22,7 +27,6 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Check session on mount
   useEffect(() => {
     async function checkSession() {
       try {
@@ -38,7 +42,6 @@ export default function Navbar() {
     checkSession();
   }, []);
 
-  // Prevent scroll when menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -54,7 +57,7 @@ export default function Navbar() {
         <a 
           href="/dashboard" 
           className="btn-primary" 
-          style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          style={{ padding: '12px 32px', fontSize: isMobile ? '1.1rem' : '0.85rem', width: isMobile ? '100%' : 'auto', textAlign: 'center' }}
           onClick={() => isMobile && setIsOpen(false)}
         >
           Back to Dashboard
@@ -62,14 +65,15 @@ export default function Navbar() {
       );
     }
     return (
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', width: isMobile ? '100%' : 'auto', flexDirection: isMobile ? 'column' : 'row' }}>
         <a 
           href="/login" 
           style={{ 
             color: 'var(--text-primary)', 
             textDecoration: 'none', 
             fontWeight: 600, 
-            fontSize: isMobile ? '1.5rem' : '0.95rem' 
+            fontSize: isMobile ? '1.1rem' : '0.95rem',
+            width: isMobile ? '100%' : 'auto'
           }}
           onClick={() => isMobile && setIsOpen(false)}
         >
@@ -78,7 +82,7 @@ export default function Navbar() {
         <a 
           href="/signup" 
           className="btn-primary" 
-          style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          style={{ padding: '12px 32px', fontSize: isMobile ? '1.1rem' : '0.85rem', width: isMobile ? '100%' : 'auto', textAlign: 'center' }}
           onClick={() => isMobile && setIsOpen(false)}
         >
           Get Started
@@ -116,14 +120,12 @@ export default function Navbar() {
           </h2>
         </a>
 
-        {/* Desktop Links */}
         <div className="nav-links-desktop">
           <a href="/explore">Explore</a>
           <a href="/how-it-works">How it Works</a>
           <AuthButtons />
         </div>
 
-        {/* Mobile Toggle */}
         <button
           className="nav-toggle"
           onClick={() => setIsOpen(!isOpen)}
@@ -134,13 +136,30 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <div className={`nav-overlay ${isOpen ? 'open' : ''}`}>
+        <div className="nav-overlay-header">
+           <a href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
+            <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 900 }}>Backr</h2>
+          </a>
+          <button onClick={() => setIsOpen(false)} style={{ border: 'none', background: 'none', padding: '8px' }}>
+            <Icons.Close />
+          </button>
+        </div>
+        
         <nav className="nav-overlay-content">
-          <a href="/explore" onClick={() => setIsOpen(false)}>Explore</a>
-          <a href="/how-it-works" onClick={() => setIsOpen(false)}>How it Works</a>
-          <div className="nav-overlay-divider" />
-          <AuthButtons isMobile />
+          <a href="/about" onClick={() => setIsOpen(false)}>About</a>
+          <a href="/explore" onClick={() => setIsOpen(false)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Explore <Icons.ChevronRight />
+          </a>
+          <a href="/pricing" onClick={() => setIsOpen(false)}>Pricing</a>
+          <a href="/how-it-works" onClick={() => setIsOpen(false)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            How it Works <Icons.ChevronRight />
+          </a>
+          <a href="/blog" onClick={() => setIsOpen(false)}>Blog</a>
+          
+          <div className="nav-overlay-footer">
+            <AuthButtons isMobile />
+          </div>
         </nav>
       </div>
 
@@ -157,16 +176,16 @@ export default function Navbar() {
           font-size: 0.95rem;
           transition: opacity 0.2s;
         }
-        .nav-links-desktop a:hover {
-          opacity: 0.7;
-        }
+        .nav-links-desktop a:hover { opacity: 0.7; }
+        
         .nav-toggle {
           display: none;
           cursor: pointer;
           color: var(--text-primary);
           padding: 8px;
-          z-index: 2100;
+          z-index: 2200;
         }
+
         .nav-overlay {
           position: fixed;
           top: 0;
@@ -174,45 +193,49 @@ export default function Navbar() {
           right: 0;
           bottom: 0;
           background: #ffffff;
-          z-index: 2050;
+          z-index: 2100;
+          transform: translateX(100%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           display: flex;
+          flex-direction: column;
+        }
+        .nav-overlay.open { transform: translateX(0); }
+        
+        .nav-overlay-header {
+          padding: 20px 24px;
+          display: flex;
+          justify-content: space-between;
           align-items: center;
-          justify-content: center;
-          transform: translateY(-100%);
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          border-bottom: 1px solid #f1f5f9;
         }
-        .nav-overlay.open {
-          transform: translateY(0);
-        }
+
         .nav-overlay-content {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          gap: 32px;
-          text-align: center;
+          padding: 32px 24px;
+          gap: 0;
           width: 100%;
-          padding: 24px;
         }
         .nav-overlay-content a {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: var(--accent-secondary);
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #0f172a;
           text-decoration: none;
-          font-family: 'Outfit', sans-serif;
+          padding: 20px 0;
+          border-bottom: 1px solid #f8fafc;
+          display: block;
         }
-        .nav-overlay-divider {
-          width: 40px;
-          height: 2px;
-          background: #f1f5f9;
+        
+        .nav-overlay-footer {
+          margin-top: 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
         }
 
         @media (max-width: 1024px) {
-          .nav-links-desktop {
-            display: none;
-          }
-          .nav-toggle {
-            display: block;
-          }
+          .nav-links-desktop { display: none; }
+          .nav-toggle { display: block; }
         }
       `}</style>
     </header>
