@@ -115,27 +115,27 @@ export function OnboardingChecklist({ user, hasCampaigns, hasBank }: { user: Use
   const steps = [
     {
       id: 'kyc',
+      number: '1',
       title: 'Verify Your Identity',
       desc: 'Unlock full platform access by submitting your ID.',
       completed: user.kycStatus === 'verified',
-      path: '/dashboard/identity',
-      icon: '🆔'
+      path: '/dashboard/identity'
     },
     {
       id: 'bank',
+      number: '2',
       title: 'Add Bank Account',
       desc: 'Set up where you’ll receive your project funds.',
       completed: hasBank,
-      path: '/dashboard/settings',
-      icon: '🏦'
+      path: '/dashboard/settings'
     },
     {
       id: 'campaign',
+      number: '3',
       title: 'Start Your First Campaign',
       desc: 'Launch your creative dream and start raising support.',
       completed: false,
-      path: '/dashboard/campaigns/create',
-      icon: '🚀'
+      path: '/dashboard/campaigns/create'
     }
   ];
 
@@ -182,17 +182,24 @@ export function OnboardingChecklist({ user, hasCampaigns, hasBank }: { user: Use
             }}
           >
             <div style={{ 
-              width: '48px', 
-              height: '48px', 
-              borderRadius: '12px', 
-              background: step.completed ? '#f0fdf4' : '#f8fafc',
+              width: '32px', 
+              height: '32px', 
+              borderRadius: '50%', 
+              background: step.completed ? '#10b981' : '#f1f5f9',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem',
-              marginBottom: '16px'
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              color: step.completed ? '#ffffff' : '#475569',
+              marginBottom: '16px',
+              transition: 'all 0.2s'
             }}>
-              {step.completed ? '✅' : step.icon}
+              {step.completed ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : step.number}
             </div>
             <h5 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px', fontFamily: "'Outfit', sans-serif" }}>
               {step.title}
