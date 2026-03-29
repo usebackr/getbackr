@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['pg', 'ioredis', 'bull', 'bcrypt'],
+    instrumentationHook: true,
   },
   images: {
     remotePatterns: [
