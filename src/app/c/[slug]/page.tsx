@@ -24,15 +24,6 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     notFound();
   }
 
-  // Increment view count in background - wrapped in try/catch for stability
-  try {
-    await db.update(campaigns)
-      .set({ views: sql`${campaigns.views} + 1` })
-      .where(eq(campaigns.id, campaign.id));
-  } catch (err) {
-    console.error('[Views] Column might be missing, skipping increment:', err);
-  }
-
   const [creator] = await db
     .select({ 
       displayName: users.displayName, 
@@ -66,10 +57,8 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
       isAnonymous: contributions.anonymous,
       createdAt: contributions.createdAt,
       storedName: contributions.backerName,
-      userDisplayName: users.displayName,
     })
     .from(contributions)
-    .leftJoin(users, eq(users.id, contributions.backerId))
     .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
     .orderBy(desc(contributions.createdAt));
 
@@ -79,7 +68,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     amount: c.amount,
     isAnonymous: c.isAnonymous,
     createdAt: c.createdAt,
-    backerName: c.userDisplayName || c.storedName || 'A Supporter'
+    backerName: c.storedName || 'A Supporter'
   }));
 
   const goalAmount = parseFloat(campaign.goalAmount);
