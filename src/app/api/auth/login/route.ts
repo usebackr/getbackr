@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
     const accessToken = signAccessToken(dbUser.id);
     const refreshToken = signRefreshToken(dbUser.id);
 
+    // Update last login timestamp
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, dbUser.id));
+
     const response = NextResponse.json({
       user: { id: dbUser.id, email: dbUser.email, displayName: dbUser.displayName },
     });

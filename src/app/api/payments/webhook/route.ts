@@ -7,7 +7,7 @@ import { notifications } from '@/db/schema/notifications';
 import { users } from '@/db/schema/users';
 import { verifyWebhookSignature } from '@/lib/payments/paystack';
 import { eq, sql } from 'drizzle-orm';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { sendEmail } from '@/workers/emailWorkers';
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -152,16 +152,15 @@ export async function POST(req: NextRequest) {
         };
       });
 
-      // F. Queue Emails via Workers (OUTSIDE THE DB TRANSACTION!)
-      // Doing it outside the transaction ensures the payment is safely recorded.
-      if (txResult && txResult.campaignDetails && process.env.REDIS_URL) {
+      // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
+      // Direct sending ensures reliability in serverless environments like Vercel.
+      if (txResult && txResult.campaignDetails) {
         try {
           const { campaignDetails, wallet, backerName } = txResult;
-          const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
           const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
 
           // Email to Donor (Receipt)
-          await emailQueue.add({
+          await sendEmail({
             type: 'donor_receipt',
             backerEmail: data.customer.email,
             backerName: backerName,
@@ -170,13 +169,13 @@ export async function POST(req: NextRequest) {
             campaignTitle: campaignDetails.title,
             contributionId: reference,
             campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-          }, { timeout: 5000 }); // strict timeout
+          });
 
           // Email to Creator (Alert)
           if (campaignDetails.creatorEmail) {
-            await emailQueue.add({
+            await sendEmail({
               type: 'creator_alert',
-              backerEmail: campaignDetails.creatorEmail,
+              backerEmail: campaignDetails.creatorEmail || undefined,
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
@@ -185,10 +184,10 @@ export async function POST(req: NextRequest) {
               totalRaised: wallet?.totalReceived || netAmount,
               goalAmount: campaignDetails.goalAmount,
               campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-            }, { timeout: 5000 });
+            });
           }
-        } catch (queueErr) {
-          console.error('[Paystack Webhook] Non-fatal error queueing emails:', queueErr);
+        } catch (emailErr) {
+          console.error('[Paystack Webhook] Non-fatal error sending emails:', emailErr);
         }
       }
 

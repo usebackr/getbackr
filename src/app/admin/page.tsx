@@ -10,6 +10,16 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboardPage() {
   // Aggregate Metrics in parallel
   const [userCountResp] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+  const [betaCountResp] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(eq(users.isBeta, true));
+  
+  const [dauCountResp] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(sql`${users.lastLoginAt} > now() - interval '24 hours'`);
+
   const [campaignCountResp] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(campaigns);
@@ -23,6 +33,8 @@ export default async function AdminDashboardPage() {
     .where(eq(contributions.status, 'confirmed'));
 
   const userCount = userCountResp?.count || 0;
+  const betaCount = betaCountResp?.count || 0;
+  const dauCount = dauCountResp?.count || 0;
   const campaignCount = campaignCountResp?.count || 0;
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
@@ -66,18 +78,50 @@ export default async function AdminDashboardPage() {
           <p
             style={{
               fontSize: '0.9rem',
-              color: '#64748b',
+              color: '#3b82f6',
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              fontWeight: 700,
+              fontWeight: 800,
               marginBottom: '8px',
             }}
           >
-            Active Users
+            Beta Early Access
           </p>
-          <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a' }}>
-            {userCount.toLocaleString()}
+          <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#1e3a8a' }}>
+            {betaCount.toLocaleString()}
           </h3>
+          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>
+            Total beta signups
+          </p>
+        </div>
+
+        <div
+          style={{
+            background: '#ffffff',
+            padding: '32px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '0.9rem',
+              color: '#f59e0b',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              fontWeight: 800,
+              marginBottom: '8px',
+            }}
+          >
+            Daily Active Users
+          </p>
+          <h3 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#92400e' }}>
+            {dauCount.toLocaleString()}
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>
+            Active last 24h
+          </p>
         </div>
 
         <div

@@ -1,4 +1,4 @@
-import { pgTable, uuid, numeric, varchar, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, numeric, varchar, timestamp, pgEnum, text } from 'drizzle-orm/pg-core';
 import { projectWallets } from './projectWallets';
 import { users } from './users';
 
@@ -7,6 +7,7 @@ export const withdrawalStatusEnum = pgEnum('withdrawal_status', [
   'processing',
   'completed',
   'expired',
+  'rejected',
 ]);
 
 export const withdrawals = pgTable('withdrawals', {
@@ -21,6 +22,7 @@ export const withdrawals = pgTable('withdrawals', {
   otpCodeHash: varchar('otp_code_hash', { length: 255 }),
   otpExpiresAt: timestamp('otp_expires_at', { withTimezone: true }),
   status: withdrawalStatusEnum('status').notNull().default('pending_otp'),
+  rejectionReason: text('rejection_reason'),
   paymentReference: varchar('payment_reference', { length: 100 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

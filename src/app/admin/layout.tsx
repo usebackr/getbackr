@@ -68,6 +68,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ⚑ KYC Approvals
           </a>
           <a
+            href="/admin/users"
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              color: '#cbd5e1',
+              textDecoration: 'none',
+              fontWeight: 500,
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'center',
+              transition: 'color 0.2s',
+            }}
+          >
+            👥 User Management
+          </a>
+          <a
             href="/admin/withdrawals"
             style={{
               padding: '12px 16px',

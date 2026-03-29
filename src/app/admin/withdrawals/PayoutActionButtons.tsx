@@ -7,18 +7,23 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const executeAction = async (action: 'completed' | 'expired') => {
-    if (action === 'expired') {
-      if (
-        !confirm(
-          `Are you sure you want to REJECT this payout and bounce funds back to their wallet?`,
-        )
-      )
+  const executeAction = async (action: 'completed' | 'rejected') => {
+    let reason = '';
+    
+    if (action === 'rejected') {
+      const input = prompt(
+        `Please state the reason for REJECTING this payout. (This will be emailed to the creator):`,
+        'Insufficient verification / Invalid bank details'
+      );
+      if (!input || input.trim() === '') {
+        alert('A rejection reason is strictly required to bounce funds.');
         return;
+      }
+      reason = input.trim();
     } else {
       if (
         !confirm(
-          `Did you successfully process the bank transfer for this amount? This will permanently close the payout.`,
+          `Process bank transfer for this amount? This permanently closes the payout.`,
         )
       )
         return;
@@ -29,13 +34,13 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
       const res = await fetch(`/api/admin/withdrawals/${withdrawalId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: action }),
+        body: JSON.stringify({ status: action, reason }),
       });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || `Failed to process payout`);
 
-      router.refresh(); // Refresh state cleanly
+      router.refresh();
     } catch (err: any) {
       alert(`Error: ${err.message}`);
       setLoading(false);
@@ -85,11 +90,11 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
             opacity: loading ? 0.7 : 1,
           }}
         >
-          {loading ? 'Processing...' : 'Mark as Paid'}
+          {loading ? 'Processing...' : 'Approve & Pay'}
         </button>
 
         <button
-          onClick={() => executeAction('expired')}
+          onClick={() => executeAction('rejected')}
           disabled={loading}
           style={{
             width: '100%',
@@ -105,7 +110,7 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
             opacity: loading ? 0.7 : 1,
           }}
         >
-          Reject / Bounce Back
+          Reject Payout
         </button>
       </div>
     </div>

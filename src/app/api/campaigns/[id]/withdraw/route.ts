@@ -8,7 +8,7 @@ import { campaigns } from '@/db/schema/campaigns';
 import { users } from '@/db/schema/users';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { withdrawals } from '@/db/schema/withdrawals';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { sendEmail } from '@/workers/emailWorkers';
 
 export async function POST(
   req: NextRequest,
@@ -68,9 +68,8 @@ export async function POST(
     })
     .returning();
 
-  // Enqueue OTP delivery job
-  const queue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
-  await queue.add({
+  // Send OTP Directly
+  await sendEmail({
     type: 'withdrawal_otp',
     userId,
     email: creator.email,

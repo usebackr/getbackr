@@ -15,6 +15,7 @@ export default async function AdminWithdrawalsPage() {
       withdrawalId: withdrawals.id,
       amount: withdrawals.amount,
       status: withdrawals.status,
+      rejectionReason: withdrawals.rejectionReason,
       createdAt: withdrawals.createdAt,
       creatorName: users.displayName,
       creatorEmail: users.email,
@@ -68,7 +69,7 @@ export default async function AdminWithdrawalsPage() {
               style={{
                 background: '#ffffff',
                 borderRadius: '16px',
-                border: '1px solid #e2e8f0',
+                border: payout.status === 'rejected' ? '1px solid #fee2e2' : '1px solid #e2e8f0',
                 padding: '32px',
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -103,13 +104,26 @@ export default async function AdminWithdrawalsPage() {
                       fontSize: '0.75rem',
                       fontWeight: 800,
                       textTransform: 'uppercase' as const,
-                      background: payout.status === 'completed' ? '#dcfce7' : payout.status === 'expired' ? '#fee2e2' : '#fef3c7',
-                      color: payout.status === 'completed' ? '#166534' : payout.status === 'expired' ? '#991b1b' : '#92400e',
+                      background: payout.status === 'completed' ? '#dcfce7' : (payout.status === 'rejected' || payout.status === 'expired') ? '#fee2e2' : '#fef3c7',
+                      color: payout.status === 'completed' ? '#166534' : (payout.status === 'rejected' || payout.status === 'expired') ? '#991b1b' : '#92400e',
                     }}>
                       {payout.status.replace('_', ' ')}
                     </span>
                   </div>
                 </div>
+
+                {payout.status === 'rejected' && payout.rejectionReason && (
+                   <div style={{
+                     marginTop: '8px',
+                     padding: '12px',
+                     background: '#fff1f2',
+                     borderLeft: '4px solid #ef4444',
+                     borderRadius: '4px',
+                   }}>
+                     <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#991b1b', marginBottom: '4px' }}>REJECTION REASON:</p>
+                     <p style={{ fontSize: '0.9rem', color: '#0f172a' }}>{payout.rejectionReason}</p>
+                   </div>
+                )}
 
                 <div
                   style={{

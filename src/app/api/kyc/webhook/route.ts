@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { notifications } from '@/db/schema/notifications';
+import { sendEmail } from '@/workers/emailWorkers';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -42,13 +43,53 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     })
     .where(eq(users.id, userId));
 
-  if (status === 'rejected') {
-    const emailQueue = getQueue(QUEUE_NAMES.EMAIL_VERIFICATION);
-    await emailQueue.add({
-      type: 'kyc_rejected',
-      userId,
-      rejectionReason: rejectionReason ?? null,
-    });
+  // Notifications
+  try {
+    const [user] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (status === 'verified') {
+      // In-App
+      await db.insert(notifications).values({
+        userId,
+        type: 'kyc_status_updated',
+        title: 'Identity Verified!',
+        message: 'Your identity has been successfully verified. Withdrawal access is now unlocked.',
+      });
+
+      // Email
+      if (user?.email) {
+        await sendEmail({
+          type: 'kyc_approved',
+          email: user.email,
+        });
+      }
+    } else if (status === 'rejected') {
+      const reason = rejectionReason ?? 'Please re-upload clearer documents.';
+      
+      // In-App
+      await db.insert(notifications).values({
+        userId,
+        type: 'kyc_status_updated',
+        title: 'Verification Failed',
+        message: `Your identity verification failed. Reason: ${reason}`,
+        metadata: JSON.stringify({ reason }),
+      });
+
+      // Email
+      if (user?.email) {
+        await sendEmail({
+          type: 'kyc_rejected',
+          email: user.email,
+          rejectionReason: reason,
+        });
+      }
+    }
+  } catch (notifyErr) {
+    console.error('[KYC Webhook] Notification failed:', notifyErr);
   }
 
   return NextResponse.json({ message: 'Webhook processed' }, { status: 200 });
