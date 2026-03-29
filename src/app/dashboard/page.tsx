@@ -408,51 +408,67 @@ export default function DashboardPage() {
                               borderRadius: '20px',
                               fontSize: '0.75rem',
                               fontWeight: 700,
+                              color: '#0f172a',
                             }}
                           >
                             {camp.category}
                           </span>
                         )}
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            background:
+                              camp.status === 'active'
+                                ? '#10b981'
+                                : camp.status === 'completed'
+                                ? '#3b82f6'
+                                : '#64748b',
+                            color: '#fff',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {camp.status || 'Draft'}
+                        </span>
                       </div>
-                      <div style={{ padding: '20px' }}>
+                      <div style={{ padding: '24px' }}>
                         <h4
                           style={{
                             fontWeight: 800,
-                            fontSize: '1rem',
+                            fontSize: '1.1rem',
                             marginBottom: '8px',
-                            color: 'var(--text-primary)',
+                            color: '#0f172a',
+                            lineHeight: 1.3,
                           }}
                         >
                           {camp.title}
                         </h4>
-                        <p
-                          style={{
-                            fontSize: '0.8rem',
-                            color: 'var(--text-secondary)',
-                            marginBottom: '16px',
-                          }}
-                        >
-                          {daysLeft > 0 ? `${daysLeft} days remaining` : 'Campaign ended'}
-                        </p>
                         <div
                           style={{
-                            marginBottom: '8px',
                             display: 'flex',
                             justifyContent: 'space-between',
-                            fontSize: '0.85rem',
+                            marginBottom: '8px',
                           }}
                         >
-                          <span style={{ color: 'var(--text-secondary)' }}>
-                            ₦{raised.toLocaleString()} raised
-                          </span>
-                          <span style={{ fontWeight: 700 }}>{pct}%</span>
+                          <p style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                            Raised ₦{raised.toLocaleString()}
+                          </p>
+                          <p style={{ fontSize: '0.85rem', color: '#0f172a', fontWeight: 800 }}>
+                            {pct}%
+                          </p>
                         </div>
                         <div
                           style={{
                             width: '100%',
-                            height: '6px',
+                            height: '8px',
                             background: '#f1f5f9',
-                            borderRadius: '3px',
+                            borderRadius: '4px',
+                            marginBottom: '16px',
                             overflow: 'hidden',
                           }}
                         >
@@ -461,18 +477,11 @@ export default function DashboardPage() {
                               width: `${pct}%`,
                               height: '100%',
                               background: 'var(--accent-primary)',
-                              borderRadius: '3px',
                             }}
-                          ></div>
+                          />
                         </div>
-                        <p
-                          style={{
-                            fontSize: '0.75rem',
-                            color: 'var(--text-secondary)',
-                            marginTop: '8px',
-                          }}
-                        >
-                          Goal: ₦{goal.toLocaleString()}
+                        <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                          Created {new Date(camp.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

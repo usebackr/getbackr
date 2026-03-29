@@ -97,9 +97,11 @@ export default function Sidebar() {
     <>
       {/* Mobile Header (Dashboard specific) */}
       <header className="mobile-header">
-        <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 900 }}>
-          Backr
-        </h2>
+        <a href="/" style={{ textDecoration: 'none' }}>
+          <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 900 }}>
+            Backr
+          </h2>
+        </a>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="nav-toggle"
@@ -114,9 +116,11 @@ export default function Sidebar() {
 
       <aside className={`sidebar-aside ${isOpen ? 'open' : ''}`}>
         <div style={{ padding: '40px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: 900 }}>
-            Backr
-          </h2>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <h2 className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: 900 }}>
+              Backr
+            </h2>
+          </a>
           <button
             className="mobile-only-close"
             onClick={() => setIsOpen(false)}

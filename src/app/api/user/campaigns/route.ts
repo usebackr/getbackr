@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         endDate: campaigns.endDate,
         createdAt: campaigns.createdAt,
         raised: projectWallets.totalReceived,
+        status: campaigns.status,
       })
       .from(campaigns)
       .leftJoin(projectWallets, eq(projectWallets.campaignId, campaigns.id))
