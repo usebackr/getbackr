@@ -93,11 +93,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             message: `Your KYC submission was not approved. Reason: ${reason}`,
           });
 
-          import('@/workers/emailWorkers').then(({ sendEmail }) => {
-            sendEmail({ type: 'kyc_rejected', email: user.email, rejectionReason: reason }).catch(
-              (e) => console.error('[Admin KYC] Rejection email failed:', e)
-            );
-          });
+          const { sendEmail } = await import('@/workers/emailWorkers');
+          await sendEmail({ type: 'kyc_rejected', email: user.email, rejectionReason: reason }).catch(
+            (e) => console.error('[Admin KYC] Rejection email failed:', e)
+          );
         }
       } catch (notifyErr) {
         console.error('[Admin KYC] Rejection notification failed:', notifyErr);

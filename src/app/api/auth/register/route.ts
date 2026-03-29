@@ -63,12 +63,15 @@ export async function POST(req: NextRequest) {
     const { trackEvent } = await import('@/lib/analytics');
     await trackEvent(beta ? 'beta_signup' : 'user_login', user.id, { email: user.email });
 
-    // Fire welcome email in the background — do NOT await so signup is instant
-    import('@/workers/emailWorkers').then(({ sendEmail }) => {
-      sendEmail({ type: 'welcome_email', email: user.email, displayName }).catch(
+    // Send welcome email — AWAIT it to ensure Vercel doesn't cut it off before handoff
+    try {
+      const { sendEmail } = await import('@/workers/emailWorkers');
+      await sendEmail({ type: 'welcome_email', email: user.email, displayName }).catch(
         (err) => console.error('[Register] Welcome email failed:', err)
       );
-    });
+    } catch (importErr) {
+      console.error('[Register] Failed to import email worker:', importErr);
+    }
 
     return NextResponse.json(
       {
