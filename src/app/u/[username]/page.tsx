@@ -45,7 +45,12 @@ export default async function PublicProfilePage({ params }: { params: { username
       contributions,
       sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
     )
-    .where(and(eq(campaigns.creatorId, user.id)))
+    .where(
+      and(
+        eq(campaigns.creatorId, user.id),
+        sql`${campaigns.status} IN ('active', 'closed')`
+      )
+    )
     .groupBy(campaigns.id)
     .orderBy(desc(campaigns.createdAt));
 

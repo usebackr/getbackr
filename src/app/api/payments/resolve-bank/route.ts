@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
     const accountName = await resolveAccountNumber(accountNumber, bankCode);
     return NextResponse.json({ accountName });
   } catch (err: any) {
+    console.error('[Bank Resolve API] Failure:', {
+      message: err.message,
+      stack: err.stack,
+    });
     return NextResponse.json({ error: err.message || 'Error resolving account' }, { status: 500 });
   }
 }
