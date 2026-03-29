@@ -45,11 +45,17 @@ export async function GET(req: NextRequest) {
       withdrawable += Number(wallet.balance || 0);
     }
 
+    // Fetch total views across all campaigns
+    const [{ totalViews }] = await db
+      .select({ totalViews: sum(campaigns.views) })
+      .from(campaigns)
+      .where(eq(campaigns.creatorId, userId));
+
     return NextResponse.json({
       totalRaised,
       withdrawable,
       totalCampaigns: Number(campaignCount || 0),
-      totalViews: 0, // TODO: Implement genuine views tracking
+      totalViews: Number(totalViews || 0),
       currency: '₦',
     });
   } catch (err) {

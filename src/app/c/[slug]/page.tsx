@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { users } from '@/db/schema/users';
@@ -21,6 +21,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     .limit(1);
 
   if (!campaign) notFound();
+
+  // Increment view count in background
+  try {
+    await db.update(campaigns)
+      .set({ views: sql`${campaigns.views} + 1` })
+      .where(eq(campaigns.id, campaign.id));
+  } catch (err) {
+    console.error('[Views] Failed to increment:', err);
+  }
 
   const [creator] = await db
     .select({ 

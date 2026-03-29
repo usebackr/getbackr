@@ -157,7 +157,7 @@ export default function WalletDashboard() {
             {/* Summary Cards - 2x2 Grid on Mobile */}
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', 
               gap: '12px' 
             }}>
               {[
