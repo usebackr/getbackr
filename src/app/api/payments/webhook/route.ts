@@ -123,6 +123,8 @@ export async function POST(req: NextRequest) {
           // F. Queue Emails via Workers
           const emailQueue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
 
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+
           // Email to Donor (Receipt)
           await emailQueue.add({
             type: 'donor_receipt',
@@ -132,7 +134,7 @@ export async function POST(req: NextRequest) {
             currency: data.currency,
             campaignTitle: campaignDetails.title,
             contributionId: reference,
-            campaignUrl: `https://backr.app/c/${campaignDetails.slug}`,
+            campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
           });
 
           // Email to Creator (Alert)
@@ -147,7 +149,7 @@ export async function POST(req: NextRequest) {
               backerName: backerName,
               totalRaised: wallet?.totalReceived || netAmount,
               goalAmount: campaignDetails.goalAmount,
-              campaignUrl: `https://backr.app/c/${campaignDetails.slug}`,
+              campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
             });
           }
         }

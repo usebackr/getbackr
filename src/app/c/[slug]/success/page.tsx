@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/material';
+import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 
 export default function ThankYouPage() {
@@ -10,14 +10,40 @@ export default function ThankYouPage() {
   const slug = params.slug as string;
   const reference = searchParams.get('reference');
 
-  const [counter, setCounter] = useState(5);
+  const [status, setStatus] = useState<'pending' | 'confirmed' | 'failed'>('pending');
+  const [counter, setCounter] = useState(10);
 
   useEffect(() => {
-    if (counter > 0) {
+    if (!reference) return;
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`/api/payments/check-status?reference=${reference}`);
+        const data = await res.json();
+        if (data.status === 'confirmed') {
+          setStatus('confirmed');
+          setCounter(0);
+        }
+      } catch (e) {
+        console.error('Status check failed', e);
+      }
+    };
+
+    const interval = setInterval(() => {
+      if (status !== 'confirmed' && counter > 0) {
+        checkStatus();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [reference, status, counter]);
+
+  useEffect(() => {
+    if (counter > 0 && status !== 'confirmed') {
       const timer = setTimeout(() => setCounter(counter - 1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [counter]);
+  }, [counter, status]);
 
   const BRAND_COLOR = '#10b981';
 
@@ -45,24 +71,35 @@ export default function ThankYouPage() {
         <div style={{ 
           width: '80px', 
           height: '80px', 
-          background: 'rgba(16, 185, 129, 0.1)', 
+          background: status === 'confirmed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', 
           borderRadius: '40px', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
           margin: '0 auto 24px',
-          color: BRAND_COLOR
+          color: status === 'confirmed' ? BRAND_COLOR : '#3b82f6'
         }}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          {status === 'confirmed' ? (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <div style={{ animation: 'spin 1s linear infinite' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            </div>
+          )}
         </div>
 
         <h1 style={{ fontSize: '2.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '12px' }}>
-          Thank You!
+          {status === 'confirmed' ? 'Contribution Confirmed!' : 'Thank You!'}
         </h1>
         <p style={{ fontSize: '1.1rem', color: '#475569', lineHeight: '1.6', marginBottom: '32px' }}>
-          Your contribution was successful. You're now a part of this project's journey!
+          {status === 'confirmed' 
+            ? "We've confirmed your payment. You're now officially a part of this project's journey!"
+            : "Your contribution was received. We're just waiting for final confirmation from the bank..."
+          }
         </p>
 
         {reference && (
