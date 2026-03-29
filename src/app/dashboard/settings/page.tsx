@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Sidebar from '@/components/Sidebar';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Payment and Payouts');
 
-  const tabs = ['KYC / Verification', 'Profile', 'Password', 'Payment and Payouts'];
+  const tabs = ['Profile', 'Password', 'Payment and Payouts'];
 
   // Payout states
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
@@ -94,373 +97,161 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="settings-page" style={{ padding: '32px', maxWidth: '800px' }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '24px' }}>Settings</h1>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <Sidebar />
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '24px',
-          borderBottom: '1px solid #e2e8f0',
-          marginBottom: '32px',
-        }}
-      >
-        {tabs.map((tab) => (
+      <main className="dash-main" style={{ flex: 1, background: '#f8fafc' }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => router.push('/dashboard')}
             style={{
-              padding: '12px 0',
-              background: 'none',
-              border: 'none',
-              borderBottom:
-                activeTab === tab ? '2px solid var(--accent-primary)' : '2px solid transparent',
-              color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-secondary)',
-              fontWeight: activeTab === tab ? 600 : 400,
-              cursor: 'pointer',
-              fontSize: '1rem',
+              background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
+              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600
             }}
           >
-            {tab}
+            ← Back to Dashboard
           </button>
-        ))}
-      </div>
 
-      {activeTab === 'Payment and Payouts' && (
-        <div className="card" style={{ padding: '32px' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '24px' }}>Bank Account Details</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-            Add your local bank account to receive campaign payouts directly.
-          </p>
+          <header style={{ marginBottom: '32px' }}>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '8px' }}>Settings</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Manage your account, security, and payout methods.</p>
+          </header>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px' }}>
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontSize: '0.9rem',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                Bank Name
-              </label>
-              <select
-                value={selectedBankCode}
-                onChange={(e) => setSelectedBankCode(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e2e8f0',
-                }}
-              >
-                <option value="">Select your bank...</option>
-                {banks.map((b) => (
-                  <option key={b.code} value={b.code}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontSize: '0.9rem',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                Account Number
-              </label>
-              <input
-                type="text"
-                maxLength={10}
-                placeholder="0000000000"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e2e8f0',
-                }}
-              />
-            </div>
-
-            <div style={{ minHeight: '60px' }}>
-              {resolving && (
-                <span style={{ color: 'var(--accent-secondary)' }}>
-                  Resolving account name... ⏳
-                </span>
-              )}
-              {resolveError && <span style={{ color: 'red' }}>{resolveError} ❌</span>}
-              {accountName && !resolving && (
-                <div
-                  style={{
-                    padding: '12px',
-                    background: '#f8fafc',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                  }}
-                >
-                  <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                    Resolved Account Map:
-                  </span>
-                  <br />
-                  <strong style={{ color: 'var(--accent-primary)' }}>{accountName} ✅</strong>
-                </div>
-              )}
-            </div>
-
-            <div style={{ marginTop: '16px', display: 'flex', gap: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '24px',
+              borderBottom: '1px solid #e2e8f0',
+              marginBottom: '32px',
+              overflowX: 'auto'
+            }}
+            className="hide-scrollbar"
+          >
+            {tabs.map((tab) => (
               <button
-                onClick={handleSave}
-                disabled={!accountName || saving}
-                className="btn-primary"
-                style={{ flex: 1, padding: '14px', opacity: !accountName || saving ? 0.5 : 1 }}
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '12px 0',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom:
+                    activeTab === tab ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                  color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontWeight: activeTab === tab ? 700 : 500,
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  whiteSpace: 'nowrap'
+                }}
               >
-                {saving ? 'Saving...' : 'Save Bank Account'}
+                {tab}
               </button>
+            ))}
+          </div>
+
+          {activeTab === 'Payment and Payouts' && (
+            <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>Bank Account Details</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: 1.6 }}>
+                Add your local bank account to receive campaign payouts directly and securely.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                    Bank Name
+                  </label>
+                  <select
+                    value={selectedBankCode}
+                    onChange={(e) => setSelectedBankCode(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <option value="">Select your bank...</option>
+                    {banks.map((b) => (
+                      <option key={b.code} value={b.code}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                    Account Number
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    placeholder="0000000000"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  />
+                </div>
+
+                <div style={{ minHeight: '60px' }}>
+                  {resolving && (
+                    <span style={{ color: 'var(--accent-secondary)', fontWeight: 600 }}>
+                      Resolving account name... ⏳
+                    </span>
+                  )}
+                  {resolveError && <span style={{ color: '#ef4444', fontWeight: 600 }}>{resolveError} ❌</span>}
+                  {accountName && !resolving && (
+                    <div
+                      style={{
+                        padding: '16px',
+                        background: '#f8fafc',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                        Account Name:
+                      </span>
+                      <br />
+                      <strong style={{ color: 'var(--accent-primary)', fontSize: '1.1rem' }}>{accountName} ✅</strong>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    onClick={handleSave}
+                    disabled={!accountName || saving}
+                    className="btn-primary"
+                    style={{ width: '100%', padding: '16px', opacity: !accountName || saving ? 0.5 : 1 }}
+                  >
+                    {saving ? 'Saving Details...' : 'Save Bank Account'}
+                  </button>
+                </div>
+
+                {saveSuccess && (
+                  <p style={{ color: '#059669', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center' }}>Bank details saved successfully!</p>
+                )}
+              </div>
             </div>
+          )}
 
-            {saveSuccess && (
-              <p style={{ color: 'green', fontSize: '0.9rem' }}>Bank details saved successfully!</p>
-            )}
-          </div>
+          {activeTab !== 'Payment and Payouts' && (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <p style={{ fontWeight: 600 }}>The {activeTab} section is currently being optimized.</p>
+            </div>
+          )}
         </div>
-      )}
-
-      {activeTab === 'KYC / Verification' && <KYCTab />}
-
-      {activeTab !== 'Payment and Payouts' && activeTab !== 'KYC / Verification' && (
-        <div style={{ color: 'var(--text-secondary)' }}>
-          <p>This section ({activeTab}) is under construction.</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function KYCTab() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  const [kycData, setKycData] = useState({
-    legalName: '',
-    idType: 'National ID',
-    idNumber: '',
-    documentUrl: '',
-  });
-  const [status, setStatus] = useState('pending');
-
-  useEffect(() => {
-    fetch('/api/user/kyc')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.profile) {
-          setKycData({
-            legalName: data.profile.legalName,
-            idType: data.profile.idType,
-            idNumber: data.profile.idNumber,
-            documentUrl: data.profile.documentUrl || '',
-          });
-        }
-        if (data.status) setStatus(data.status);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setKycData({ ...kycData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const res = await fetch('/api/user/kyc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(kycData),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Validation failed');
-      } else {
-        setSuccess('Identity verified successfully! You are now eligible to receive payouts.');
-        setStatus('verified');
-      }
-    } catch (err) {
-      setError('Network error');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) return <div>Loading verification status...</div>;
-
-  return (
-    <div className="card" style={{ padding: '32px' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px',
-        }}
-      >
-        <h2 style={{ fontSize: '1.25rem' }}>Identity Verification</h2>
-        <span
-          style={{
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            background: status === 'verified' ? '#dcfce7' : '#fef3c7',
-            color: status === 'verified' ? '#166534' : '#92400e',
-          }}
-        >
-          {status === 'verified' ? 'VERIFIED' : 'ACTION REQUIRED'}
-        </span>
-      </div>
-
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-        To comply with local regulations and prevent fraud, securely verify your identity before
-        withdrawing funds from your campaigns.
-      </p>
-
-      {error && (
-        <div
-          style={{
-            padding: '12px',
-            background: '#fef2f2',
-            color: '#ef4444',
-            borderRadius: '8px',
-            marginBottom: '24px',
-          }}
-        >
-          {error}
-        </div>
-      )}
-      {success && (
-        <div
-          style={{
-            padding: '12px',
-            background: '#dcfce7',
-            color: '#166534',
-            borderRadius: '8px',
-            marginBottom: '24px',
-          }}
-        >
-          {success}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '480px' }}>
-        <div>
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.9rem',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            Full Legal Name
-          </label>
-          <input
-            type="text"
-            name="legalName"
-            value={kycData.legalName}
-            onChange={handleChange}
-            placeholder="Matching your government ID"
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-            }}
-            disabled={status === 'verified'}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <div style={{ flex: 1 }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '0.9rem',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              ID Type
-            </label>
-            <select
-              name="idType"
-              value={kycData.idType}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-              }}
-              disabled={status === 'verified'}
-            >
-              <option value="National ID">National ID / NIN</option>
-              <option value="Passport">International Passport</option>
-              <option value="Driver License">Driver's License</option>
-            </select>
-          </div>
-
-          <div style={{ flex: 1 }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '0.9rem',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              ID Number
-            </label>
-            <input
-              type="text"
-              name="idNumber"
-              value={kycData.idNumber}
-              onChange={handleChange}
-              placeholder="ABC-12345"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-              }}
-              disabled={status === 'verified'}
-            />
-          </div>
-        </div>
-
-        {status !== 'verified' && (
-          <button
-            onClick={handleSave}
-            disabled={saving || !kycData.legalName || !kycData.idNumber}
-            className="btn-primary"
-            style={{ padding: '14px', marginTop: '16px' }}
-          >
-            {saving ? 'Verifying...' : 'Submit Verification'}
-          </button>
-        )}
-      </div>
+      </main>
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+      `}</style>
     </div>
   );
 }

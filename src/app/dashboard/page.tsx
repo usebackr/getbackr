@@ -348,6 +348,7 @@ export default function DashboardPage() {
                   const filtered = campaigns.filter(c => {
                     const status = c.status?.toLowerCase() || 'draft';
                     if (statusFilter === 'all') return true;
+                    // Robust mapping: 'completed' filter matches 'closed' status
                     if (statusFilter === 'completed') return status === 'closed';
                     return status === statusFilter.toLowerCase();
                   });
@@ -445,11 +446,11 @@ export default function DashboardPage() {
                                   top: '12px',
                                   right: '12px',
                                   background:
-                                    camp.status === 'active'
-                                      ? '#10b981'
-                                      : camp.status === 'closed'
-                                      ? '#3b82f6'
-                                      : '#64748b',
+                                    camp.status?.toLowerCase() === 'active'
+                                      ? '#10b981' // Green
+                                      : camp.status?.toLowerCase() === 'closed'
+                                      ? '#f59e0b' // Yellow (per user request for Completed)
+                                      : '#10b981', // Draft (per user request for Green)
                                   color: '#fff',
                                   padding: '4px 12px',
                                   borderRadius: '20px',

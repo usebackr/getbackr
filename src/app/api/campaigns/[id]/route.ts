@@ -6,12 +6,40 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 
 const editCampaignSchema = z.object({
+  title: z.string().optional(),
+  category: z.string().optional(),
   description: z.string().optional(),
-  coverImageUrl: z.string().url().optional(),
-  // These are never allowed after creation — included only to detect and reject them
+  coverImageUrl: z.string().url().optional().or(z.literal('')),
   goalAmount: z.number().optional(),
   endDate: z.string().optional(),
+  status: z.string().optional(),
 });
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+): Promise<NextResponse> {
+  const auth = requireAuth(req);
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params;
+  const campaign = await db.query.campaigns.findFirst({
+    where: eq(campaigns.id, id),
+  });
+
+  if (!campaign) {
+    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+  }
+
+  // Security check: only creator can fetch draft details for editing
+  if (campaign.creatorId !== auth.userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  return NextResponse.json({ campaign });
+}
 
 export async function PUT(
   req: NextRequest,
@@ -34,7 +62,9 @@ export async function PUT(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  if (campaign.status === 'closed' || campaign.status === 'cancelled') {
+  const isDraft = campaign.status?.toLowerCase() === 'draft';
+
+  if (!isDraft && (campaign.status === 'closed' || campaign.status === 'cancelled')) {
     return NextResponse.json(
       { error: 'Cannot edit a closed or cancelled campaign' },
       { status: 422 },
@@ -61,20 +91,24 @@ export async function PUT(
     );
   }
 
-  const { description, coverImageUrl, goalAmount, endDate } = parsed.data;
+  const { title, category, description, coverImageUrl, goalAmount, endDate, status } = parsed.data;
 
-  // goalAmount and endDate are never editable after creation
-  if (goalAmount !== undefined || endDate !== undefined) {
+  // goalAmount and endDate are only editable if it's a draft
+  if (!isDraft && (goalAmount !== undefined || endDate !== undefined)) {
     return NextResponse.json(
-      { error: 'Funding goal and end date cannot be changed after campaign creation.' },
+      { error: 'Funding goal and end date cannot be changed after campaign is active.' },
       { status: 422 },
     );
   }
 
-  const updates: Partial<{ description: string; coverImageUrl: string; updatedAt: Date }> = {};
+  const updates: any = { updatedAt: new Date() };
+  if (title !== undefined) updates.title = title;
+  if (category !== undefined) updates.category = category;
   if (description !== undefined) updates.description = description;
-  if (coverImageUrl !== undefined) updates.coverImageUrl = coverImageUrl;
-  updates.updatedAt = new Date();
+  if (coverImageUrl !== undefined) updates.coverImageUrl = coverImageUrl || null;
+  if (goalAmount !== undefined) updates.goalAmount = goalAmount.toString();
+  if (endDate !== undefined) updates.endDate = new Date(endDate).toISOString();
+  if (status !== undefined) updates.status = status;
 
   const [updated] = await db.update(campaigns).set(updates).where(eq(campaigns.id, id)).returning();
 

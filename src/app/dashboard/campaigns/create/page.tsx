@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function CreateCampaignPage() {
+function CreateCampaignForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('id');
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -18,6 +22,32 @@ export default function CreateCampaignPage() {
     endDate: '',
     coverImageUrl: '',
   });
+
+  // Fetch campaign data if in edit mode
+  useEffect(() => {
+    if (editId) {
+      setFetching(true);
+      fetch(`/api/campaigns/${editId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.campaign) {
+            const c = data.campaign;
+            setFormData({
+              title: c.title || '',
+              category: c.category || '',
+              description: c.description || '',
+              goalAmount: c.goalAmount ? parseFloat(c.goalAmount).toString() : '',
+              endDate: c.endDate ? new Date(c.endDate).toISOString().split('T')[0] : '',
+              coverImageUrl: c.coverImageUrl || '',
+            });
+          } else if (data.error) {
+            setError(data.error);
+          }
+        })
+        .catch(() => setError('Failed to load campaign data'))
+        .finally(() => setFetching(false));
+    }
+  }, [editId]);
 
   const handleNext = () => setStep((s) => s + 1);
   const handlePrev = () => setStep((s) => s - 1);
@@ -68,18 +98,23 @@ export default function CreateCampaignPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/campaigns/create', {
-        method: 'POST',
+      // If editId exists, we are publishing/updating a draft
+      const url = editId ? `/api/campaigns/${editId}` : '/api/campaigns/create';
+      const method = editId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           goalAmount: parseFloat(formData.goalAmount),
+          status: 'active', // Ensure it becomes active when "Launched/Published"
         }),
       });
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Failed to create campaign');
+        setError(data.error || `Failed to ${editId ? 'update' : 'create'} campaign`);
       } else {
         router.push(`/dashboard`);
       }
@@ -89,6 +124,14 @@ export default function CreateCampaignPage() {
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div style={{ padding: '60px', textAlign: 'center', fontWeight: 800, color: 'var(--accent-secondary)' }}>
+        Loading venture details...
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', padding: 'clamp(20px, 5vw, 60px) 24px' }}>
@@ -103,7 +146,9 @@ export default function CreateCampaignPage() {
           ← Back to Dashboard
         </button>
 
-        <h1 style={{ fontSize: '2rem', marginBottom: '8px', fontWeight: 900 }}>Launch a Venture</h1>
+        <h1 style={{ fontSize: '2rem', marginBottom: '8px', fontWeight: 900 }}>
+          {editId ? 'Finalize Your Venture' : 'Launch a Venture'}
+        </h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontWeight: 500 }}>Step {step} of 3</p>
 
         <div className="dash-card" style={{ padding: 'clamp(24px, 5vw, 40px)' }}>
@@ -188,7 +233,7 @@ export default function CreateCampaignPage() {
               <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'space-between' }}>
                 <button onClick={handlePrev} className="btn-secondary" style={{ padding: '14px 40px', background: '#f1f5f9', border: 'none' }} disabled={loading}>Back</button>
                 <button onClick={handleSubmit} className="btn-primary" style={{ padding: '14px 40px' }} disabled={loading || uploading}>
-                  {loading ? 'Creating...' : 'Launch Campaign'}
+                  {loading ? 'Processing...' : editId ? 'Publish Changes' : 'Launch Campaign'}
                 </button>
               </div>
             </div>
@@ -199,5 +244,13 @@ export default function CreateCampaignPage() {
         .input-label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 700; color: #475569; }
       `}</style>
     </div>
+  );
+}
+
+export default function CreateCampaignPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Loading...</div>}>
+      <CreateCampaignForm />
+    </Suspense>
   );
 }
