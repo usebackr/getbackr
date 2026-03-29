@@ -20,8 +20,8 @@ export default async function AdminKycPage() {
       idNumber: kycProfiles.idNumber,
       documentUrl: kycProfiles.documentUrl,
     })
-    .from(users)
-    .leftJoin(kycProfiles, eq(users.id, kycProfiles.userId))
+    .from(kycProfiles)
+    .innerJoin(users, eq(users.id, kycProfiles.userId))
     .where(eq(users.kycStatus, 'pending'));
 
   return (
