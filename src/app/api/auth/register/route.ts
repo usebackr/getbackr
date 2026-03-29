@@ -63,12 +63,11 @@ export async function POST(req: NextRequest) {
     const { trackEvent } = await import('@/lib/analytics');
     await trackEvent(beta ? 'beta_signup' : 'user_login', user.id, { email: user.email });
 
-    // Send Welcome Email
-    const { sendEmail } = await import('@/workers/emailWorkers');
-    await sendEmail({
-      type: 'welcome_email',
-      email: user.email,
-      displayName: displayName,
+    // Fire welcome email in the background — do NOT await so signup is instant
+    import('@/workers/emailWorkers').then(({ sendEmail }) => {
+      sendEmail({ type: 'welcome_email', email: user.email, displayName }).catch(
+        (err) => console.error('[Register] Welcome email failed:', err)
+      );
     });
 
     return NextResponse.json(
