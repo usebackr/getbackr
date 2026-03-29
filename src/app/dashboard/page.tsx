@@ -167,28 +167,32 @@ export default function DashboardPage() {
 
       <main className="dash-main" style={{ flex: 1 }}>
         <header
+          className="dash-header"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             marginBottom: '40px',
+            gap: '24px',
+            flexWrap: 'wrap',
           }}
         >
-          <div>
-            <h1 style={{ fontSize: '2rem', marginBottom: '4px' }}>My Campaigns</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <div style={{ flex: '1 1 300px' }}>
+            <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', marginBottom: '4px', fontWeight: 800 }}>My Campaigns</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               Manage your creative ventures and transparency logs
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }} className="dash-header-actions">
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: '1 1 140px' }}>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 style={{
-                  padding: '10px 16px 10px 36px',
-                  borderRadius: '12px',
+                  width: '100%',
+                  padding: '12px 16px 12px 40px',
+                  borderRadius: '14px',
                   border: '1px solid #e2e8f0',
                   fontSize: '0.9rem',
                   fontWeight: 600,
@@ -198,14 +202,14 @@ export default function DashboardPage() {
                 }}
               >
                 <option value="all">All Time</option>
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
+                <option value="24h">24 Hours</option>
+                <option value="7d">7 Days</option>
+                <option value="30d">30 Days</option>
               </select>
               <div
                 style={{
                   position: 'absolute',
-                  left: '12px',
+                  left: '14px',
                   pointerEvents: 'none',
                   color: 'var(--text-secondary)',
                 }}
@@ -213,29 +217,13 @@ export default function DashboardPage() {
                 <Icons.Filter />
               </div>
             </div>
-            <button className="btn-secondary" style={{ padding: '10px 24px', fontSize: '0.9rem' }}>
-              Setup Guide
-            </button>
-            <button
-              onClick={handleWithdrawClick}
-              className="btn-primary"
-              style={{
-                padding: '10px 24px',
-                fontSize: '0.9rem',
-                opacity: stats.withdrawable > 0 ? 1 : 0.6,
-                cursor: stats.withdrawable > 0 ? 'pointer' : 'not-allowed',
-              }}
-              disabled={stats.withdrawable === 0}
-              title={stats.withdrawable === 0 ? 'No funds available for withdrawal' : ''}
-            >
-              Withdraw Funds
-            </button>
+            
             <button
               onClick={() => router.push('/dashboard/campaigns/create')}
               className="btn-primary"
-              style={{ padding: '10px 24px', fontSize: '0.9rem' }}
+              style={{ padding: '12px 24px', fontSize: '0.95rem', flex: '1 1 auto' }}
             >
-              Create Campaign
+              + Create
             </button>
           </div>
         </header>
@@ -243,7 +231,7 @@ export default function DashboardPage() {
         <section
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: '24px',
             marginBottom: '48px',
           }}
@@ -350,8 +338,8 @@ export default function DashboardPage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-                gap: '24px',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+                gap: '32px',
               }}
             >
               {campaigns.map((camp: any) => {

@@ -121,8 +121,8 @@ export default async function OngoingProjects() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '40px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+            gap: '32px',
           }}
         >
           {displayProjects.map((project, idx) => (
