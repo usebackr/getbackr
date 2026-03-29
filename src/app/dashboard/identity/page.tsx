@@ -238,12 +238,15 @@ export default function IdentityPage() {
                 </div>
 
                 {/* Upload Areas */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>ID Document — Front Page <span style={{ color: '#94a3b8', fontWeight: 400 }}>(max 2MB)</span></label>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', minHeight: '40px' }}>
+                    ID Document — Front Page <br/>
+                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>(Passport, NIN, or License • max 2MB)</span>
+                  </label>
                   <div 
                     onClick={() => document.getElementById('id-upload')?.click()}
                     style={{ 
-                      height: '160px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
+                      flex: 1, height: '180px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                       background: previews.idDoc ? `url(${previews.idDoc}) center/cover no-repeat` : '#f8fafc',
                       cursor: 'pointer', transition: 'border-color 0.2s', textAlign: 'center'
@@ -251,21 +254,24 @@ export default function IdentityPage() {
                   >
                     {!previews.idDoc && (
                       <div style={{ padding: '0 16px' }}>
-                        <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>🪪</div>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to upload ID</span>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Passport, NIN, or License</div>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to upload ID</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Clear photo of front page</div>
                       </div>
                     )}
                   </div>
                   <input type="file" id="id-upload" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleFileChange(e, 'idDoc')} />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Selfie — Holding Your ID <span style={{ color: '#94a3b8', fontWeight: 400 }}>(max 2MB)</span></label>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', minHeight: '40px' }}>
+                    Selfie — Holding Your ID <br/>
+                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>(Face clearly visible • max 2MB)</span>
+                  </label>
                   <div 
                     onClick={() => document.getElementById('selfie-upload')?.click()}
                     style={{ 
-                      height: '160px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
+                      flex: 1, height: '180px', border: '2px dashed #e2e8f0', borderRadius: '20px', 
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                       background: previews.selfie ? `url(${previews.selfie}) center/cover no-repeat` : '#f8fafc',
                       cursor: 'pointer', textAlign: 'center'
@@ -273,9 +279,9 @@ export default function IdentityPage() {
                   >
                     {!previews.selfie && (
                       <div style={{ padding: '0 16px' }}>
-                        <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>🤳</div>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</span>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Hold your ID next to your face</div>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Hold ID next to your face</div>
                       </div>
                     )}
                   </div>
