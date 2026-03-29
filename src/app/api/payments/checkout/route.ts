@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       .limit(1);
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
-    const appUrl = 'https://dirty-bushes-listen.loca.lt';
+    const appUrl = 'https://b56ab4fa12c91733-105-112-199-128.serveousercontent.com';
     const callbackUrl = `${appUrl}/c/${campaign.slug}/success`;
 
     console.log(`[Checkout API] Redirecting to: ${callbackUrl}`);
