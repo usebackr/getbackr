@@ -1,5 +1,5 @@
-import React from 'react';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
@@ -22,7 +22,11 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
   if (!campaign) notFound();
 
   const [creator] = await db
-    .select({ displayName: users.displayName, avatarUrl: users.avatarUrl })
+    .select({ 
+      displayName: users.displayName, 
+      avatarUrl: users.avatarUrl,
+      username: users.username
+    })
     .from(users)
     .where(eq(users.id, campaign.creatorId))
     .limit(1);
@@ -142,28 +146,35 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '24px',
-                    background: 'var(--accent-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                  }}
+                <Link 
+                  href={creator?.username ? `/u/${creator.username}` : '#'}
+                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}
                 >
-                  {creator?.displayName?.charAt(0) || 'C'}
-                </div>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a' }}>
-                    {creator?.displayName || 'Unknown Creator'}
-                  </p>
-                  <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Individual</p>
-                </div>
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '24px',
+                      background: creator?.avatarUrl ? `url(${creator.avatarUrl}) center/cover` : 'var(--accent-primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    {!creator?.avatarUrl && (creator?.displayName?.charAt(0) || 'C')}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', marginBottom: '2px' }}>
+                      {creator?.displayName || 'Unknown Creator'}
+                    </p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                       View Profile →
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
 

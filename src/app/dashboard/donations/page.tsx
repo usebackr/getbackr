@@ -30,16 +30,18 @@ export default function DonationsPage() {
         {loading ? (
           <p style={{ color: 'var(--text-secondary)' }}>Loading...</p>
         ) : donations.length === 0 ? (
-          <div className="dash-card" style={{ padding: '48px', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🤝</div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No donations yet</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+          <div className="dash-card" style={{ padding: '60px 48px', textAlign: 'center' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 800 }}>No donations yet</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontWeight: 500 }}>
               When you back a project, it will appear here.
             </p>
             <a
               href="/explore"
               className="btn-primary"
-              style={{ padding: '12px 32px', textDecoration: 'none' }}
+              style={{ padding: '14px 40px', textDecoration: 'none', display: 'inline-block' }}
             >
               Discover Projects
             </a>

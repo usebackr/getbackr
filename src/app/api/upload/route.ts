@@ -30,22 +30,27 @@ export async function POST(req: NextRequest) {
     const fileName = `${uuidv4()}.${fileExt}`;
     const s3Key = `${uploadType}/${userId}/${fileName}`;
 
-    // Upload to S3 using existing wrapper
-    await uploadFile(buffer, s3Key, file.type);
+    // Upload to S3 or Local (Dev)
+    const resultKey = await uploadFile(buffer, s3Key, file.type);
 
-    // Form the Public URL (assuming the bucket is public-read or using a proxy)
-    // If the bucket is not public, we would normally use a signed URL strategy.
-    // Given the previous code returns the 'key', we will return the full path here.
-    const baseUrl = process.env.NEXT_PUBLIC_S3_URL || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`;
-    // If S3_ENDPOINT is set (e.g. Supabase), use that.
-    const publicUrl = process.env.S3_ENDPOINT 
-      ? `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}/${s3Key}` 
-      : `${baseUrl}/${s3Key}`;
+    let publicUrl = '';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    if (resultKey.startsWith('local:')) {
+      const filename = resultKey.replace('local:', '');
+      publicUrl = `${appUrl}/uploads/${filename}`;
+    } else {
+      // S3 Production
+      const baseUrl = process.env.NEXT_PUBLIC_S3_URL || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`;
+      publicUrl = process.env.S3_ENDPOINT 
+        ? `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}/${resultKey}` 
+        : `${baseUrl}/${resultKey}`;
+    }
 
     return NextResponse.json({
       message: 'Upload successful',
       url: publicUrl,
-      key: s3Key,
+      key: resultKey,
     });
   } catch (err: any) {
     console.error('[Upload API] Error:', err);

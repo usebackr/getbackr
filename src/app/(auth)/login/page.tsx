@@ -36,7 +36,7 @@ function LoginForm() {
 
       // Login successful
       const from = searchParams.get('from') || '/dashboard';
-      router.push(from);
+      router.replace(from);
     } catch (err) {
       setError('Failed to connect to the server');
     } finally {

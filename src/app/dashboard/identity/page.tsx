@@ -109,7 +109,7 @@ export default function IdentityPage() {
                   color: status === 'verified' ? '#166534' : '#92400e',
                 }}
               >
-                {status === 'verified' ? 'VERIFIED ✅' : 'ACTION REQUIRED ⚠️'}
+                {status === 'verified' ? 'VERIFIED' : 'ACTION REQUIRED'}
               </span>
             </div>
 

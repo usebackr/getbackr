@@ -37,11 +37,32 @@ export default function NotificationsPage() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
-        <header style={{ marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '4px' }}>Notifications</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Stay updated on your campaigns and backers
-          </p>
+        <header style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <a 
+            href="/dashboard" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '12px', 
+              background: '#fff', 
+              border: '1px solid #e2e8f0',
+              color: '#475569',
+              textDecoration: 'none'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
+          </a>
+          <div>
+            <h1 style={{ fontSize: '2rem', marginBottom: '4px', fontWeight: 900 }}>Notifications</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
+              Showing your last 3 updates
+            </p>
+          </div>
         </header>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '720px' }}>
@@ -52,7 +73,7 @@ export default function NotificationsPage() {
               <p style={{ color: '#64748b', fontWeight: 600 }}>All caught up! No new notifications.</p>
             </div>
           ) : (
-            notifications.map((n) => (
+            notifications.slice(0, 3).map((n) => (
               <div
                 key={n.id}
                 className="dash-card"

@@ -44,6 +44,11 @@ const Icons = {
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
   ),
+  Bell: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
   Settings: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -60,6 +65,36 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState<any>(null);
+
+  // Poll for notifications
+  useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        const res = await fetch('/api/notifications');
+        const data = await res.json();
+        if (data.notifications) {
+          const unread = data.notifications.filter((n: any) => !n.isRead);
+          setUnreadCount(unread.length);
+
+          if (unread.length > 0 && unread[0].id !== lastNotificationId) {
+            // New unread notification! Show toast
+            setLastNotificationId(unread[0].id);
+            setShowToast(unread[0]);
+            setTimeout(() => setShowToast(null), 5000);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch notifications polling');
+      }
+    };
+
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [lastNotificationId]);
 
   // Prevent scroll when sidebar is open on mobile
   useEffect(() => {
@@ -71,16 +106,16 @@ export default function Sidebar() {
   }, [isOpen]);
 
   const menuItems = [
-    { label: 'My Campaigns', icon: <Icons.Campaigns />, path: '/dashboard' },
+    { label: 'Dashboard', icon: <Icons.Campaigns />, path: '/dashboard' },
     { label: 'Wallet', icon: <Icons.Wallet />, path: '/dashboard/wallet' },
-    { label: 'My Donations', icon: <Icons.Donations />, path: '/dashboard/donations' },
+    { label: 'Donations', icon: <Icons.Donations />, path: '/dashboard/donations' },
     { label: 'Profile', icon: <Icons.Profile />, path: '/dashboard/profile' },
     { label: 'Explore', icon: <Icons.Discover />, path: '/explore' },
   ];
 
   const secondaryItems = [
-    { label: 'Identity Verification', icon: <Icons.Profile />, path: '/dashboard/identity' },
-    { label: 'Notifications', icon: <Icons.Notifications />, path: '/dashboard/notifications' },
+    { label: 'Identity', icon: <Icons.Profile />, path: '/dashboard/identity' },
+    { label: 'Notifications', icon: <Icons.Notifications />, path: '/dashboard/notifications', count: unreadCount },
     { label: 'Settings', icon: <Icons.Settings />, path: '/dashboard/settings' },
   ];
 
@@ -95,6 +130,23 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Toast Alert */}
+      {showToast && (
+        <div 
+          className="notification-toast glass"
+          onClick={() => {
+            router.push('/dashboard/notifications');
+            setShowToast(null);
+          }}
+        >
+          <div style={{ fontSize: '1.5rem' }}>💰</div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>{showToast.title}</p>
+            <p style={{ fontSize: '0.8rem', color: '#475569' }}>{showToast.message}</p>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Header (Dashboard specific) */}
       <header className="mobile-header">
         <a href="/" style={{ textDecoration: 'none' }}>
@@ -102,13 +154,21 @@ export default function Sidebar() {
             Backr
           </h2>
         </a>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="nav-toggle"
-          style={{ display: 'block' }}
-        >
-          {isOpen ? <Icons.Close /> : <Icons.Menu />}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a href="/dashboard/notifications" style={{ position: 'relative', color: '#475569', padding: '8px' }}>
+            <Icons.Bell />
+            {unreadCount > 0 && (
+              <span className="badge-pulse">{unreadCount}</span>
+            )}
+          </a>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="nav-toggle"
+            style={{ display: 'block' }}
+          >
+            {isOpen ? <Icons.Close /> : <Icons.Menu />}
+          </button>
+        </div>
       </header>
 
       {/* Sidebar Overlay */}
@@ -153,9 +213,23 @@ export default function Sidebar() {
                 href={item.path}
                 onClick={() => setIsOpen(false)}
                 className={`sidebar-link ${pathname === item.path ? 'active' : ''}`}
+                style={{ position: 'relative' }}
               >
                 {item.icon}
                 {item.label}
+                {item.count && item.count > 0 && (
+                  <span style={{ 
+                    marginLeft: 'auto', 
+                    background: '#ef4444', 
+                    color: '#fff', 
+                    fontSize: '0.7rem', 
+                    padding: '2px 8px', 
+                    borderRadius: '20px',
+                    fontWeight: 800
+                  }}>
+                    {item.count}
+                  </span>
+                )}
               </a>
             ))}
           </div>
@@ -172,6 +246,44 @@ export default function Sidebar() {
       </aside>
 
       <style jsx>{`
+        .notification-toast {
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 9999;
+          width: 90%;
+          max-width: 400px;
+          padding: 16px 20px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          cursor: pointer;
+          animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+          from { transform: translate(-50%, -100%); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        .badge-pulse {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: #ef4444;
+          color: white;
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 2px 5px;
+          border-radius: 10px;
+          border: 2px solid #fff;
+        }
+
         .mobile-only-close {
           display: none;
           background: none;

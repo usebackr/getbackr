@@ -191,7 +191,7 @@ export default function CheckoutForm({
               gap: '8px',
               fontSize: '0.85rem',
               color: '#475569',
-              marginBottom: '8px',
+              marginBottom: '12px',
               position: 'relative'
             }}
           >
@@ -201,29 +201,47 @@ export default function CheckoutForm({
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
             >
-              <span style={{ color: '#fbbf24', fontSize: '1.1rem' }}>ⓘ</span>
+              <div 
+                style={{ 
+                  width: '18px', 
+                  height: '18px', 
+                  borderRadius: '50%', 
+                  background: '#f1f5f9', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  color: '#64748b',
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                i
+              </div>
               {showTooltip && (
                 <div 
                   style={{
                     position: 'absolute',
-                    bottom: 'calc(100% + 10px)',
+                    bottom: 'calc(100% + 12px)',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     background: '#0f172a',
                     color: '#fff',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
                     fontSize: '0.75rem',
-                    width: '200px',
+                    width: '220px',
                     zIndex: 50,
-                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
                     textAlign: 'center',
                     pointerEvents: 'none',
                     fontWeight: 500,
-                    lineHeight: 1.4
+                    lineHeight: 1.5
                   }}
                 >
-                  There's a 1.5% processing fee that will be charged from the donation.
+                  <p style={{ margin: 0 }}>
+                    A <span style={{ color: '#10b981', fontWeight: 800 }}>1.5% processing fee</span> will be deducted from your donation to cover payment gateway costs.
+                  </p>
                   <div 
                     style={{
                       position: 'absolute',

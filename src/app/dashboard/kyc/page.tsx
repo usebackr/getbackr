@@ -101,7 +101,9 @@ export default function KYCPage() {
         <div style={{ maxWidth: '800px' }}>
           {status === 'pending' ? (
             <div className="dash-card" style={{ textAlign: 'center', padding: '60px' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '24px' }}>⏳</div>
+              <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
               <h2 style={{ fontSize: '1.8rem', marginBottom: '16px' }}>Verification Pending</h2>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto' }}>
                 We are currently reviewing your documents. This usually takes 24-48 hours. 
@@ -110,7 +112,9 @@ export default function KYCPage() {
             </div>
           ) : status === 'verified' ? (
             <div className="dash-card" style={{ textAlign: 'center', padding: '60px', border: '2px solid #10b981' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '24px' }}>✅</div>
+              <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
               <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#10b981' }}>Account Verified</h2>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto' }}>
                 Your identity has been confirmed. You now have full access to all features!
@@ -177,7 +181,7 @@ export default function KYCPage() {
                       cursor: 'pointer', transition: 'border-color 0.2s'
                     }}
                   >
-                    {!previews.idDoc && <><span style={{ fontSize: '1.5rem', marginBottom: '8px' }}>📷</span><span style={{ fontSize: '0.8rem', color: '#64748b' }}>Select File</span></>}
+                    {!previews.idDoc && <><span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Select ID Document</span></>}
                   </div>
                   <input type="file" id="id-upload" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleFileChange(e, 'idDoc')} />
                 </div>
@@ -193,7 +197,7 @@ export default function KYCPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    {!previews.selfie && <><span style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🤳</span><span style={{ fontSize: '0.8rem', color: '#64748b' }}>Take Photo</span></>}
+                    {!previews.selfie && <><span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Upload Selfie</span></>}
                   </div>
                   <input type="file" id="selfie-upload" style={{ display: 'none' }} accept="image/*" capture="user" onChange={(e) => handleFileChange(e, 'selfie')} />
                 </div>

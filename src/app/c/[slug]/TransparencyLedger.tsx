@@ -32,52 +32,51 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {displayedLogs.map((log) => (
         <div
           key={log.id}
+          className="ledger-row"
           style={{
-            padding: '16px 20px',
+            padding: '12px 16px',
             background: '#ffffff',
             borderRadius: '12px',
             border: '1px solid #e2e8f0',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '12px'
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'nowrap'
-            }}
-          >
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, whiteSpace: 'nowrap' }}>
               {new Date(log.entryDate).toLocaleDateString(undefined, { 
                 month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
+                day: 'numeric'
               })}
+              <span style={{ marginLeft: '4px', opacity: 0.7 }}>
+                {new Date(log.entryDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </span>
-            <span 
-              className="ledger-amount"
-              style={{ fontSize: '1rem', fontWeight: 800, color: '#ef4444' }}
+            <p 
+              style={{ 
+                color: '#475569', 
+                fontSize: '0.8rem', 
+                fontWeight: 600,
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
             >
-              -₦{Number(log.amount).toLocaleString()}
-            </span>
+              {log.description}
+            </p>
           </div>
-          <p 
-            style={{ 
-              color: '#0f172a', 
-              fontSize: '0.85rem', 
-              lineHeight: 1.5,
-              fontWeight: 500
-            }}
+          <span 
+            style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444', whiteSpace: 'nowrap' }}
           >
-            {log.description}
-          </p>
+            -₦{Number(log.amount).toLocaleString()}
+          </span>
         </div>
       ))}
 
@@ -85,13 +84,13 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
         <button
           onClick={() => setShowAll(!showAll)}
           style={{
-            marginTop: '8px',
-            padding: '12px',
+            marginTop: '4px',
+            padding: '10px',
             borderRadius: '10px',
             border: '1px solid #e2e8f0',
             background: '#fff',
-            color: '#475569',
-            fontSize: '0.85rem',
+            color: '#64748b',
+            fontSize: '0.8rem',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.2s'
@@ -104,8 +103,11 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
 
       <style jsx>{`
         @media (max-width: 640px) {
-          .ledger-amount {
-            font-size: 0.9rem !important;
+          .ledger-row {
+            padding: 8px 12px !important;
+          }
+          .ledger-row p {
+            font-size: 0.75rem !important;
           }
         }
       `}</style>

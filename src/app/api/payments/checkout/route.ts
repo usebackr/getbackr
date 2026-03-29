@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       .limit(1);
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
-    const appUrl = 'https://shoppers-retained-pete-involving.trycloudflare.com';
+    const appUrl = 'https://villa-cancelled-difficulties-union.trycloudflare.com';
     const callbackUrl = `${appUrl}/c/${campaign.slug}/success`;
 
     console.log(`[Checkout API] Redirecting to: ${callbackUrl}`);

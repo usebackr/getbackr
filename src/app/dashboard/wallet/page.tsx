@@ -127,8 +127,8 @@ export default function WalletDashboard() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
-                gap: '24px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+                gap: '16px',
               }}
             >
               <div
@@ -297,137 +297,49 @@ export default function WalletDashboard() {
 
             {/* Transaction History */}
             <div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '24px' }}>Transaction History</h3>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>Transaction History</h3>
               {transactions.length === 0 ? (
                 <div className="dash-card" style={{ padding: '40px', textAlign: 'center' }}>
                   <p style={{ color: '#64748b' }}>No wallet transactions yet.</p>
                 </div>
               ) : (
-                <div className="dash-card" style={{ padding: '0', overflow: 'hidden' }}>
+                <div className="dash-card" style={{ padding: '0', overflow: 'hidden', borderRadius: '16px' }}>
                   <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '650px' }}>
                       <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                         <tr>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              textTransform: 'uppercase',
-                            }}
-                          >
-                            Type
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              textTransform: 'uppercase',
-                            }}
-                          >
-                            Description
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              textTransform: 'uppercase',
-                            }}
-                          >
-                            Amount
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              textTransform: 'uppercase',
-                            }}
-                          >
-                            Status
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              textTransform: 'uppercase',
-                            }}
-                          >
-                            Date
-                          </th>
+                          <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Type</th>
+                          <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
+                          <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Amount</th>
+                          <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                          <th style={{ padding: '16px 24px', color: '#475569', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</th>
                         </tr>
                       </thead>
                       <tbody>
                         {transactions.map((tx: any, idx) => (
-                          <tr
-                            key={`${tx.type}-${tx.id}-${idx}`}
-                            style={{ borderBottom: '1px solid #f1f5f9' }}
-                          >
+                          <tr key={`${tx.type}-${tx.id}-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
                             <td style={{ padding: '16px 24px' }}>
-                              <span
-                                style={{
-                                  padding: '4px 10px',
-                                  borderRadius: '12px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  background: tx.type === 'contribution' ? '#dcfce7' : '#fee2e2',
-                                  color: tx.type === 'contribution' ? '#166534' : '#991b1b',
-                                }}
-                              >
+                              <span style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 700, background: tx.type === 'contribution' ? '#ecfdf5' : '#fef2f2', color: tx.type === 'contribution' ? '#059669' : '#dc2626', textTransform: 'uppercase' }}>
                                 {tx.type === 'contribution' ? 'Credit' : 'Debit'}
                               </span>
                             </td>
-                            <td style={{ padding: '16px 24px', fontWeight: 500 }}>
-                              {tx.description}
+                            <td style={{ padding: '16px 24px' }}>
+                              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem' }}>{tx.description}</div>
                               {tx.type === 'contribution' && (
-                                <span
-                                  style={{
-                                    display: 'block',
-                                    fontSize: '0.75rem',
-                                    color: '#64748b',
-                                    marginTop: '4px',
-                                  }}
-                                >
+                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', marginTop: '4px' }}>
                                   Fee: ₦{Number(tx.platformFee).toLocaleString()}
                                 </span>
                               )}
                             </td>
-                            <td
-                              style={{
-                                padding: '16px 24px',
-                                fontWeight: 700,
-                                color: tx.type === 'contribution' ? '#10b981' : '#0f172a',
-                              }}
-                            >
-                              {tx.type === 'contribution' ? '+' : '-'}₦
-                              {Number(tx.amount).toLocaleString()}
+                            <td style={{ padding: '16px 24px', fontWeight: 800, fontSize: '1rem', color: tx.type === 'contribution' ? '#059669' : '#0f172a' }}>
+                              {tx.type === 'contribution' ? '+' : '-'}₦{Number(tx.amount).toLocaleString()}
                             </td>
                             <td style={{ padding: '16px 24px' }}>
-                              <span
-                                style={{
-                                  fontSize: '0.8rem',
-                                  color: '#64748b',
-                                  textTransform: 'capitalize',
-                                }}
-                              >
+                              <span style={{ fontSize: '0.8rem', color: tx.status === 'confirmed' || tx.status === 'completed' ? '#059669' : '#64748b', fontWeight: 500, textTransform: 'capitalize' }}>
                                 {tx.status.replace('_', ' ')}
                               </span>
                             </td>
-                            <td
-                              style={{
-                                padding: '16px 24px',
-                                color: '#475569',
-                                fontSize: '0.85rem',
-                              }}
-                            >
+                            <td style={{ padding: '16px 24px', color: '#64748b', fontSize: '0.85rem' }}>
                               {new Date(tx.createdAt).toLocaleDateString()}
                             </td>
                           </tr>

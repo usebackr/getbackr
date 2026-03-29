@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
 import { eq, desc, sql, or } from 'drizzle-orm';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function OngoingProjects() {
   // Pull live 'active' or 'draft' (for testing/launch phase) campaigns from DB

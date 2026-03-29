@@ -13,12 +13,14 @@ export async function GET(req: NextRequest) {
 
     const [user] = await db
       .select({
+        id: users.id,
         displayName: users.displayName,
         email: users.email,
         bio: users.bio,
         category: users.category,
         username: users.username,
         avatarUrl: users.avatarUrl,
+        socialLinks: users.socialLinks,
         kycStatus: users.kycStatus,
       })
       .from(users)
@@ -39,11 +41,19 @@ export async function PATCH(req: NextRequest) {
     const userId = payload.sub as string;
 
     const body = await req.json();
-    const { displayName, bio, category, username } = body;
+    const { displayName, bio, category, username, avatarUrl, socialLinks } = body;
 
     await db
       .update(users)
-      .set({ displayName, bio, category, username, updatedAt: new Date() })
+      .set({ 
+        displayName, 
+        bio, 
+        category, 
+        username, 
+        avatarUrl, 
+        socialLinks,
+        updatedAt: new Date() 
+      })
       .where(eq(users.id, userId));
 
     return NextResponse.json({ message: 'Profile updated' });

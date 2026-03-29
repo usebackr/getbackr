@@ -34,8 +34,8 @@ export default function BackersList({
           marginBottom: '24px',
         }}
       >
-        <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>
-          {totalDonors} Total Donor{totalDonors !== 1 ? 's' : ''}
+        <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
+          Latest Backers
         </h4>
         <span
           style={{
@@ -50,7 +50,7 @@ export default function BackersList({
             letterSpacing: '0.05em'
           }}
         >
-          Latest Backers
+          {totalDonors} TOTAL
         </span>
       </div>
 
@@ -67,7 +67,7 @@ export default function BackersList({
             Be the first to back this project!
           </p>
         ) : (
-          backers.map((backer) => (
+          backers.slice(0, 10).map((backer) => (
             <div 
               key={backer.id}
               style={{
@@ -80,7 +80,7 @@ export default function BackersList({
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <p style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
-                  {backer.isAnonymous ? 'Anonymous' : (backer.backerName || 'A Supporter')}
+                  {backer.isAnonymous ? 'Anonymous Supporter' : (backer.backerName || 'Anonymous Supporter')}
                 </p>
                 <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                   {new Date(backer.createdAt).toLocaleDateString(undefined, {
