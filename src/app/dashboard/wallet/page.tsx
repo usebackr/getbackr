@@ -145,7 +145,7 @@ export default function WalletDashboard() {
                  </div>
                  <p style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 700 }}>KYC Verification is required for payouts.</p>
               </div>
-              <a href="/dashboard/kyc" className="btn-primary" style={{ padding: '10px 20px', fontSize: '0.85rem', textDecoration: 'none' }}>Verify Now</a>
+              <a href="/dashboard/identity" className="btn-primary" style={{ padding: '10px 20px', fontSize: '0.85rem', textDecoration: 'none' }}>Verify Now</a>
             </div>
           )}
         </div>
