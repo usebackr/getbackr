@@ -32,12 +32,19 @@ const getS3Client = () => {
     // Sanitize region: if it starts with http, it's actually an endpoint
     let finalRegion = (region || 'us-east-1').trim();
     if (finalRegion.startsWith('http')) {
-      // If endpoint is missing but region has a URL, treat it as endpoint
+      console.log(`[Storage] Detected URL in S3_REGION (${finalRegion}). Resetting to us-east-1 and using as endpoint if missing.`);
       if (!finalEndpoint) {
         finalEndpoint = finalRegion;
       }
-      finalRegion = 'us-east-1'; // Reset to default region
+      finalRegion = 'us-east-1';
     }
+
+    console.log(`[Storage] Initializing S3 Client with:`, {
+      region: finalRegion,
+      endpoint: finalEndpoint,
+      bucket: BUCKET,
+      accessKeyId: accessKeyId ? `${accessKeyId.slice(0, 4)}...` : 'MISSING',
+    });
 
     s3 = new S3Client({
       region: finalRegion,
@@ -99,14 +106,25 @@ export async function uploadFile(
 
   // S3 Production
   const client = getS3Client();
-  await client.send(
-    new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-      ServerSideEncryption: 'AES256',
-    }),
-  );
-  return key;
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+        ServerSideEncryption: 'AES256',
+      }),
+    );
+    console.log(`[Storage] Successfully uploaded to S3: ${key} in bucket ${BUCKET}`);
+    return key;
+  } catch (err: any) {
+    console.error(`[Storage] S3 Upload failed for bucket ${BUCKET}:`, err.name, err.message);
+    
+    if (err.name === 'NoSuchBucket' || err.message?.toLowerCase().includes('not found')) {
+      throw new Error(`The storage bucket "${BUCKET}" does not exist in your Supabase project. Please log into Supabase, go to Storage, and create a PUBLIC bucket named exactly "${BUCKET}".`);
+    }
+    
+    throw new Error(`Cloud storage upload failed: ${err.message || 'Unknown error'}`);
+  }
 }

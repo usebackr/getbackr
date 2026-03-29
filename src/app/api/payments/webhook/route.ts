@@ -42,9 +42,9 @@ export async function POST(req: NextRequest) {
 
     // Calculate 5% Platform Fee
     const platformFee = amountInMajor * 0.05;
-    const netAmount = amountInMajor - platformFee;
+    const netAmount = amountInMajor - platformFee;    try {
+      console.log(`[Paystack Webhook] Processing charge.success. Campaign: ${campaignId}, Reference: ${reference}`);
 
-    try {
       const txResult = await db.transaction(async (tx) => {
         // A. Idempotency: skip if already processed
         const existing = await tx
@@ -53,9 +53,13 @@ export async function POST(req: NextRequest) {
           .where(sql`${contributions.paymentReference} = ${reference}`)
           .limit(1);
 
-        if (existing.length > 0) return;
+        if (existing.length > 0) {
+          console.log(`[Paystack Webhook] Duplicate reference detected: ${reference}. Skipping.`);
+          return null;
+        }
 
         // B. Insert confirmed contribution
+        console.log(`[Paystack Webhook] Recording contribution in database...`);
         await tx.insert(contributions).values({
           campaignId,
           backerId: backerId || null,
@@ -71,6 +75,7 @@ export async function POST(req: NextRequest) {
 
         // C. Update campaign's project wallet (atomic increment)
         console.log(`[Paystack Webhook] Updating wallet for campaign: ${campaignId}`);
+        // Use explicit numeric addition to be 100% sure with Postgres
         const walletUpdate = await tx
           .update(projectWallets)
           .set({
@@ -79,19 +84,22 @@ export async function POST(req: NextRequest) {
             updatedAt: new Date(),
           })
           .where(eq(projectWallets.campaignId, campaignId))
-          .returning({ id: projectWallets.id });
+          .returning({ id: projectWallets.id, balance: projectWallets.balance });
 
         if (walletUpdate.length === 0) {
-          console.warn(`[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one...`);
+          console.warn(`[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one for tracking...`);
           await tx.insert(projectWallets).values({
             campaignId,
             balance: netAmount.toString(),
             totalReceived: amountInMajor.toString(),
             currency: data.currency || 'NGN',
           });
+        } else {
+          console.log(`[Paystack Webhook] Wallet updated successfully. New recorded balance: ${walletUpdate[0].balance}`);
         }
 
         // D. Fetch campaign creator details and current wallet state
+        console.log(`[Paystack Webhook] Fetching notification details...`);
         const [campaignDetails] = await tx
           .select({
             title: campaigns.title,
@@ -141,7 +149,6 @@ export async function POST(req: NextRequest) {
       });
 
       // F. Queue Emails via Workers (OUTSIDE THE DB TRANSACTION!)
-      // If we are on Vercel without a configured Redis URL, this could hang.
       // Doing it outside the transaction ensures the payment is safely recorded.
       if (txResult && txResult.campaignDetails && process.env.REDIS_URL) {
         try {
