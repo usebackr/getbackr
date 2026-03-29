@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
       .limit(1);
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
-    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/c/${campaign.slug}?success=true`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const callbackUrl = `${appUrl}/c/${campaign.slug}/success`;
 
     const metadata = {
       campaignId,
