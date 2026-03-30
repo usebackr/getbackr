@@ -113,6 +113,15 @@ export async function POST(req: NextRequest) {
     );
   } catch (err: any) {
     console.error('[Create Campaign] Error:', err);
+    
+    // Specifically handle JWT errors
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return NextResponse.json(
+        { error: 'Session expired. Please log in again.' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
       { error: err.message || 'Server error creating campaign' },
       { status: 500 },

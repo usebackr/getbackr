@@ -1,6 +1,26 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 export default function Hero() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (err) {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkSession();
+  }, []);
+
   return (
     <section
       style={{
@@ -44,7 +64,7 @@ export default function Hero() {
           }}
         >
           <a
-            href="/signup"
+            href={!loading && isAuthenticated ? "/dashboard/campaigns/create" : "/signup"}
             className="btn-primary"
             style={{
               padding: '16px 40px',
