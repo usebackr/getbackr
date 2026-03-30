@@ -80,7 +80,7 @@ export default function Navbar() {
           Log In
         </a>
         <a 
-          href="/signup" 
+          href="/login" 
           className="btn-primary" 
           style={{ padding: '12px 32px', fontSize: isMobile ? '1.1rem' : '0.85rem', width: isMobile ? '100%' : 'auto', textAlign: 'center' }}
           onClick={() => isMobile && setIsOpen(false)}

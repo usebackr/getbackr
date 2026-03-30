@@ -64,7 +64,7 @@ export default function Hero() {
           }}
         >
           <a
-            href={!loading && isAuthenticated ? "/dashboard/campaigns/create" : "/signup"}
+            href={!loading && isAuthenticated ? "/dashboard/campaigns/create" : "/login"}
             className="btn-primary"
             style={{
               padding: '16px 40px',
