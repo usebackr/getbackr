@@ -137,6 +137,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             creatorId: withdrawals.creatorId,
             creatorEmail: users.email,
             campaignTitle: campaigns.title,
+            walletId: projectWallets.id,
           })
           .from(withdrawals)
           .leftJoin(users, eq(users.id, withdrawals.creatorId))
@@ -145,11 +146,25 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           .where(eq(withdrawals.id, withdrawalId))
           .limit(1);
 
-        // Update DB to completed
-        await db.update(withdrawals).set({ 
-          status: 'completed',
-          payoutReference: providedTransferCode
-        }).where(eq(withdrawals.id, withdrawalId));
+        // Atomic update for database and wallet consistency
+        await db.transaction(async (tx) => {
+          // Update DB to completed
+          await tx.update(withdrawals).set({ 
+            status: 'completed',
+            payoutReference: providedTransferCode
+          }).where(eq(withdrawals.id, withdrawalId));
+
+          // Sync Wallet: Balance decreases, Total Withdrawn increases. Total Received stays the same (Progress preserved).
+          if (request.walletId) {
+            await tx.update(projectWallets)
+              .set({
+                balance: sql`${projectWallets.balance} - ${request.amount}::numeric`,
+                totalWithdrawn: sql`${projectWallets.totalWithdrawn} + ${request.amount}::numeric`,
+                updatedAt: new Date()
+              })
+              .where(eq(projectWallets.id, request.walletId));
+          }
+        });
 
         // Notify Creator
         if (request) {
@@ -254,12 +269,26 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         }
       }
 
-      // Update the payout status in DB
-      await db.update(withdrawals).set({ 
-        status, 
-        rejectionReason: status === 'rejected' ? feedbackReason : null,
-        payoutReference: payoutReference
-      }).where(eq(withdrawals.id, withdrawalId));
+      // Atomic update for database and wallet consistency
+      await db.transaction(async (tx) => {
+        // Update the payout status in DB
+        await tx.update(withdrawals).set({ 
+          status, 
+          rejectionReason: status === 'rejected' ? feedbackReason : null,
+          payoutReference: payoutReference
+        }).where(eq(withdrawals.id, withdrawalId));
+
+        // Sync Wallet if approved: Balance decreases, Total Withdrawn increases.
+        if (status === 'completed' && existingRequest.walletId) {
+          await tx.update(projectWallets)
+            .set({
+              balance: sql`${projectWallets.balance} - ${existingRequest.amount}::numeric`,
+              totalWithdrawn: sql`${projectWallets.totalWithdrawn} + ${existingRequest.amount}::numeric`,
+              updatedAt: new Date()
+            })
+            .where(eq(projectWallets.id, existingRequest.walletId));
+        }
+      });
 
       // Trigger Email & In-App Notification
       try {

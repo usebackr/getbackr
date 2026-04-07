@@ -252,14 +252,15 @@ export default function DashboardPage() {
     }
 
     try {
-      const res = await fetch(`/api/campaigns/${id}`, {
-        method: 'PUT',
+      const res = await fetch(`/api/campaigns/${id}/status`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'closed' }),
       });
       if (res.ok) {
         // Refresh local data
         setCampaigns(campaigns.map((c) => (c.id === id ? { ...c, status: 'closed' } : c)));
+        fetchStatsAndBank(filter);
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to end campaign');
@@ -789,37 +790,26 @@ export default function DashboardPage() {
                             >
                               Edit Project
                             </button>
-                            <button
-                              onClick={async () => {
-                                if (confirm('Are you sure you want to end this campaign? This cannot be undone.')) {
-                                  try {
-                                    const res = await fetch(`/api/campaigns/${camp.id}/status`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ status: 'closed' }),
-                                    });
-                                    if (res.ok) fetchStatsAndBank(filter);
-                                  } catch (err) {
-                                    console.error(err);
-                                  }
-                                }
-                              }}
-                              style={{ 
-                                padding: '12px', 
-                                borderRadius: '14px',
-                                border: '1px solid #fee2e2',
-                                background: '#fff5f5',
-                                color: '#ef4444',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                width: '48px'
-                              }}
-                              title="End Campaign"
-                            >
-                              <Icons.Trash />
-                            </button>
+                            {camp.status?.toLowerCase() === 'active' && (
+                              <button
+                                onClick={() => handleEndCampaign(camp.id)}
+                                style={{ 
+                                  flex: 1.5,
+                                  padding: '12px', 
+                                  borderRadius: '14px',
+                                  border: '1px solid #fee2e2',
+                                  background: '#fff5f5',
+                                  color: '#ef4444',
+                                  fontWeight: 700,
+                                  fontSize: '0.85rem',
+                                  cursor: 'pointer',
+                                  whiteSpace: 'nowrap'
+                                }}
+                                title="End Campaign"
+                              >
+                                End Project
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

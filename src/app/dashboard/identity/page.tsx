@@ -290,7 +290,7 @@ export default function IdentityPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', minHeight: '40px' }}>
-                    Selfie — Holding Your ID <br/>
+                    Selfie — Face Verification <br/>
                     <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>(Face clearly visible • max 2MB)</span>
                   </label>
                   <div 
@@ -306,7 +306,7 @@ export default function IdentityPage() {
                       <div style={{ padding: '0 16px' }}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Hold ID next to your face</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Ensure your face is clearly visible</div>
                       </div>
                     ) : (
                       <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' }}>
