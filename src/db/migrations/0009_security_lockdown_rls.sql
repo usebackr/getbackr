@@ -47,6 +47,12 @@ CREATE POLICY "Spending logs are viewable by everyone"
 ON "spending_logs" FOR SELECT 
 USING (true);
 
+-- Project wallets are public for progress tracking
+DROP POLICY IF EXISTS "Project wallets are viewable by everyone" ON "project_wallets";
+CREATE POLICY "Project wallets are viewable by everyone" 
+ON "project_wallets" FOR SELECT 
+USING (true);
+
 -- 3. Define Authenticated User Policies (via Supabase Auth if used)
 -- Even if the app uses custom auth, defining these ensures that if Supabase Auth is enabled, 
 -- users can only touch their own data.
@@ -62,6 +68,20 @@ CREATE POLICY "Users can update their own profile"
 ON "users" FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = id);
+
+-- Users can view their own bank accounts
+DROP POLICY IF EXISTS "Users can view their own bank accounts" ON "bank_accounts";
+CREATE POLICY "Users can view their own bank accounts"
+ON "bank_accounts" FOR SELECT
+TO authenticated
+USING (auth.uid() = userId);
+
+-- Users can view their own withdrawals
+DROP POLICY IF EXISTS "Users can view their own withdrawals" ON "withdrawals";
+CREATE POLICY "Users can view their own withdrawals"
+ON "withdrawals" FOR SELECT
+TO authenticated
+USING (auth.uid() = creatorId);
 
 -- 4. Lockdown Sensitive Tables (No Public Access)
 -- The following tables have NO public policies. 

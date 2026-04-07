@@ -15,91 +15,117 @@ import BackersList from './BackersList';
 import { getPublicUrl } from '@/lib/storage';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
-  const [campaign] = await db
-    .select()
-    .from(campaigns)
-    .where(eq(campaigns.slug, params.slug))
-    .limit(1);
+  let campaign, creator, wallet, logs, campaignContributions, latestBackers, goalAmount, raisedAmount, comments, totalDonors, coverUrl, avatarUrl;
 
-  if (!campaign) notFound();
-
-  // Increment view count in background - wrapped in try/catch for stability
   try {
-    await db.update(campaigns)
-      .set({ views: sql`${campaigns.views} + 1` })
-      .where(eq(campaigns.id, campaign.id));
-  } catch (err) {
-    console.error('[Views] Column might be missing, skipping increment:', err);
-  }
+    const campaignsResult = await db
+      .select()
+      .from(campaigns)
+      .where(eq(campaigns.slug, params.slug))
+      .limit(1);
 
-  const [creator] = await db
-    .select({ 
-      displayName: users.displayName, 
-      avatarUrl: users.avatarUrl,
-      username: users.username
-    })
-    .from(users)
-    .where(eq(users.id, campaign.creatorId))
-    .limit(1);
+    campaign = campaignsResult[0];
 
-  // Apply self-healing URLs
-  const coverUrl = getPublicUrl(campaign.coverImageUrl);
-  const avatarUrl = getPublicUrl(creator?.avatarUrl);
+    if (!campaign) notFound();
 
-  const [wallet] = await db
-    .select()
-    .from(projectWallets)
-    .where(eq(projectWallets.campaignId, campaign.id))
-    .limit(1);
+    // Increment view count in background - wrapped in try/catch for stability
+    try {
+      await db.update(campaigns)
+        .set({ views: sql`${campaigns.views} + 1` })
+        .where(eq(campaigns.id, campaign.id));
+    } catch (err) {
+      console.error('[Views] Column might be missing, skipping increment:', err);
+    }
 
-  const logs = await db
-    .select({
-      id: spendingLogs.id,
-      amount: spendingLogs.amount,
-      description: spendingLogs.description,
-      entryDate: spendingLogs.entryDate,
-      withdrawalStatus: withdrawals.status,
-    })
-    .from(spendingLogs)
-    .leftJoin(withdrawals, eq(spendingLogs.withdrawalId, withdrawals.id))
-    .where(
-      and(
-        eq(spendingLogs.campaignId, campaign.id),
-        or(
-          sql`${spendingLogs.withdrawalId} IS NULL`,
-          inArray(withdrawals.status, ['processing', 'completed'])
+    const creatorsResult = await db
+      .select({ 
+        displayName: users.displayName, 
+        avatarUrl: users.avatarUrl,
+        username: users.username
+      })
+      .from(users)
+      .where(eq(users.id, campaign.creatorId))
+      .limit(1);
+    
+    creator = creatorsResult[0];
+
+    // Apply self-healing URLs
+    coverUrl = getPublicUrl(campaign.coverImageUrl);
+    avatarUrl = getPublicUrl(creator?.avatarUrl);
+
+    const walletsResult = await db
+      .select()
+      .from(projectWallets)
+      .where(eq(projectWallets.campaignId, campaign.id))
+      .limit(1);
+    
+    wallet = walletsResult[0];
+
+    logs = await db
+      .select({
+        id: spendingLogs.id,
+        amount: spendingLogs.amount,
+        description: spendingLogs.description,
+        entryDate: spendingLogs.entryDate,
+        withdrawalStatus: withdrawals.status,
+      })
+      .from(spendingLogs)
+      .leftJoin(withdrawals, eq(spendingLogs.withdrawalId, withdrawals.id))
+      .where(
+        and(
+          eq(spendingLogs.campaignId, campaign.id),
+          or(
+            sql`${spendingLogs.withdrawalId} IS NULL`,
+            inArray(withdrawals.status, ['processing', 'completed'])
+          )
         )
       )
-    )
-    .orderBy(desc(spendingLogs.entryDate));
+      .orderBy(desc(spendingLogs.entryDate));
 
-  const campaignContributions = await db
-    .select()
-    .from(contributions)
-    .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
-    .orderBy(desc(contributions.createdAt));
+    campaignContributions = await db
+      .select()
+      .from(contributions)
+      .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
+      .orderBy(desc(contributions.createdAt));
 
-  const comments = campaignContributions
-    .filter(c => c.message && c.message.trim() !== '')
-    .map(c => ({
+    comments = campaignContributions
+      .filter(c => c.message && c.message.trim() !== '')
+      .map(c => ({
+        id: c.id,
+        backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
+        message: c.message,
+        createdAt: c.createdAt
+      }));
+
+    totalDonors = campaignContributions.length;
+    // Map contributions correctly for the BackersList
+    latestBackers = campaignContributions.slice(0, 10).map(c => ({
       id: c.id,
       backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
-      message: c.message,
+      amount: c.amount,
+      isAnonymous: c.anonymous,
       createdAt: c.createdAt
     }));
 
-  const totalDonors = campaignContributions.length;
-  // Map contributions correctly for the BackersList
-  const latestBackers = campaignContributions.slice(0, 10).map(c => ({
-    id: c.id,
-    backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
-    amount: c.amount,
-    isAnonymous: c.anonymous,
-    createdAt: c.createdAt
-  }));
+    goalAmount = parseFloat(campaign.goalAmount);
+    raisedAmount = parseFloat(wallet?.totalReceived || '0');
 
-  const goalAmount = parseFloat(campaign.goalAmount);
-  const raisedAmount = parseFloat(wallet?.totalReceived || '0');
+  } catch (error) {
+    console.error('[CampaignPublicPage] Critical Error:', error);
+    return (
+      <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '40px', background: '#fff', borderRadius: '24px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', maxWidth: '500px' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', marginBottom: '16px' }}>Campaign Unavailable</h1>
+          <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '32px' }}>
+            We're having trouble loading this campaign page. This might be due to a temporary database sync issue.
+          </p>
+          <a href="/explore" className="btn-primary" style={{ padding: '12px 32px', borderRadius: '12px', textDecoration: 'none' }}>
+            Back to Explore
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#fafafa' }}>

@@ -88,23 +88,32 @@ export default async function AdminWithdrawalsPage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+      {/* Error Banner */}
       {fetchError && (
         <div style={{ 
-          padding: '24px', 
-          background: '#fef2f2', 
-          border: '1px solid #fee2e2', 
-          borderRadius: '16px', 
-          color: '#991b1b', 
-          marginBottom: '32px',
+          padding: '32px', 
+          background: '#fff1f2', 
+          border: '1px solid #fda4af', 
+          borderRadius: '24px', 
+          color: '#9f1239', 
+          marginBottom: '40px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '12px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
         }}>
-          <h3 style={{ fontWeight: 800 }}>⚠️ Database Synchronization Error</h3>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.5 }}>
-            We encountered an exception while fetching payout data. This usually happens if new database columns haven't been applied to production. 
-            Please run <code>npm run db:migrate</code> on your production database.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+            <h3 style={{ fontWeight: 900, margin: 0, fontSize: '1.25rem' }}>Database Synchronization Issue</h3>
+          </div>
+          <p style={{ fontSize: '1rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>
+            We encountered an exception while fetching payout data for the governance dashboard. 
+            This typically occurs if the production database schema is out of sync with the latest application code, 
+            or if Row Level Security (RLS) is blocking the required administrative joins.
           </p>
+          <div style={{ marginTop: '8px', padding: '12px 16px', background: 'rgba(255,255,255,0.5)', borderRadius: '12px', fontSize: '0.9rem', fontFamily: 'monospace' }}>
+            Action: Run <strong>npm run db:migrate</strong> and verify RLS policies for <em>project_wallets</em>.
+          </div>
         </div>
       )}
       <div style={{ marginBottom: '40px' }}>

@@ -141,7 +141,21 @@ export async function POST(req: NextRequest) {
       });
     });
   } catch (error: any) {
-    console.error('[withdraw API Error]', error);
+    // Enhanced logging for production diagnostics
+    console.error('[Withdraw API Error] Full Context:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      stack: error.stack,
+    });
+
+    // Provide a slightly more helpful error if it's a known database issue
+    if (error.code === '42703') { // Undefined column
+       return NextResponse.json({ 
+         error: 'Database schema mismatch. Please contact admin to run migrations.' 
+       }, { status: 500 });
+    }
+
     return NextResponse.json({ error: 'Server error processing withdrawal' }, { status: 500 });
   }
 }
