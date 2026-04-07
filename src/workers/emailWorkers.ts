@@ -6,7 +6,7 @@ import { contributions } from '@/db/schema/contributions';
 
 // Initialise Resend with API key - Lazy loading to prevent build-time crashes
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
-const FROM_EMAIL = process.env.EMAIL_FROM ?? 'onboarding@getResend().dev';
+const FROM_EMAIL = process.env.EMAIL_FROM ?? 'no-reply@findbackr.com.ng';
 
 let _resend: Resend | null = null;
 function getResend() {

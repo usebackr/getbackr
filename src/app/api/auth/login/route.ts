@@ -32,6 +32,14 @@ export async function POST(req: NextRequest) {
     }
 
     const dbUser = user[0];
+    
+    // REQUIRE email verification in production
+    if (process.env.NODE_ENV === 'production' && !dbUser.emailVerified) {
+      return NextResponse.json(
+        { error: 'Email verification required. Please check your inbox for the verification link.' },
+        { status: 403 }
+      );
+    }
 
     const isValid = await verifyPassword(password, dbUser.passwordHash);
     if (!isValid) {

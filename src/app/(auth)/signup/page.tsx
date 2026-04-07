@@ -66,8 +66,8 @@ export default function SignupPage() {
         return;
       }
 
-      // Registration succeeded — go to login
-      router.push(`/login?registered=true`);
+      // Registration succeeded — go to pending verification
+      router.push(`/verify-email/pending?email=${encodeURIComponent(formData.email)}`);
     } catch (err) {
       setError('Failed to connect to the server');
     } finally {
