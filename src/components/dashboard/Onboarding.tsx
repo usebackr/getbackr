@@ -21,10 +21,10 @@ export function VerificationBanner({ user }: { user: UserProfile }) {
           title: 'Unlock Payouts & Full Features',
           message: 'Complete your identity verification to start receiving funds and launch verified projects.',
           btnText: 'Verify Identity Now',
-          bg: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-          border: '1px solid #bfdbfe',
-          color: '#1e40af',
-          btnBg: '#2563eb',
+          bg: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          border: '1px solid #e2e8f0',
+          color: '#0f172a',
+          btnBg: '#10b981', // Branded green for positive action
         };
       case 'pending':
         return {
@@ -136,6 +136,14 @@ export function OnboardingChecklist({ user, hasCampaigns, hasBank }: { user: Use
       desc: 'Launch your creative dream and start raising support.',
       completed: false,
       path: '/dashboard/campaigns/create'
+    },
+    {
+      id: 'explore',
+      number: '4',
+      title: 'Explore Projects',
+      desc: 'Find and support creative ventures across the platform.',
+      completed: false,
+      path: '/explore'
     }
   ];
 

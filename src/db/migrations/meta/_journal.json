@@ -57,6 +57,20 @@
       "when": 1774803649197,
       "tag": "0007_married_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775564219600,
+      "tag": "0008_kyc_status_fix",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775564219700,
+      "tag": "0009_security_lockdown_rls",
+      "breakpoints": true
     }
   ]
 }

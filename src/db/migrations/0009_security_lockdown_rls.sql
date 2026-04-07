@@ -23,22 +23,26 @@ ALTER TABLE "password_resets" ENABLE ROW LEVEL SECURITY;
 -- Only non-sensitive public metadata should be visible via the external REST API.
 
 -- Campaigns are public
+DROP POLICY IF EXISTS "Campaigns are viewable by everyone" ON "campaigns";
 CREATE POLICY "Campaigns are viewable by everyone" 
 ON "campaigns" FOR SELECT 
 USING (true);
 
 -- Campaign updates are public
+DROP POLICY IF EXISTS "Campaign updates are viewable by everyone" ON "campaign_updates";
 CREATE POLICY "Campaign updates are viewable by everyone" 
 ON "campaign_updates" FOR SELECT 
 USING (true);
 
 -- Contributions (public view)
 -- Note: We allow viewing confirmed contributions so the community can see the support.
+DROP POLICY IF EXISTS "Confirmed contributions are viewable by everyone" ON "contributions";
 CREATE POLICY "Confirmed contributions are viewable by everyone" 
 ON "contributions" FOR SELECT 
 USING ("status" = 'confirmed');
 
 -- Spending logs are public for transparency
+DROP POLICY IF EXISTS "Spending logs are viewable by everyone" ON "spending_logs";
 CREATE POLICY "Spending logs are viewable by everyone" 
 ON "spending_logs" FOR SELECT 
 USING (true);
@@ -47,11 +51,13 @@ USING (true);
 -- Even if the app uses custom auth, defining these ensures that if Supabase Auth is enabled, 
 -- users can only touch their own data.
 
+DROP POLICY IF EXISTS "Users can view their own profile" ON "users";
 CREATE POLICY "Users can view their own profile" 
 ON "users" FOR SELECT 
 TO authenticated 
 USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON "users";
 CREATE POLICY "Users can update their own profile" 
 ON "users" FOR UPDATE 
 TO authenticated 

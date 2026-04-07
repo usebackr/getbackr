@@ -55,14 +55,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CampaignPage({ params }: PageProps) {
-  const data = await getCampaignBySlug(params.slug);
+  let data;
+  try {
+    data = await getCampaignBySlug(params.slug);
+  } catch (error) {
+    console.error('Error loading campaign:', error);
+    return (
+      <main style={{ maxWidth: 800, margin: '4rem auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h1 style={{ color: '#1a2744' }}>Campaign Unavailable</h1>
+        <p style={{ color: '#666' }}>We're having trouble loading this campaign right now. Please try again later.</p>
+        <a href="/" style={{ color: '#f5a623', fontWeight: 600 }}>Back to Home</a>
+      </main>
+    );
+  }
+
   if (!data) notFound();
 
-  // data is guaranteed non-null after notFound() above
-  const { campaign, creator, wallet } = data!;
+  const { campaign, creator, wallet } = data;
 
-  const goalAmount = parseFloat(campaign.goalAmount);
-  const totalReceived = wallet ? parseFloat(wallet.totalReceived) : 0;
+  const parseSafe = (val: any) => {
+    const parsed = parseFloat(val);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const goalAmount = parseSafe(campaign.goalAmount);
+  const totalReceived = wallet ? parseSafe(wallet.totalReceived) : 0;
   const progressPercent = goalAmount > 0 ? Math.min(100, (totalReceived / goalAmount) * 100) : 0;
 
   const endDate = new Date(campaign.endDate);
