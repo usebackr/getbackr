@@ -88,7 +88,10 @@ export default function SettingsPage() {
         }),
       });
       const data = await res.json();
-      if (!data.error) setSaveSuccess(true);
+      if (!data.error) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 5000);
+      }
     } catch (err) {
       console.error(err);
     } finally {
