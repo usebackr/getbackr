@@ -237,3 +237,25 @@ export async function resolveAccountNumber(
 
   return data.data.account_name;
 }
+
+/**
+ * Fetches the current balance of the Paystack account.
+ * Specifically checks the NGN balance available for transfers.
+ */
+export async function getTransferBalance(): Promise<number> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/balance`, {
+    headers: { Authorization: `Bearer ${secretKey}` },
+  });
+
+  if (!response.ok) throw new Error('Failed to fetch balance from Paystack');
+
+  const data = await response.json();
+  if (!data.status) throw new Error(data.message);
+
+  // Return NGN balance or 0 if not found
+  const ngnBalance = data.data.find((b: any) => b.currency === 'NGN');
+  return ngnBalance ? ngnBalance.balance / 100 : 0;
+}

@@ -111,7 +111,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    const { status, reason: feedbackReason } = await req.json();
+    const { status, reason: feedbackReason, isManual } = await req.json();
     const withdrawalId = params.id;
 
     if (!withdrawalId)
@@ -152,26 +152,30 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
       // Actual physical transfer via Paystack if approved
       if (status === 'completed') {
-        try {
-          // 1. Create Transfer Recipient if needed (Paystack handles existing nuban gracefully)
-          const { createTransferRecipient } = await import('@/lib/payments/paystack');
-          const recipientCode = await createTransferRecipient(
-            existingRequest.accountName || 'Creator',
-            existingRequest.accountNumber || '',
-            existingRequest.bankCode || ''
-          );
+        if (isManual) {
+          payoutReference = `MANUAL_PAYOUT_${new Date().toISOString().split('T')[0]}_${Math.random().toString(36).substring(7).toUpperCase()}`;
+        } else {
+          try {
+            // 1. Create Transfer Recipient if needed (Paystack handles existing nuban gracefully)
+            const { createTransferRecipient } = await import('@/lib/payments/paystack');
+            const recipientCode = await createTransferRecipient(
+              existingRequest.accountName || 'Creator',
+              existingRequest.accountNumber || '',
+              existingRequest.bankCode || ''
+            );
 
-          // 2. Initiate the Transfer
-          payoutReference = await initiateTransfer(
-            Number(existingRequest.amount),
-            recipientCode,
-            `Backr Cloud Payout: ${existingRequest.campaignTitle}`
-          );
-        } catch (paystackErr: any) {
-          console.error('[Admin Payout] Paystack Transfer Failed:', paystackErr);
-          return NextResponse.json({ 
-            error: `Paystack Payout Failed: ${paystackErr.message}. Funds not moved.` 
-          }, { status: 500 });
+            // 2. Initiate the Transfer
+            payoutReference = await initiateTransfer(
+              Number(existingRequest.amount),
+              recipientCode,
+              `Backr Cloud Payout: ${existingRequest.campaignTitle}`
+            );
+          } catch (paystackErr: any) {
+            console.error('[Admin Payout] Paystack Transfer Failed:', paystackErr);
+            return NextResponse.json({ 
+              error: `Paystack Payout Failed: ${paystackErr.message}. Funds not moved.` 
+            }, { status: 500 });
+          }
         }
       }
 

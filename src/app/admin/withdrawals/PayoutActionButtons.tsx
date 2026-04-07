@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: string }) {
@@ -8,12 +8,28 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
   const [loading, setLoading] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [reason, setReason] = useState('Insufficient verification / Invalid bank details');
+  const [paystackBalance, setPaystackBalance] = useState<number | null>(null);
 
-  const executeAction = async (action: 'completed' | 'rejected') => {
-    if (action === 'completed') {
-      if (!confirm(`Process bank transfer for this amount? This permanently closes the payout.`)) {
-        return;
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const res = await fetch('/api/admin/payments/balance');
+        const data = await res.json();
+        if (data.balance !== undefined) setPaystackBalance(data.balance);
+      } catch (err) {
+        console.error('Failed to fetch balance', err);
       }
+    }
+    fetchBalance();
+  }, []);
+
+  const executeAction = async (action: 'completed' | 'rejected', isManual = false) => {
+    if (action === 'completed') {
+      const confirmMsg = isManual 
+        ? "Mark this as COMPLETED manually? This means you've already sent the funds via another bank and just want to close the request in the app."
+        : "Process automated bank transfer via Paystack for this amount?";
+      
+      if (!confirm(confirmMsg)) return;
     } else {
       if (!reason || reason.trim() === '') {
         alert('A rejection reason is strictly required to bounce funds.');
@@ -26,7 +42,11 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
       const res = await fetch(`/api/admin/withdrawals/${withdrawalId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: action, reason: action === 'rejected' ? reason.trim() : '' }),
+        body: JSON.stringify({ 
+          status: action, 
+          reason: action === 'rejected' ? reason.trim() : '',
+          isManual
+        }),
       });
       const data = await res.json();
 
@@ -83,9 +103,19 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
         flex: 1,
       }}
     >
-      <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
-        Action Center
-      </h4>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+          Action Center
+        </h4>
+        {paystackBalance !== null && (
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Paystack Wallet</p>
+            <p style={{ fontSize: '0.9rem', fontWeight: 900, color: paystackBalance > 0 ? '#10b981' : '#ef4444' }}>
+              ₦{paystackBalance.toLocaleString()}
+            </p>
+          </div>
+        )}
+      </div>
 
       <div
         style={{
@@ -97,7 +127,7 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
         }}
       >
         <button
-          onClick={() => executeAction('completed')}
+          onClick={() => executeAction('completed', false)}
           disabled={loading}
           style={{
             width: '100%',
@@ -117,13 +147,32 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
         </button>
 
         <button
+          onClick={() => executeAction('completed', true)}
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
+          }}
+        >
+          Mark as Paid Manually
+        </button>
+
+        <button
           onClick={() => setIsRejecting(true)}
           disabled={loading}
           style={{
             width: '100%',
             padding: '12px',
             borderRadius: '8px',
-            border: '1px solid currentColor',
+            border: 'none',
             background: 'transparent',
             color: '#ef4444',
             fontWeight: 600,
