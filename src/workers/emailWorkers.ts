@@ -55,7 +55,7 @@ export interface ReceiptJobData {
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received';
+  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_otp' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received' | 'account_deleted';
   userId?: string;
   email?: string;
   displayName?: string;
@@ -389,6 +389,40 @@ export async function sendEmail(data: ReceiptJobData) {
                 </p>
               </div>
               <p>In the meantime, you can continue exploring projects on Backr.</p>
+            </div>
+          </div>
+        `,
+      });
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
+    }
+
+    // 4g. Account Deleted Confirmation
+    if (type === 'account_deleted') {
+      const to = email;
+      if (!to) throw new Error('Missing email for Account Deletion');
+
+      const { data: res, error } = await getResend().emails.send({
+        to,
+        from: FROM_EMAIL,
+        subject: '⚠️ Your Backr account has been removed',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <div style="background: #f8fafc; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <span style="font-size: 32px;">⚠️</span>
+              </div>
+              <h2 style="font-size: 1.5rem; color: #0f172a; text-align: center; margin-bottom: 24px;">Account Removed</h2>
+              <p>Hi ${displayName || 'there'},</p>
+              <p>We're writing to inform you that your Backr account has been permanently removed by an administrator.</p>
+              <div style="background: #fff1f2; border-left: 4px solid #ef4444; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 0.9rem; color: #991b1b; text-align: center;">
+                  All associated campaigns, financial records, and personal data have been <strong>permanently deleted</strong>.
+                </p>
+              </div>
+              <p>If you have any questions regarding this action, please reach out to our support team.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng</p>
             </div>
           </div>
         `,

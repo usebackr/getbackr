@@ -54,6 +54,30 @@ export function UserManagementTable({ initialUsers }: { initialUsers: any[] }) {
     }
   }
 
+  async function handleDeleteUser(userId: string, email: string) {
+    if (!window.confirm(`⚠️ PERMANENT DELETION: Are you sure you want to delete ${email}? This will erase all their campaigns, contributions, and wallet data. This CANNOT be undone.`)) {
+      return;
+    }
+
+    setUpdating(userId);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== userId));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete user');
+      }
+    } catch (err) {
+      console.error('Failed to delete user');
+      alert('Network error during deletion');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   return (
     <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -128,6 +152,22 @@ export function UserManagementTable({ initialUsers }: { initialUsers: any[] }) {
                       Verify
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDeleteUser(user.id, user.email)}
+                    disabled={!!updating}
+                    style={{
+                      padding: '6px 12px',
+                      background: '#fef2f2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </td>
             </tr>
