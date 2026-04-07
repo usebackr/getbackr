@@ -58,8 +58,8 @@ export async function POST(req: NextRequest) {
           },
         });
 
-      // Update user KYC status to verified (mocking an automatic approval for the MVP)
-      await tx.update(users).set({ kycStatus: 'verified' }).where(eq(users.id, userId));
+      // Update user KYC status to pending for administrative review
+      await tx.update(users).set({ kycStatus: 'pending', updatedAt: new Date() }).where(eq(users.id, userId));
     });
 
     return NextResponse.json(

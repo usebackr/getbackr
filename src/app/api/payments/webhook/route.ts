@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
           .where(eq(projectWallets.campaignId, campaignId))
           .limit(1);
 
-        if (campaignDetails) {
+        if (campaignDetails && campaignDetails.creatorId) {
           // E. Create internal notification for creator
           await tx.insert(notifications).values({
             userId: campaignDetails.creatorId,
