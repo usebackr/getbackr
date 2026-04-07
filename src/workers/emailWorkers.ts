@@ -4,11 +4,20 @@ import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
-// Initialise Resend with API key
+// Initialise Resend with API key - Lazy loading to prevent build-time crashes
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
-const FROM_EMAIL = process.env.EMAIL_FROM ?? 'noreply@backr.app';
+const FROM_EMAIL = process.env.EMAIL_FROM ?? 'onboarding@getResend().dev';
 
-const resend = new Resend(RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) {
+    if (!RESEND_API_KEY) {
+      console.warn('[Email Workers] RESEND_API_KEY is missing. Emails will fail to send.');
+    }
+    _resend = new Resend(RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 // ---------------------------------------------------------------------------
 // 22.1 — email:receipt worker
@@ -81,7 +90,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'withdrawal_otp') {
       const to = email;
       if (!to) throw new Error('Missing email for withdrawal OTP');
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '🔒 Your Backr Withdrawal security code',
@@ -109,7 +118,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'payment_approved') {
       const to = email || backerEmail;
       if (!to) throw new Error('Missing email for approval notification');
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '✅ Payout Approved: Your funds have been sent! 🚀',
@@ -144,7 +153,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'withdrawal_rejected') {
       const to = email || backerEmail;
       if (!to) throw new Error('Missing email for rejection notification');
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '⚠️ Update on your withdrawal request',
@@ -178,7 +187,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'kyc_approved') {
       const to = email;
       if (!to) throw new Error('Missing email for KYC approval');
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '✨ Your Identity has been Verified! 🔐',
@@ -211,7 +220,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'kyc_rejected') {
       const to = email;
       if (!to) throw new Error('Missing email for KYC rejection');
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '❌ Identity Verification Update',
@@ -250,7 +259,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const supportEmail = 'Usebackr@gmail.com';
       const founderName = 'Babatunde Lawal';
 
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: 'Welcome to Backr! 🚀',
@@ -304,7 +313,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const resetUrl = `${appUrl}/reset-password?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Forgot Password');
 
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '🔒 Reset your Backr password',
@@ -334,7 +343,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const verifyUrl = `${appUrl}/verify-email?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Verification');
 
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '⚡️ Verify your Backr account',
@@ -362,7 +371,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const to = email;
       if (!to) throw new Error('Missing email for KYC confirmation');
 
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: '📤 Documents Received: Identity Verification in progress',
@@ -391,7 +400,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const to = backerEmail;
       if (!to) throw new Error('Missing creator email');
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      const { data: res, error } = await resend.emails.send({
+      const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
         subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
@@ -425,7 +434,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (!to) throw new Error('Missing backerEmail');
     const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const { data: res, error } = await resend.emails.send({
+    const { data: res, error } = await getResend().emails.send({
       to,
       from: FROM_EMAIL,
       subject: `Thanks for supporting "${campaignTitle}"! ✨`,
@@ -511,7 +520,7 @@ export function registerBackerUpdateWorker(): void {
     // Send in batches to respect Resend rate limits
     const BATCH_SIZE = 100;
     for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-      await resend.batch.send(emails.slice(i, i + BATCH_SIZE));
+      await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
     }
 
     return { sent: backerRows.length };
@@ -539,7 +548,7 @@ export function registerAccountLockoutWorker(): void {
       timeStyle: 'short',
     });
 
-    await resend.emails.send({
+    await getResend().emails.send({
       to: email,
       from: FROM_EMAIL,
       subject: 'Your Backr account has been temporarily locked',
@@ -574,7 +583,7 @@ export function registerSubscriptionRenewalWorker(): void {
       dateStyle: 'long',
     });
 
-    await resend.emails.send({
+    await getResend().emails.send({
       to: email,
       from: FROM_EMAIL,
       subject: 'Your Backr Premium subscription payment failed',
