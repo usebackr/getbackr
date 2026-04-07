@@ -1,16 +1,14 @@
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
-// Initialise SendGrid with API key
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY ?? '';
+// Initialise Resend with API key
+const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
 const FROM_EMAIL = process.env.EMAIL_FROM ?? 'noreply@backr.app';
 
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-}
+const resend = new Resend(RESEND_API_KEY);
 
 // ---------------------------------------------------------------------------
 // 22.1 — email:receipt worker
@@ -73,8 +71,8 @@ export async function sendEmail(data: ReceiptJobData) {
     rejectionReason, displayName
   } = data;
 
-  if (!SENDGRID_API_KEY) {
-    console.error('[Email Utility] SENDGRID_API_KEY is missing.');
+  if (!RESEND_API_KEY) {
+    console.error('[Email Utility] RESEND_API_KEY is missing.');
     return { sent: false, error: 'Missing API key' };
   }
 
@@ -83,7 +81,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'withdrawal_otp') {
       const to = email;
       if (!to) throw new Error('Missing email for withdrawal OTP');
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '🔒 Your Backr Withdrawal security code',
@@ -103,14 +101,15 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 2. Withdrawal Approved (Payment Approved)
     if (type === 'payment_approved') {
       const to = email || backerEmail;
       if (!to) throw new Error('Missing email for approval notification');
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '✅ Payout Approved: Your funds have been sent! 🚀',
@@ -137,14 +136,15 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 3. Withdrawal Rejected
     if (type === 'withdrawal_rejected') {
       const to = email || backerEmail;
       if (!to) throw new Error('Missing email for rejection notification');
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '⚠️ Update on your withdrawal request',
@@ -170,14 +170,15 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4. KYC Approved
     if (type === 'kyc_approved') {
       const to = email;
       if (!to) throw new Error('Missing email for KYC approval');
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '✨ Your Identity has been Verified! 🔐',
@@ -202,14 +203,15 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4b. KYC Rejected
     if (type === 'kyc_rejected') {
       const to = email;
       if (!to) throw new Error('Missing email for KYC rejection');
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '❌ Identity Verification Update',
@@ -235,7 +237,8 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4c. Welcome Email
@@ -247,7 +250,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const supportEmail = 'Usebackr@gmail.com';
       const founderName = 'Babatunde Lawal';
 
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: 'Welcome to Backr! 🚀',
@@ -290,7 +293,8 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4d. Forgot Password
@@ -300,7 +304,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const resetUrl = `${appUrl}/reset-password?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Forgot Password');
 
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '🔒 Reset your Backr password',
@@ -319,7 +323,8 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4e. Verification Email
@@ -329,7 +334,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const verifyUrl = `${appUrl}/verify-email?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Verification');
 
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '⚡️ Verify your Backr account',
@@ -348,7 +353,8 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 4f. KYC Received Confirmation
@@ -356,7 +362,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const to = email;
       if (!to) throw new Error('Missing email for KYC confirmation');
 
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: '📤 Documents Received: Identity Verification in progress',
@@ -378,13 +384,14 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
     if (type === 'creator_alert') {
       const to = backerEmail;
       if (!to) throw new Error('Missing creator email');
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      const [response] = await sgMail.send({
+      const { data: res, error } = await resend.emails.send({
         to,
         from: FROM_EMAIL,
         subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
@@ -409,14 +416,16 @@ export async function sendEmail(data: ReceiptJobData) {
           </div>
         `,
       });
-      return { sent: true, type, messageId: response.headers['x-message-id'] };
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
     }
 
     // 6. Donor Receipt
     const to = backerEmail;
     if (!to) throw new Error('Missing backerEmail');
     const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const [response] = await sgMail.send({
+
+    const { data: res, error } = await resend.emails.send({
       to,
       from: FROM_EMAIL,
       subject: `Thanks for supporting "${campaignTitle}"! ✨`,
@@ -438,7 +447,8 @@ export async function sendEmail(data: ReceiptJobData) {
         </div>
       `,
     });
-    return { sent: true, type, messageId: response.headers['x-message-id'] };
+    if (error) throw error;
+    return { sent: true, type, messageId: res?.id };
 
   } catch (err: any) {
     console.error(`[Email Utility] Failed to send ${type}:`, err);
@@ -478,7 +488,7 @@ export function registerBackerUpdateWorker(): void {
 
     if (backerRows.length === 0) return { sent: 0 };
 
-    const messages = backerRows.map((row: { backerEmail: string }) => ({
+    const emails = backerRows.map((row: { backerEmail: string }) => ({
       to: row.backerEmail,
       from: FROM_EMAIL,
       subject: `New update on ${campaignTitle}: ${updateTitle}`,
@@ -498,10 +508,10 @@ export function registerBackerUpdateWorker(): void {
       `,
     }));
 
-    // Send in batches to respect SendGrid rate limits
+    // Send in batches to respect Resend rate limits
     const BATCH_SIZE = 100;
-    for (let i = 0; i < messages.length; i += BATCH_SIZE) {
-      await sgMail.send(messages.slice(i, i + BATCH_SIZE) as any);
+    for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+      await resend.batch.send(emails.slice(i, i + BATCH_SIZE));
     }
 
     return { sent: backerRows.length };
@@ -529,7 +539,7 @@ export function registerAccountLockoutWorker(): void {
       timeStyle: 'short',
     });
 
-    await sgMail.send({
+    await resend.emails.send({
       to: email,
       from: FROM_EMAIL,
       subject: 'Your Backr account has been temporarily locked',
@@ -564,7 +574,7 @@ export function registerSubscriptionRenewalWorker(): void {
       dateStyle: 'long',
     });
 
-    await sgMail.send({
+    await resend.emails.send({
       to: email,
       from: FROM_EMAIL,
       subject: 'Your Backr Premium subscription payment failed',

@@ -29,7 +29,7 @@ const envSchema = z.object({
   KYC_PROVIDER_URL: z.string().url().optional().default('https://api.example.com'),
 
   // Email
-  SENDGRID_API_KEY: z.string().min(1).optional().default('dummy'),
+  RESEND_API_KEY: z.string().min(1).optional().default('re_dummy'),
   EMAIL_FROM: z.string().email().optional().default('noreply@example.com'),
   EMAIL_FROM_NAME: z.string().default('Backr'),
 
