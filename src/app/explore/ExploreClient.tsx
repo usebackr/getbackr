@@ -176,7 +176,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
 
                       <div style={{ marginTop: 'auto' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700 }}>
-                          <span style={{ color: '#0f172a' }}>₦{raised.toLocaleString()} <span style={{ fontWeight: 500, color: '#94a3b8' }}>raised</span></span>
+                          <span style={{ color: '#0f172a' }}>₦{raised.toLocaleString()} <span style={{ fontWeight: 500, color: '#94a3b8' }}>of ₦{goal.toLocaleString()}</span></span>
                           <span style={{ color: 'var(--accent-primary)' }}>{pct}%</span>
                         </div>
                         <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '16px', overflow: 'hidden' }}>

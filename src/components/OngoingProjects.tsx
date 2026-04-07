@@ -40,6 +40,7 @@ export default async function OngoingProjects() {
             title: c.title,
             category: c.category || 'Creator Project',
             raised: `₦${raisedNum.toLocaleString()}`,
+            goal: `₦${goalNum.toLocaleString()}`,
             progress,
             image: getPublicUrl(c.image) || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800',
             backers: c.backers,
@@ -51,6 +52,7 @@ export default async function OngoingProjects() {
             title: 'Echoes of the Sahara',
             category: 'Music Documentary (Kano)',
             raised: '₦1,200,000',
+            goal: '₦3,000,000',
             progress: 40,
             image: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=800',
             backers: 124,
@@ -60,6 +62,7 @@ export default async function OngoingProjects() {
             title: 'Solar Pod — Clean Energy',
             category: 'Tech / Innovation (Lagos)',
             raised: '₦4,800,000',
+            goal: '₦5,000,000',
             progress: 96,
             image: 'https://images.unsplash.com/photo-1509391366360-fe5bb584850a?auto=format&fit=crop&q=80&w=800',
             backers: 450,
@@ -102,7 +105,7 @@ export default async function OngoingProjects() {
                       <div className="card-progress-fill" style={{ width: `${project.progress}%` }}></div>
                     </div>
                     <div className="card-stats">
-                      <span className="card-raised">{project.raised}</span>
+                      <span className="card-raised">{project.raised} <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>of {project.goal}</span></span>
                       <span className="card-percent">{project.progress}% funded</span>
                     </div>
                   </div>
