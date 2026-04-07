@@ -25,6 +25,7 @@ export async function initializeTransaction(
   currency: string,
   metadata: Record<string, unknown>,
   callbackUrl: string,
+  subaccount?: string, // optional subaccount for split payments
 ): Promise<InitializeTransactionResult> {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!secretKey) {
@@ -43,6 +44,8 @@ export async function initializeTransaction(
       currency: currency.toUpperCase(),
       metadata,
       callback_url: callbackUrl,
+      subaccount: subaccount || undefined,
+      bearer: subaccount ? 'subaccount' : 'account', // subaccount pays fees if present
     }),
   });
 
@@ -62,6 +65,101 @@ export async function initializeTransaction(
   }
 
   return data.data;
+}
+
+/**
+ * Creates a Subaccount on Paystack for split payments.
+ */
+export async function createSubaccount(
+  businessName: string,
+  settlementBank: string,
+  accountNumber: string,
+  percentageCharge: number = 5,
+): Promise<string> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/subaccount`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      business_name: businessName,
+      settlement_bank: settlementBank,
+      account_number: accountNumber,
+      percentage_charge: percentageCharge,
+    }),
+  });
+
+  const data = await response.json();
+  if (!data.status) throw new Error(data.message);
+
+  return data.data.subaccount_code;
+}
+
+/**
+ * Creates a Transfer Recipient on Paystack.
+ */
+export async function createTransferRecipient(
+  name: string,
+  accountNumber: string,
+  bankCode: string,
+): Promise<string> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/transferrecipient`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      type: 'nuban',
+      name,
+      account_number: accountNumber,
+      bank_code: bankCode,
+      currency: 'NGN',
+    }),
+  });
+
+  const data = await response.json();
+  if (!data.status) throw new Error(data.message);
+
+  return data.data.recipient_code;
+}
+
+/**
+ * Initiates a Transfer from Backr's Paystack balance to a recipient.
+ */
+export async function initiateTransfer(
+  amount: number,
+  recipientCode: string,
+  reason: string,
+): Promise<string> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/transfer`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      source: 'balance',
+      amount: toSmallestUnit(amount),
+      recipient: recipientCode,
+      reason,
+    }),
+  });
+
+  const data = await response.json();
+  if (!data.status) throw new Error(data.message);
+
+  return data.data.transfer_code;
 }
 
 /**

@@ -11,6 +11,7 @@ export const projectWallets = pgTable('project_wallets', {
   totalReceived: numeric('total_received', { precision: 15, scale: 2 }).notNull().default('0'),
   totalWithdrawn: numeric('total_withdrawn', { precision: 15, scale: 2 }).notNull().default('0'),
   currency: varchar('currency', { length: 3 }).notNull(),
+  subaccountCode: varchar('subaccount_code', { length: 100 }),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

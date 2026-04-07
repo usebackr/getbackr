@@ -9,6 +9,8 @@ import { spendingLogs } from '@/db/schema/spendingLogs';
 import { eq, and, sql, inArray } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 
+import { bankAccounts } from '@/db/schema/bankAccounts';
+
 export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Verify KYC securely before allowing payout dispatch
+    // 1. Verify KYC and Bank Account securely before allowing payout dispatch
     const [userRecord] = await db
       .select({ kycStatus: users.kycStatus })
       .from(users)
@@ -40,6 +42,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'You must complete KYC verification before withdrawing funds.' },
         { status: 403 },
+      );
+    }
+
+    const [bankAccount] = await db
+      .select()
+      .from(bankAccounts)
+      .where(eq(bankAccounts.userId, userId))
+      .limit(1);
+
+    if (!bankAccount) {
+      return NextResponse.json(
+        { error: 'Please link a bank account in your settings before withdrawing.' },
+        { status: 400 },
       );
     }
 
@@ -98,15 +113,19 @@ export async function POST(req: NextRequest) {
         }, { status: 400 });
       }
 
-      // 4. Securely record the withdrawal request
+      // 4. Securely record the withdrawal request with snapshots of banking info
       const [withdrawal] = await tx.insert(withdrawals).values({
         walletId: campaignWallet.walletId,
         creatorId: userId,
         amount: withdrawAmount.toString(),
-        status: 'processing', // MVP state machine bypass
+        status: 'processing',
+        reason,
+        accountNumber: bankAccount.accountNumber,
+        bankCode: bankAccount.bankCode,
+        accountName: bankAccount.accountName,
       }).returning({ id: withdrawals.id });
 
-      // 4. Inject into Transparency Ledger (spendingLogs)
+      // 5. Inject into Transparency Ledger (spendingLogs)
       await tx.insert(spendingLogs).values({
         campaignId,
         withdrawalId: withdrawal.id,
