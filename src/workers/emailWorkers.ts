@@ -55,12 +55,12 @@ export interface ReceiptJobData {
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_otp' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received' | 'account_deleted';
+  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received' | 'account_deleted';
   userId?: string;
   email?: string;
   displayName?: string;
-  otp?: string;
   token?: string;
+  otp?: string;
   rejectionReason?: string;
   // Extra data for creator alert
   creatorName?: string;
@@ -77,8 +77,10 @@ export async function sendEmail(data: ReceiptJobData) {
   const { 
     type, amount, currency, campaignTitle, backerEmail, email, otp,
     creatorName, backerName, totalRaised, goalAmount, campaignUrl,
-    rejectionReason, displayName
+    rejectionReason, displayName, token
   } = data;
+
+  console.log(`[Email Utility] Preparing to send ${type} to ${email || backerEmail || 'unknown recipient'}`);
 
   if (!RESEND_API_KEY) {
     console.error('[Email Utility] RESEND_API_KEY is missing.');
@@ -171,7 +173,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>Your funds have been returned to your project wallet. You can review the feedback above and submit a new request once the issues are addressed.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/wallet" style="display:inline-block; padding:14px 32px; border: 2px solid ${BRAND_COLOR}; color: ${BRAND_COLOR}; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/wallet" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
                   Return to Wallet
                 </a>
               </div>
@@ -310,7 +312,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'forgot_password') {
       const to = email;
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-      const resetUrl = `${appUrl}/reset-password?token=${data.token}&email=${email}`;
+      const resetUrl = `${appUrl}/reset-password?token=${token || data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Forgot Password');
 
       const { data: res, error } = await getResend().emails.send({
@@ -340,7 +342,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'verification_email') {
       const to = email;
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-      const verifyUrl = `${appUrl}/verify-email?token=${data.token}&email=${email}`;
+      const verifyUrl = `${appUrl}/verify-email?token=${token || data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Verification');
 
       const { data: res, error } = await getResend().emails.send({
