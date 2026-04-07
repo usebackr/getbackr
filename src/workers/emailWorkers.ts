@@ -95,7 +95,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '🔒 Your Backr Withdrawal security code',
+        subject: 'Your Backr Withdrawal security code',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -123,7 +123,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '✅ Payout Approved: Your funds have been sent! 🚀',
+        subject: 'Payout Approved: Your funds have been sent',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -158,7 +158,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '⚠️ Update on your withdrawal request',
+        subject: 'Update on your withdrawal request',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -192,7 +192,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '✨ Your Identity has been Verified! 🔐',
+        subject: 'Your Identity has been Verified',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -225,7 +225,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '❌ Identity Verification Update',
+        subject: 'Identity Verification Update',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -264,7 +264,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: 'Welcome to Backr! 🚀',
+        subject: 'Welcome to Backr',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -318,7 +318,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '🔒 Reset your Backr password',
+        subject: 'Reset your Backr password',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -348,7 +348,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '⚡️ Verify your Backr account',
+        subject: 'Verify your Backr account',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -376,7 +376,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '📤 Documents Received: Identity Verification in progress',
+        subject: 'Documents Received: Identity Verification in progress',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -407,7 +407,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: '⚠️ Your Backr account has been removed',
+        subject: 'Your Backr account has been removed',
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -439,7 +439,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: `You Just Got Backrd for "${campaignTitle}" 🎉`,
+        subject: `You Just Got Backrd for "${campaignTitle}"`,
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
@@ -473,7 +473,7 @@ export async function sendEmail(data: ReceiptJobData) {
     const { data: res, error } = await getResend().emails.send({
       to,
       from: FROM_EMAIL,
-      subject: `Thanks for supporting "${campaignTitle}"! ✨`,
+      subject: `Thanks for supporting "${campaignTitle}"`,
       html: `
         <div style="${emailWrapperStyle}">
           <div style="${emailCardStyle}">

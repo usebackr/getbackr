@@ -7,10 +7,73 @@ interface UserProfile {
   kycStatus: 'unsubmitted' | 'pending' | 'verified' | 'rejected';
   kycRejectionReason?: string | null;
   isBeta?: boolean;
+  emailVerified?: boolean;
 }
 
 export function VerificationBanner({ user }: { user: UserProfile }) {
   const router = useRouter();
+  const [resending, setResending] = React.useState(false);
+  const [sent, setSent] = React.useState(false);
+
+  const handleResend = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setResending(true);
+    try {
+      const res = await fetch('/api/auth/resend-verification', { method: 'POST' });
+      if (res.ok) setSent(true);
+    } catch (err) {
+      console.error('Failed to resend verification');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // 1. Email Verification Priority
+  if (!user.emailVerified) {
+    return (
+      <div style={{
+        padding: '24px 32px',
+        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+        border: '1px solid #bfdbfe',
+        borderRadius: '24px',
+        marginBottom: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '24px',
+        flexWrap: 'wrap',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+      }}>
+        <div style={{ flex: '1 1 400px' }}>
+          <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e40af', marginBottom: '4px', fontFamily: "'Outfit', sans-serif" }}>
+            Confirm Your Email Address
+          </h4>
+          <p style={{ fontSize: '0.9rem', color: '#1e40af', opacity: 0.8, fontWeight: 500, lineHeight: 1.5 }}>
+            Please verify your email to secure your account and access all features. Check your inbox for the link.
+          </p>
+        </div>
+        <button 
+          onClick={handleResend}
+          disabled={resending || sent}
+          style={{
+            padding: '12px 24px',
+            background: sent ? '#10b981' : '#2563eb',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: sent ? 'default' : 'pointer',
+            whiteSpace: 'nowrap',
+            transition: 'all 0.2s',
+            opacity: resending ? 0.7 : 1,
+          }}
+        >
+          {resending ? 'Sending...' : sent ? '✓ Link Sent' : 'Resend Verification Link'}
+        </button>
+      </div>
+    );
+  }
 
   if (user.kycStatus === 'verified') return null;
 
