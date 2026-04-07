@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       if (txResult && txResult.campaignDetails) {
         try {
           const { campaignDetails, wallet, backerName } = txResult;
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
 
           // Email to Donor (Receipt)
           await sendEmail({

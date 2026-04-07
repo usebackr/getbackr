@@ -104,7 +104,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 Backr.app
+                &copy; 2026 findbackr.com.ng
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@ export async function sendEmail(data: ReceiptJobData) {
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
               <p style="font-size: 0.9rem; color: #64748b;">Funds typically arrive within 24-48 business hours depending on your bank.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="https://backr.app/dashboard/wallet" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/wallet" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
                   View Transaction History
                 </a>
               </div>
@@ -171,7 +171,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>Your funds have been returned to your project wallet. You can review the feedback above and submit a new request once the issues are addressed.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="https://backr.app/dashboard/wallet" style="display:inline-block; padding:14px 32px; border: 2px solid ${BRAND_COLOR}; color: ${BRAND_COLOR}; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/wallet" style="display:inline-block; padding:14px 32px; border: 2px solid ${BRAND_COLOR}; color: ${BRAND_COLOR}; text-decoration:none; border-radius: 12px; font-weight: 700;">
                   Return to Wallet
                 </a>
               </div>
@@ -204,7 +204,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>You can now withdraw funds from your campaigns directly to your bank account anytime.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="https://backr.app/dashboard" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                   Go to Dashboard
                 </a>
               </div>
@@ -238,7 +238,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>To withdraw funds, you must re-submit your verification documents in your profile settings.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="https://backr.app/dashboard/profile" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/settings" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                   Re-upload ID
                 </a>
               </div>
@@ -255,7 +255,7 @@ export async function sendEmail(data: ReceiptJobData) {
       const to = email;
       if (!to) throw new Error('Missing email for Welcome Email');
       const firstName = displayName ? displayName.split(' ')[0] : 'there';
-      const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'https://backr.app/dashboard';
+      const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'https://findbackr.com.ng/dashboard';
       const supportEmail = 'Usebackr@gmail.com';
       const founderName = 'Babatunde Lawal';
 
@@ -309,7 +309,7 @@ export async function sendEmail(data: ReceiptJobData) {
     // 4d. Forgot Password
     if (type === 'forgot_password') {
       const to = email;
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
       const resetUrl = `${appUrl}/reset-password?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Forgot Password');
 
@@ -339,7 +339,7 @@ export async function sendEmail(data: ReceiptJobData) {
     // 4e. Verification Email
     if (type === 'verification_email') {
       const to = email;
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backr.app';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
       const verifyUrl = `${appUrl}/verify-email?token=${data.token}&email=${email}`;
       if (!to) throw new Error('Missing email for Verification');
 
@@ -417,7 +417,7 @@ export async function sendEmail(data: ReceiptJobData) {
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
               <p>Your campaign is now at <strong>₦${Number(totalRaised).toLocaleString()} raised</strong>.</p>
               <div style="margin-top: 40px; text-align: center;">
-                <a href="${campaignUrl || 'https://backr.app/dashboard'}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${campaignUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL + '/dashboard' : 'https://findbackr.com.ng/dashboard')}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                   View Campaign
                 </a>
               </div>
@@ -448,7 +448,7 @@ export async function sendEmail(data: ReceiptJobData) {
             <p><strong>Date:</strong> ${dateStr}</p>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
             <div style="margin-top: 40px; text-align: center;">
-              <a href="${campaignUrl || 'https://backr.app/dashboard'}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+              <a href="${campaignUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL + '/dashboard' : 'https://findbackr.com.ng/dashboard')}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                 Follow Progress
               </a>
             </div>
@@ -508,7 +508,7 @@ export function registerBackerUpdateWorker(): void {
             <h3 style="color: #0f172a; font-size: 1.25rem;">${updateTitle}</h3>
             <p>Log in to Backr to read the full update and see how your support is making an impact.</p>
             <div style="margin-top: 32px; text-align: center;">
-              <a href="https://backr.app/dashboard" style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                 Read Full Update
               </a>
             </div>
