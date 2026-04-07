@@ -71,6 +71,13 @@
       "when": 1775564219700,
       "tag": "0009_security_lockdown_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775566595924,
+      "tag": "0010_synchronize_withdrawals_schema",
+      "breakpoints": true
     }
   ]
 }
