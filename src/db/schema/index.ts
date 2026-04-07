@@ -16,3 +16,5 @@ export * from './bankAccounts';
 export * from './kycProfiles';
 export * from './notifications';
 export * from './passwordResets';
+export * from './verificationTokens';
+export * from './refreshTokens';
