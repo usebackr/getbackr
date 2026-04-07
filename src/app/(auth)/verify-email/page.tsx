@@ -7,12 +7,50 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email') || 'your email';
+  const token = searchParams.get('token');
   const userId = searchParams.get('userId');
+  
   const [verified, setVerified] = useState(false);
-  const [status, setStatus] = useState('Waiting for confirmation...');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // 1. Automatic Verification if token is present
   useEffect(() => {
-    if (!userId) return;
+    if (!token) {
+      if (!userId) {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const performVerification = async () => {
+      try {
+        const res = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setVerified(true);
+        } else {
+          setError(data.errors?.[0]?.message || 'Verification failed. The link may be expired.');
+        }
+      } catch (err) {
+        setError('Failed to connect to the server. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    performVerification();
+  }, [token, userId]);
+
+  // 2. Legacy Polling for "Check your email" tab that stayed open
+  useEffect(() => {
+    if (verified || token || !userId) return;
 
     const checkStatus = async () => {
       try {
@@ -20,10 +58,7 @@ function VerifyEmailContent() {
         const data = await res.json();
         if (data.verified) {
           setVerified(true);
-          setStatus('Email verified! Redirecting to dashboard...');
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
+          setLoading(false);
           return true;
         }
       } catch (err) {
@@ -32,10 +67,7 @@ function VerifyEmailContent() {
       return false;
     };
 
-    // Initial check
     checkStatus();
-
-    // Poll every 3 seconds
     const interval = setInterval(async () => {
       const isVerified = await checkStatus();
       if (isVerified) {
@@ -44,7 +76,79 @@ function VerifyEmailContent() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [userId, router]);
+  }, [userId, token, verified]);
+
+  if (loading) {
+    return (
+      <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}>
+        <div className="animate-pulse">
+          <div style={{ width: '64px', height: '64px', background: '#f1f5f9', borderRadius: '50%', margin: '0 auto 24px' }}></div>
+          <h3 style={{ color: 'var(--text-secondary)' }}>Verifying your account...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}>
+        <div style={{ fontSize: '4rem', marginBottom: '24px' }}>⚠️</div>
+        <h2 style={{ color: 'var(--accent-secondary)', marginBottom: '16px' }}>Verification Error</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>{error}</p>
+        <button className="btn-secondary" style={{ width: '100%' }} onClick={() => router.push('/signup')}>
+          Back to Signup
+        </button>
+      </div>
+    );
+  }
+
+  if (verified) {
+    return (
+      <div 
+        className="card" 
+        style={{ 
+          maxWidth: '540px', 
+          width: '100%', 
+          textAlign: 'center', 
+          padding: '80px 48px',
+          background: '#ffffff',
+          boxShadow: '0 40px 100px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <div
+          style={{
+            width: '100px',
+            height: '100px',
+            background: '#f0fdf4',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '3.5rem',
+            margin: '0 auto 40px',
+            animation: 'scaleIn 0.5s ease-out',
+          }}
+        >
+          ✅
+        </div>
+
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '16px', color: 'var(--accent-secondary)' }}>
+          Email <span className="text-gradient">Verified</span>!
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '48px', lineHeight: 1.6 }}>
+          Thank you! Your account is now fully active. You're ready to start your journey with Backr.
+        </p>
+
+        <button 
+          className="btn-primary" 
+          style={{ width: '100%', padding: '18px', fontSize: '1rem', fontWeight: 700 }}
+          onClick={() => router.push('/login')}
+        >
+          Continue to Login
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -55,72 +159,38 @@ function VerifyEmailContent() {
         style={{
           width: '80px',
           height: '80px',
-          background: verified ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 122, 0, 0.1)',
+          background: 'rgba(255, 122, 0, 0.1)',
           borderRadius: '99px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '2.5rem',
           margin: '0 auto 32px',
-          transition: 'all 0.3s ease',
         }}
       >
-        {verified ? '✅' : '📧'}
+        📧
       </div>
 
       <h2 style={{ fontSize: '2rem', marginBottom: '16px', color: 'var(--accent-secondary)' }}>
-        {verified ? 'Confirmed!' : 'Check your email'}
+        Check your email
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
-        {verified ? (
-          'Your email has been successfully verified. Welcome home!'
-        ) : (
-          <>
-            We've sent a verification link to{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>.<br />
-            Please click the link to confirm your account.
-          </>
-        )}
+        We've sent a verification link to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>.<br />
+        Please click the link to confirm your account.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {!verified && (
-          <button
-            className="btn-primary"
-            style={{ width: '100%', padding: '16px' }}
-            onClick={() => window.open('https://mail.google.com', '_blank')}
-          >
-            Open Mail App
-          </button>
-        )}
-
-        <p
-          style={{
-            fontSize: '0.9rem',
-            color: verified ? 'var(--accent-primary)' : 'var(--text-secondary)',
-            fontWeight: 600,
-          }}
+        <button
+          className="btn-primary"
+          style={{ width: '100%', padding: '16px' }}
+          onClick={() => window.open('https://mail.google.com', '_blank')}
         >
-          {status}
-        </p>
+          Open Mail App
+        </button>
 
-        {!verified && (
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
-            Didn't receive the email?{' '}
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--accent-primary)',
-                fontWeight: 700,
-                cursor: 'pointer',
-                padding: 0,
-              }}
-            >
-              Resend Verification
-            </button>
-          </p>
-        )}
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '24px' }}>
+          Waiting for confirmation...
+        </p>
       </div>
 
       <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid #f1f5f9' }}>

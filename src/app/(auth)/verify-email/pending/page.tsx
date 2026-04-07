@@ -1,10 +1,11 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 function PendingContent() {
   const searchParams = useSearchParams();
+  const router = useRouter(); // Use router for navigation
   const email = searchParams.get('email') || 'your email';
 
   return (
@@ -78,11 +79,11 @@ function PendingContent() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => router.push('/login')}
           className="btn-primary"
           style={{ width: '100%', padding: '16px' }}
         >
-          I've verified my email
+          Verification complete? Go to Login
         </button>
         <a
           href="/login"
