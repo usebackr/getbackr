@@ -11,73 +11,102 @@ import PayoutActionButtons from './PayoutActionButtons';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminWithdrawalsPage() {
-  // Fetch pending payouts along with bank details and campaign context
-  const payoutsWithContext = await db
-    .select({
-      id: withdrawals.id,
-      amount: withdrawals.amount,
-      status: withdrawals.status,
-      reason: withdrawals.reason,
-      rejectionReason: withdrawals.rejectionReason,
-      createdAt: withdrawals.createdAt,
-      creatorName: users.displayName,
-      creatorEmail: users.email,
-      campaignTitle: campaigns.title,
-      campaignId: campaigns.id,
-      walletId: projectWallets.id,
-      snapAccountNumber: withdrawals.accountNumber,
-      snapBankCode: withdrawals.bankCode,
-      snapAccountName: withdrawals.accountName,
-    })
-    .from(withdrawals)
-    .innerJoin(users, eq(withdrawals.creatorId, users.id))
-    .leftJoin(projectWallets, eq(projectWallets.id, withdrawals.walletId))
-    .leftJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
-    .orderBy(desc(withdrawals.createdAt));
+  // ---------------------------------------------------------------------------
+  // Data Fetching with Safety Net
+  // ---------------------------------------------------------------------------
+  let enrichedPayouts: any[] = [];
+  let fetchError = false;
 
-  // For each payout, we'll calculate financial context
-  const enrichedPayouts = await Promise.all(payoutsWithContext.map(async (payout) => {
-    // 1. Calc Lifetime Project Raised (Gross) & Fees
-    const [contribStats] = await db
+  try {
+    const payoutsWithContext = await db
       .select({
-        totalAmount: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
-        totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
-      })
-      .from(contributions)
-      .where(and(
-        eq(contributions.campaignId, payout.campaignId || ''), 
-        eq(contributions.status, 'confirmed')
-      ));
-
-    // 2. Calc Total Already Withdrawn
-    const [withdrawalStats] = await db
-      .select({
-        totalWithdrawn: sql<number>`COALESCE(SUM(${withdrawals.amount}), 0)::numeric`,
+        id: withdrawals.id,
+        amount: withdrawals.amount,
+        status: withdrawals.status,
+        reason: withdrawals.reason,
+        rejectionReason: withdrawals.rejectionReason,
+        createdAt: withdrawals.createdAt,
+        creatorName: users.displayName,
+        creatorEmail: users.email,
+        campaignTitle: campaigns.title,
+        campaignId: campaigns.id,
+        walletId: projectWallets.id,
+        snapAccountNumber: withdrawals.accountNumber,
+        snapBankCode: withdrawals.bankCode,
+        snapAccountName: withdrawals.accountName,
       })
       .from(withdrawals)
-      .where(and(
-        eq(withdrawals.walletId, payout.walletId || ''),
-        eq(withdrawals.status, 'completed')
-      ));
+      .innerJoin(users, eq(withdrawals.creatorId, users.id))
+      .leftJoin(projectWallets, eq(projectWallets.id, withdrawals.walletId))
+      .leftJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
+      .orderBy(desc(withdrawals.createdAt));
 
-    const totalRaised = Number(contribStats?.totalAmount || 0);
-    const platformFees = Number(contribStats?.totalPlatformFee || 0);
-    const withdrawnSum = Number(withdrawalStats?.totalWithdrawn || 0);
-    const currentBalance = totalRaised - platformFees - withdrawnSum;
+    // For each payout, we'll calculate financial context
+    enrichedPayouts = await Promise.all(payoutsWithContext.map(async (payout) => {
+      // 1. Calc Lifetime Project Raised (Gross) & Fees
+      const [contribStats] = await db
+        .select({
+          totalAmount: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+          totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
+        })
+        .from(contributions)
+        .where(and(
+          eq(contributions.campaignId, payout.campaignId || ''), 
+          eq(contributions.status, 'confirmed')
+        ));
 
-    return {
-      ...payout,
-      financials: {
-        totalRaised,
-        platformFees,
-        currentBalance,
-        remainingAfter: currentBalance - Number(payout.amount)
-      }
-    };
-  }));
+      // 2. Calc Total Already Withdrawn
+      const [withdrawalStats] = await db
+        .select({
+          totalWithdrawn: sql<number>`COALESCE(SUM(${withdrawals.amount}), 0)::numeric`,
+        })
+        .from(withdrawals)
+        .where(and(
+          eq(withdrawals.walletId, payout.walletId || ''),
+          eq(withdrawals.status, 'completed')
+        ));
+
+      const totalRaised = Number(contribStats?.totalAmount || 0);
+      const platformFees = Number(contribStats?.totalPlatformFee || 0);
+      const withdrawnSum = Number(withdrawalStats?.totalWithdrawn || 0);
+      const currentBalance = totalRaised - platformFees - withdrawnSum;
+
+      return {
+        ...payout,
+        financials: {
+          totalRaised,
+          platformFees,
+          currentBalance,
+          remainingAfter: currentBalance - Number(payout.amount)
+        }
+      };
+    }));
+  } catch (err) {
+    console.error('[AdminWithdrawals] Critical fetch failure:', err);
+    fetchError = true;
+  }
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+      {fetchError && (
+        <div style={{ 
+          padding: '24px', 
+          background: '#fef2f2', 
+          border: '1px solid #fee2e2', 
+          borderRadius: '16px', 
+          color: '#991b1b', 
+          marginBottom: '32px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <h3 style={{ fontWeight: 800 }}>⚠️ Database Synchronization Error</h3>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.5 }}>
+            We encountered an exception while fetching payout data. This usually happens if new database columns haven't been applied to production. 
+            Please run <code>npm run db:migrate</code> on your production database.
+          </p>
+        </div>
+      )}
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '8px', fontFamily: 'Outfit, sans-serif' }}>
           Payout Governance 🏛️
