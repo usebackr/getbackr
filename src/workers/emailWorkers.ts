@@ -433,28 +433,35 @@ export async function sendEmail(data: ReceiptJobData) {
       return { sent: true, type, messageId: res?.id };
     }
     if (type === 'creator_alert') {
-      const to = backerEmail;
+      const to = email || backerEmail; // job variable stores the creator's email
       if (!to) throw new Error('Missing creator email');
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
-        subject: `You Just Got Backrd for "${campaignTitle}"`,
+        subject: `You Just Got Backed! 🚀 ${campaignTitle}`,
         html: `
           <div style="${emailWrapperStyle}">
             <div style="${emailCardStyle}">
-              <p>Hi ${creatorName || 'Creator'},</p>
-              <p>You just received a new contribution for your campaign:</p>
-              <p><strong>"${campaignTitle}"</strong></p>
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
-              <p><strong>From:</strong> ${backerName || 'A Supporter'}</p>
-              <p><strong>Date:</strong> ${dateStr}</p>
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p>Your campaign is now at <strong>₦${Number(totalRaised).toLocaleString()} raised</strong>.</p>
+               <div style="background: #ecfdf5; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <span style="font-size: 32px;">🔥</span>
+              </div>
+              <h2 style="font-size: 1.8rem; color: #0f172a; text-align: center; margin-bottom: 8px;">You Just Got Backed!</h2>
+              <p style="text-align: center; color: #64748b; font-size: 1.1rem; margin-bottom: 32px;">Someone believes in your vision.</p>
+              
+              <div style="background: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                <p style="margin: 0 0 8px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: 700;">Contribution from:</p>
+                <p style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">${backerName || 'A Supporter'}</p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;">
+                <p style="margin: 0 0 4px; color: #64748b; font-size: 0.85rem;">Amount:</p>
+                <p style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #10b981;">₦${Number(amount).toLocaleString()}</p>
+              </div>
+
+              <p style="font-size: 0.95rem; line-height: 1.6; color: #334155;">Your campaign <strong>"${campaignTitle}"</strong> is gaining momentum. Your current total raised is <strong>₦${Number(totalRaised).toLocaleString()}</strong>.</p>
+
               <div style="margin-top: 40px; text-align: center;">
-                <a href="${campaignUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL + '/dashboard' : 'https://findbackr.com.ng/dashboard')}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                  View Campaign
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                  View Your Dashboard
                 </a>
               </div>
             </div>
@@ -473,19 +480,38 @@ export async function sendEmail(data: ReceiptJobData) {
     const { data: res, error } = await getResend().emails.send({
       to,
       from: FROM_EMAIL,
-      subject: `Thanks for supporting "${campaignTitle}"`,
+      subject: `Official Receipt: Thank you for backing ${campaignTitle}! 🌟`,
       html: `
         <div style="${emailWrapperStyle}">
           <div style="${emailCardStyle}">
-            <p>Hi ${backerName || 'A Supporter'},</p>
-            <p>Thank you for supporting <strong>"${campaignTitle}"</strong>.</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p><strong>Amount:</strong> ₦${Number(amount).toLocaleString()}</p>
-            <p><strong>Date:</strong> ${dateStr}</p>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+            <div style="background: #f0fdf4; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+              <span style="font-size: 32px;">✨</span>
+            </div>
+            <h2 style="font-size: 1.8rem; color: #0f172a; text-align: center; margin-bottom: 8px;">You're making an impact!</h2>
+            <p style="text-align: center; color: #64748b; font-size: 1.1rem; margin-bottom: 32px;">Thank you for backing ${campaignTitle}</p>
+            
+            <div style="border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+              <table style="width: 100%;">
+                <tr>
+                  <td style="color: #64748b; padding-bottom: 8px;">Campaign</td>
+                  <td style="text-align: right; font-weight: 700; padding-bottom: 8px;">${campaignTitle}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b; padding-bottom: 8px;">Amount</td>
+                  <td style="text-align: right; font-weight: 700; color: #10b981; padding-bottom: 8px;">₦${Number(amount).toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b;">Status</td>
+                  <td style="text-align: right; color: #10b981; font-weight: 700;">Confirmed ✅</td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="font-size: 0.95rem; line-height: 1.6; color: #334155;">You'll receive updates from the creator as they reach new milestones. Your support makes this possible.</p>
+
             <div style="margin-top: 40px; text-align: center;">
-              <a href="${campaignUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL + '/dashboard' : 'https://findbackr.com.ng/dashboard')}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                Follow Progress
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/explore" style="display:inline-block; padding:14px 32px; background: #0f172a; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                Explore More Projects
               </a>
             </div>
           </div>
