@@ -7,6 +7,7 @@ import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
 import { eq, desc, and, sql, inArray } from 'drizzle-orm';
 import PayoutActionButtons from './PayoutActionButtons';
+import { getTransferBalance } from '@/lib/payments/paystack';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +16,17 @@ export default async function AdminWithdrawalsPage() {
   // Data Fetching with Safety Net
   // ---------------------------------------------------------------------------
   let enrichedPayouts: any[] = [];
+  let paystackBalance: number | null = null;
   let fetchError = false;
 
   try {
+    // 1. Fetch live Paystack balance for liquidity check
+    try {
+      paystackBalance = await getTransferBalance();
+    } catch (err) {
+      console.error('[AdminWithdrawals] Paystack balance fetch failed:', err);
+    }
+
     const payoutsWithContext = await db
       .select({
         id: withdrawals.id,
@@ -123,6 +132,50 @@ export default async function AdminWithdrawalsPage() {
         <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500 }}>
           Review, analyze, and authorize fund transfers for Backr campaigns.
         </p>
+      </div>
+
+      {/* Paystack Liquidity Banner */}
+      <div style={{ 
+        marginBottom: '40px',
+        padding: '32px',
+        background: '#0f172a',
+        borderRadius: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '24px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ 
+            width: '64px', 
+            height: '64px', 
+            borderRadius: '16px', 
+            background: 'rgba(16, 185, 129, 0.1)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            border: '1px solid rgba(16, 185, 129, 0.2)'
+          }}>
+            <span style={{ fontSize: '2rem' }}>💰</span>
+          </div>
+          <div>
+            <h3 style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+              Paystack Account Liquidity
+            </h3>
+            <p style={{ color: '#ffffff', fontSize: '2.5rem', fontWeight: 900, margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+              {paystackBalance !== null ? `₦${paystackBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '---'}
+            </p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', marginBottom: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+            <span style={{ color: '#10b981', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase' }}>Live API Feed</span>
+          </div>
+          <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>Available for Transfers</p>
+        </div>
       </div>
 
       {enrichedPayouts.length === 0 ? (
