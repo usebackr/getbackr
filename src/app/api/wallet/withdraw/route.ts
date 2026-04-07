@@ -63,7 +63,10 @@ export async function POST(req: NextRequest) {
     return await db.transaction(async (tx) => {
       // 1. Fetch wallet associated with this specific campaign
       const [campaignWallet] = await tx
-        .select({ walletId: projectWallets.id })
+        .select({ 
+          walletId: projectWallets.id,
+          recordedBalance: projectWallets.balance
+        })
         .from(projectWallets)
         .innerJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
         .where(and(eq(campaigns.creatorId, userId), eq(campaigns.id, campaignId)))
@@ -76,7 +79,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 2. Evaluate project-specific balance
+      // 2. Evaluate project-specific balance from ledger (source of truth)
       const [contribStats] = await tx
         .select({
           totalAmount: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
@@ -101,7 +104,13 @@ export async function POST(req: NextRequest) {
         );
 
       const projectWithdrawn = Number(withdrawalStats?.totalWithdrawn || 0);
-      const availableBalance = Math.max(0, projectRaised - projectFees - projectWithdrawn);
+      
+      // We calculate from ledger but also respect the recorded 'balance' column
+      const ledgerBalance = Math.max(0, projectRaised - projectFees - projectWithdrawn);
+      const walletBalance = Number(campaignWallet.recordedBalance || 0);
+      
+      // Use the more conservative of the two for safety
+      const availableBalance = Math.min(ledgerBalance, walletBalance);
 
       // 3. Precise Validations
       if (projectRaised === 0 || availableBalance <= 0) {
