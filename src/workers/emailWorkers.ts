@@ -323,7 +323,7 @@ export async function sendEmail(data: ReceiptJobData) {
               <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 24px;">Reset Your Password</h2>
               <p>Someone requested a password reset for your Backr account. If this was you, click the button below to set a new password:</p>
               <div style="text-align: center; margin: 32px 0;">
-                <a href="${resetUrl}" style="display:inline-block; padding:14px 32px; background: #6366f1; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                <a href="${resetUrl}" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
                   Reset Password
                 </a>
               </div>
