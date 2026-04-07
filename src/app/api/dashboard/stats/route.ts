@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, sum, count } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
