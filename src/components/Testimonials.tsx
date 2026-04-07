@@ -4,24 +4,24 @@ export default function Testimonials() {
   const reviews = [
     {
       name: 'Babatunde Lawal',
-      role: 'Filmmaker (Lagos)',
+      role: 'Independent Filmmaker',
       text: 'Backr changed how I interact with my community. Real-time spending logs built a level of trust that allowed me to raise 2x more than my initial goal.',
-      avatar:
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+      iconBg: '#ecfdf5',
+      iconColor: '#10b981'
     },
     {
       name: 'Aisha Bello',
-      role: 'Agri-Tech Founder (Kano)',
+      role: 'Visual Artist & Curator',
       text: 'The transparency tool is brilliant. My backers feel like partners in the build process, and it keeps our team accountable for every naira spent.',
-      avatar:
-        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=150',
+      iconBg: '#eff6ff',
+      iconColor: '#3b82f6'
     },
     {
       name: 'Chinedu Okafor',
-      role: 'Hardware Developer (Enugu)',
+      role: 'Independent Musician',
       text: 'I used to hesitate to back projects on other platforms. With Backr, I feel 100% confident knowing exactly how my contribution is being spent.',
-      avatar:
-        'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&q=80&w=150',
+      iconBg: '#f5f3ff',
+      iconColor: '#8b5cf6'
     },
   ];
 
@@ -60,19 +60,26 @@ export default function Testimonials() {
                 background: '#ffffff',
               }}
             >
-              <div style={{ position: 'absolute', top: '-24px', left: '32px' }}>
-                <img
-                  src={review.avatar}
-                  alt={review.name}
-                  style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '50%',
-                    border: '4px solid #ffffff',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                    objectFit: 'cover',
-                  }}
-                />
+              <div 
+                style={{ 
+                  position: 'absolute', 
+                  top: '-24px', 
+                  left: '32px',
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '18px', // Slightly rounded square for modern look
+                  border: '4px solid #ffffff',
+                  background: review.iconBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={review.iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
               </div>
               <p
                 style={{
