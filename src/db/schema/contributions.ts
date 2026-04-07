@@ -23,6 +23,8 @@ export const contributions = pgTable('contributions', {
   paymentReference: varchar('payment_reference', { length: 100 }).notNull().unique(),
   paymentMethod: varchar('payment_method', { length: 50 }),
   status: contributionStatusEnum('status').notNull().default('pending'),
+  backerName: varchar('backer_name', { length: 255 }),
+  message: varchar('message', { length: 500 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

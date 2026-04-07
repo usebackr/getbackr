@@ -1,11 +1,14 @@
 import { pgTable, uuid, text, numeric, date, timestamp } from 'drizzle-orm/pg-core';
 import { campaigns } from './campaigns';
+import { withdrawals } from './withdrawals';
 
 export const spendingLogs = pgTable('spending_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   campaignId: uuid('campaign_id')
     .notNull()
     .references(() => campaigns.id),
+  withdrawalId: uuid('withdrawal_id')
+    .references(() => withdrawals.id),
   description: text('description').notNull(),
   amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
   entryDate: date('entry_date').notNull(),

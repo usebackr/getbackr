@@ -14,6 +14,7 @@ const checkoutSchema = z.object({
   name: z.string().optional(),
   isAnonymous: z.boolean().optional(),
   shareDetails: z.boolean().optional(),
+  message: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid checkout data' }, { status: 422 });
     }
 
-    const { campaignId, amount, isAnonymous, shareDetails } = parsed.data;
+    const { campaignId, amount, isAnonymous, shareDetails, message } = parsed.data;
     
     // If not logged in, we must have an email from the body
     if (!userId) {
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
       backerEmail: email,
       anonymous: isAnonymous || false,
       shareDetails: shareDetails ?? true,
+      message: message || null,
       type: 'contribution',
     };
     

@@ -99,16 +99,17 @@ export async function POST(req: NextRequest) {
       }
 
       // 4. Securely record the withdrawal request
-      await tx.insert(withdrawals).values({
+      const [withdrawal] = await tx.insert(withdrawals).values({
         walletId: campaignWallet.walletId,
         creatorId: userId,
         amount: withdrawAmount.toString(),
         status: 'processing', // MVP state machine bypass
-      });
+      }).returning({ id: withdrawals.id });
 
       // 4. Inject into Transparency Ledger (spendingLogs)
       await tx.insert(spendingLogs).values({
         campaignId,
+        withdrawalId: withdrawal.id,
         description: reason,
         amount: withdrawAmount.toString(),
         entryDate: new Date().toISOString().split('T')[0],

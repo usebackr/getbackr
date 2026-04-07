@@ -18,9 +18,27 @@ export default function CheckoutForm({
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [shareDetails, setShareDetails] = useState(true);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
+
+  React.useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
+        if (data.authenticated) {
+          setName(data.user.name || '');
+          setEmail(data.user.email || '');
+        }
+      } catch (err) {
+        setIsAuthenticated(false);
+      }
+    }
+    checkSession();
+  }, []);
 
   const currentPct = Math.floor(Math.min((raisedAmount / goalAmount) * 100, 100));
   const inputAmt = Number(amount) || 0;
@@ -49,6 +67,7 @@ export default function CheckoutForm({
           amount,
           email,
           name,
+          message,
           isAnonymous,
           shareDetails
         }), 
@@ -416,20 +435,35 @@ export default function CheckoutForm({
       </div>
 
       {/* Submit Button */}
-      <button
-        onClick={initiatePayment}
-        disabled={loading}
-        className="btn-primary"
-        style={{
-          width: '100%',
-          padding: '18px',
-          fontSize: '1.1rem',
-          borderRadius: '8px',
-          opacity: loading ? 0.7 : 1,
-        }}
-      >
-        {loading ? 'Processing...' : 'Support This Project'}
-      </button>
+      {!isAuthenticated ? (
+        <div style={{ textAlign: 'center', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <p style={{ fontSize: '0.9rem', color: '#475569', marginBottom: '16px', fontWeight: 500 }}>
+            You must be logged in to back this project. 🇳🇬
+          </p>
+          <a 
+            href={`/login?returnTo=/c/${campaignId}`} 
+            className="btn-primary"
+            style={{ display: 'inline-block', padding: '12px 32px', fontSize: '0.9rem' }}
+          >
+            Log In to Continue
+          </a>
+        </div>
+      ) : (
+        <button
+          onClick={initiatePayment}
+          disabled={loading}
+          className="btn-primary"
+          style={{
+            width: '100%',
+            padding: '16px',
+            fontSize: '1.1rem',
+            opacity: loading ? 0.7 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Processing...' : `Fund with ₦${inputAmt.toLocaleString()}`}
+        </button>
+      )}
     </div>
   );
 }

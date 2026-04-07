@@ -59,19 +59,35 @@ export async function POST(req: NextRequest) {
           return null;
         }
 
+        const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
+        let backerName = (metadata.backerName || 'A Supporter').trim();
+        const contributionMessage = (metadata.message || '').trim();
+
+        if (backerId && !isAnonymous) {
+          const [backer] = await tx
+            .select({ displayName: users.displayName })
+            .from(users)
+            .where(eq(users.id, backerId))
+            .limit(1);
+          if (backer) backerName = backer.displayName;
+        }
+
+        const finalBackerName = isAnonymous ? 'Anonymous Supporter' : backerName;
+
         // B. Insert confirmed contribution
         console.log(`[Paystack Webhook] Recording contribution in database...`);
-        const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
         
         await tx.insert(contributions).values({
           campaignId,
           backerId: backerId || null,
           backerEmail: data.customer.email,
+          backerName: finalBackerName,
           amount: amountInMajor.toString(),
           platformFee: platformFee.toString(),
           netAmount: netAmount.toString(),
           currency: data.currency || 'NGN',
           anonymous: isAnonymous,
+          message: contributionMessage || null,
           paymentReference: reference,
           paymentMethod: data.channel || 'paystack',
           status: 'confirmed',
@@ -124,16 +140,6 @@ export async function POST(req: NextRequest) {
           .where(eq(projectWallets.campaignId, campaignId))
           .limit(1);
 
-        let backerName = isAnonymous ? 'Anonymous Supporter' : (metadata.backerName || 'A Supporter');
-        if (backerId && !isAnonymous) {
-          const [backer] = await tx
-            .select({ displayName: users.displayName })
-            .from(users)
-            .where(eq(users.id, backerId))
-            .limit(1);
-          if (backer) backerName = backer.displayName;
-        }
-
         if (campaignDetails) {
           // E. Create internal notification for creator
           await tx.insert(notifications).values({
@@ -148,7 +154,7 @@ export async function POST(req: NextRequest) {
         return {
           campaignDetails,
           wallet,
-          backerName
+          backerName: finalBackerName
         };
       });
 
@@ -179,7 +185,7 @@ export async function POST(req: NextRequest) {
               amount: amountInMajor,
               currency: data.currency,
               campaignTitle: campaignDetails.title,
-              creatorName: campaignDetails.creatorName,
+              creatorName: campaignDetails.creatorName || undefined,
               backerName: backerName,
               totalRaised: wallet?.totalReceived || netAmount,
               goalAmount: campaignDetails.goalAmount,
