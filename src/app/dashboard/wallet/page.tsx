@@ -82,7 +82,7 @@ export default function WalletDashboard() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to request withdrawal');
 
-      setSuccess('Withdrawal requested successfully. Your request is pending and will be reviewed within 1 hour.');
+      setSuccess('Withdrawal requested successfully. Your request is pending and will be reviewed within 24 hours.');
       setWithdrawAmount('');
       setWithdrawReason('');
       setCampaignId('');

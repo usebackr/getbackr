@@ -111,11 +111,70 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    const { status, reason: feedbackReason, isManual } = await req.json();
+    const { status, reason: feedbackReason, isManual, otp, transferCode: providedTransferCode } = await req.json();
     const withdrawalId = params.id;
 
     if (!withdrawalId)
       return NextResponse.json({ error: 'Withdrawal ID is absolutely required' }, { status: 400 });
+
+    // -------------------------------------------------------------------------
+    // New Action: Finalize OTP Transfer
+    // -------------------------------------------------------------------------
+    if (status === 'finalize_otp') {
+      if (!otp || !providedTransferCode) {
+        return NextResponse.json({ error: 'OTP and Transfer Code are required to finalize.' }, { status: 400 });
+      }
+
+      try {
+        const { finalizeTransfer } = await import('@/lib/payments/paystack');
+        await finalizeTransfer(providedTransferCode, otp);
+
+        // Fetch user context for notifications
+        const [request] = await db
+          .select({
+            id: withdrawals.id,
+            amount: withdrawals.amount,
+            creatorId: withdrawals.creatorId,
+            creatorEmail: users.email,
+            campaignTitle: campaigns.title,
+          })
+          .from(withdrawals)
+          .leftJoin(users, eq(users.id, withdrawals.creatorId))
+          .leftJoin(projectWallets, eq(projectWallets.id, withdrawals.walletId))
+          .leftJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
+          .where(eq(withdrawals.id, withdrawalId))
+          .limit(1);
+
+        // Update DB to completed
+        await db.update(withdrawals).set({ 
+          status: 'completed',
+          payoutReference: providedTransferCode
+        }).where(eq(withdrawals.id, withdrawalId));
+
+        // Notify Creator
+        if (request) {
+          await db.insert(notifications).values({
+            userId: request.creatorId,
+            type: 'payout_processed',
+            title: 'Withdrawal Approved!',
+            message: `Your request for ₦${Number(request.amount).toLocaleString()} has been fully processed and sent.`,
+            metadata: JSON.stringify({ withdrawalId: request.id, amount: request.amount }),
+          });
+
+          await sendEmail({
+            type: 'payment_approved',
+            email: request.creatorEmail || undefined,
+            amount: request.amount,
+            campaignTitle: request.campaignTitle || 'Your Campaign',
+          });
+        }
+
+        return NextResponse.json({ message: 'Transfer finalized successfully.', payoutReference: providedTransferCode });
+      } catch (err: any) {
+        console.error('[Admin Payout] Finalize OTP Failed:', err);
+        return NextResponse.json({ error: `Finalization failed: ${err.message}` }, { status: 500 });
+      }
+    }
 
     if (status === 'completed' || status === 'rejected' || status === 'expired') {
       const [existingRequest] = await db
@@ -165,11 +224,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             );
 
             // 2. Initiate the Transfer
-            payoutReference = await initiateTransfer(
+            const result = await initiateTransfer(
               Number(existingRequest.amount),
               recipientCode,
               `Backr Cloud Payout: ${existingRequest.campaignTitle}`
             );
+
+            // 3. Check for OTP requirement
+            if (result.status === 'otp') {
+              // Mark as processing in DB (no change needed to status) but store the reference
+              await db.update(withdrawals).set({ 
+                payoutReference: result.transfer_code 
+              }).where(eq(withdrawals.id, withdrawalId));
+
+              return NextResponse.json({ 
+                otpRequired: true, 
+                transferCode: result.transfer_code,
+                message: 'OTP required to finalize this transfer. Please check your phone/email.' 
+              });
+            }
+
+            payoutReference = result.transfer_code;
           } catch (paystackErr: any) {
             console.error('[Admin Payout] Paystack Transfer Failed:', paystackErr);
             return NextResponse.json({ 

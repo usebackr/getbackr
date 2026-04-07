@@ -9,6 +9,11 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
   const [isRejecting, setIsRejecting] = useState(false);
   const [reason, setReason] = useState('Insufficient verification / Invalid bank details');
   const [paystackBalance, setPaystackBalance] = useState<number | null>(null);
+  
+  // OTP State
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [activeTransferCode, setActiveTransferCode] = useState('');
 
   useEffect(() => {
     async function fetchBalance() {
@@ -23,16 +28,21 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
     fetchBalance();
   }, []);
 
-  const executeAction = async (action: 'completed' | 'rejected', isManual = false) => {
+  const executeAction = async (action: 'completed' | 'rejected' | 'finalize_otp', isManual = false) => {
     if (action === 'completed') {
       const confirmMsg = isManual 
         ? "Mark this as COMPLETED manually? This means you've already sent the funds via another bank and just want to close the request in the app."
         : "Process automated bank transfer via Paystack for this amount?";
       
       if (!confirm(confirmMsg)) return;
-    } else {
+    } else if (action === 'rejected') {
       if (!reason || reason.trim() === '') {
         alert('A rejection reason is strictly required to bounce funds.');
+        return;
+      }
+    } else if (action === 'finalize_otp') {
+      if (!otpValue || otpValue.length < 4) {
+        alert('Please enter a valid OTP.');
         return;
       }
     }
@@ -45,15 +55,28 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
         body: JSON.stringify({ 
           status: action, 
           reason: action === 'rejected' ? reason.trim() : '',
-          isManual
+          isManual,
+          otp: action === 'finalize_otp' ? otpValue : undefined,
+          transferCode: action === 'finalize_otp' ? activeTransferCode : undefined
         }),
       });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || `Failed to process payout`);
 
+      // Handle OTP Required from server
+      if (data.otpRequired) {
+        setOtpRequired(true);
+        setActiveTransferCode(data.transferCode);
+        setLoading(false);
+        alert(data.message || 'OTP Required to continue.');
+        return;
+      }
+
       router.refresh();
       setIsRejecting(false);
+      setOtpRequired(false);
+      setOtpValue('');
     } catch (err: any) {
       alert(`Error: ${err.message}`);
       setLoading(false);
@@ -82,6 +105,44 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
             onClick={() => setIsRejecting(false)}
             disabled={loading}
             style={{ flex: 1, padding: '10px', background: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.85rem' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (otpRequired) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '24px', background: '#f0f9ff', borderRadius: '16px', border: '2px solid #3b82f6' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '1.2rem' }}>🔐</span>
+          <h4 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e40af', margin: 0 }}>Two-Factor Required</h4>
+        </div>
+        <p style={{ fontSize: '0.85rem', color: '#1e40af', fontWeight: 600, margin: 0 }}>
+          Enter the OTP sent to your registered Paystack device/email to finalize this transfer.
+        </p>
+        <input
+          type="text"
+          value={otpValue}
+          onChange={(e) => setOtpValue(e.target.value)}
+          placeholder="000000"
+          maxLength={6}
+          style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '2px solid #3b82f6', fontSize: '1.5rem', fontWeight: 900, textAlign: 'center', letterSpacing: '0.5em', outline: 'none' }}
+        />
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => executeAction('finalize_otp')}
+            disabled={loading}
+            style={{ flex: 2, padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.95rem' }}
+          >
+            {loading ? 'Verifying...' : 'Verify & Send Funds'}
+          </button>
+          <button
+            onClick={() => { setOtpRequired(false); setOtpValue(''); }}
+            disabled={loading}
+            style={{ flex: 1, padding: '14px', background: '#fff', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '12px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
           >
             Cancel
           </button>

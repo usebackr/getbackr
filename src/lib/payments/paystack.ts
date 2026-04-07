@@ -138,7 +138,7 @@ export async function initiateTransfer(
   amount: number,
   recipientCode: string,
   reason: string,
-): Promise<string> {
+): Promise<{ status: string; transfer_code: string; message: string }> {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
 
@@ -159,7 +159,42 @@ export async function initiateTransfer(
   const data = await response.json();
   if (!data.status) throw new Error(data.message);
 
-  return data.data.transfer_code;
+  return {
+    status: data.data.status, // "otp", "success", "pending"
+    transfer_code: data.data.transfer_code,
+    message: data.message
+  };
+}
+
+/**
+ * Finalizes a transfer that requires an OTP.
+ */
+export async function finalizeTransfer(
+  transferCode: string,
+  otp: string,
+): Promise<{ status: boolean; message: string }> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/transfer/finalize_transfer`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      transfer_code: transferCode,
+      otp,
+    }),
+  });
+
+  const data = await response.json();
+  if (!data.status) throw new Error(data.message);
+
+  return {
+    status: data.status,
+    message: data.message
+  };
 }
 
 /**
