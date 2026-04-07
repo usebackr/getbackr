@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { emailCampaigns } from '@/db/schema/emailCampaigns';
 import { requirePremium } from '@/lib/middleware/premiumGuard';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { processEmailCampaign } from '@/workers/emailWorkers';
+// import { getQueue, QUEUE_NAMES } from '@/lib/queue'; // Removed
 
 const DAILY_SEND_LIMIT = 10_000;
 
@@ -79,9 +80,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     })
     .returning();
 
-  // Enqueue send job
-  const emailCampaignQueue = getQueue(QUEUE_NAMES.EMAIL_CAMPAIGN);
-  await emailCampaignQueue.add({ emailCampaignId: emailCampaign.id });
+  // Enqueue send job (Direct Call now)
+  await processEmailCampaign(emailCampaign.id);
 
   return NextResponse.json(emailCampaign, { status: 201 });
 }

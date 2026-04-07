@@ -12,22 +12,30 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-jest.mock('@/lib/redis', () => ({
-  getRedis: jest.fn(() => ({
-    set: jest.fn().mockResolvedValue('OK'),
-    get: jest.fn().mockResolvedValue(null),
-    del: jest.fn().mockResolvedValue(1),
-  })),
+jest.mock('@/lib/auth/tokens', () => ({
+  generateVerificationToken: jest.fn(() => 'test-verification-token'),
+  storeVerificationToken: jest.fn().mockResolvedValue(undefined),
+  consumeVerificationToken: jest.fn().mockResolvedValue('user-1'),
 }));
 
-jest.mock('@/lib/queue', () => ({
-  getQueue: jest.fn(() => ({
-    add: jest.fn().mockResolvedValue({ id: 'job-1' }),
-  })),
-  QUEUE_NAMES: {
-    EMAIL_VERIFICATION: 'email:verification',
-    EMAIL_RECEIPT: 'email:receipt',
-  },
+jest.mock('@/lib/auth/jwt', () => {
+  const actual = jest.requireActual('jsonwebtoken');
+  const ACCESS_SECRET = 'access-secret-change-me';
+  const REFRESH_SECRET = 'refresh-secret-change-me';
+  
+  return {
+    signAccessToken: jest.fn((userId) => actual.sign({ sub: userId, type: 'access' }, ACCESS_SECRET, { expiresIn: '15m' })),
+    signRefreshToken: jest.fn((userId) => actual.sign({ sub: userId, type: 'refresh', nonce: Math.random() }, REFRESH_SECRET, { expiresIn: '7d' })),
+    verifyAccessToken: jest.fn((token) => actual.verify(token, ACCESS_SECRET)),
+    verifyRefreshToken: jest.fn((token) => actual.verify(token, REFRESH_SECRET)),
+    getRefreshTokenUserId: jest.fn().mockResolvedValue('user-1'),
+    invalidateRefreshToken: jest.fn().mockResolvedValue(undefined),
+    storeRefreshToken: jest.fn().mockResolvedValue(undefined),
+  };
+});
+
+jest.mock('@/workers/emailWorkers', () => ({
+  sendEmail: jest.fn().mockResolvedValue({ sent: true }),
 }));
 
 jest.mock('@/lib/audit', () => ({
@@ -53,9 +61,9 @@ import { POST as refreshHandler } from '@/app/api/auth/refresh/route';
 import { POST as setup2faHandler } from '@/app/api/auth/2fa/setup/route';
 import { POST as verify2faHandler } from '@/app/api/auth/2fa/verify/route';
 import { db } from '@/lib/db';
-import { getRedis } from '@/lib/redis';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { consumeVerificationToken } from '@/lib/auth/tokens';
 
 // Helper to create a NextRequest
 function makeRequest(body: unknown, headers: Record<string, string> = {}): NextRequest {
@@ -194,9 +202,7 @@ describe('POST /api/auth/verify-email', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('verifies email with valid token', async () => {
-    const redis = getRedis();
-    (redis.get as jest.Mock).mockResolvedValueOnce('user-1');
-    (redis.del as jest.Mock).mockResolvedValueOnce(1);
+    (consumeVerificationToken as jest.Mock).mockResolvedValueOnce('user-1');
     mockDbUpdate();
 
     const req = makeRequest({ token: 'valid-token-abc123' });
@@ -207,8 +213,7 @@ describe('POST /api/auth/verify-email', () => {
   });
 
   it('returns 422 for expired/invalid token', async () => {
-    const redis = getRedis();
-    (redis.get as jest.Mock).mockResolvedValueOnce(null);
+    (consumeVerificationToken as jest.Mock).mockResolvedValueOnce(null);
 
     const req = makeRequest({ token: 'expired-token' });
     const res = await verifyEmailHandler(req);
@@ -244,9 +249,8 @@ describe('POST /api/auth/login', () => {
 
   it('logs in successfully with correct credentials', async () => {
     mockDbSelect([mockUser]);
+    mockDbInsert([]); // mock refresh token store
     mockDbUpdate();
-    const redis = getRedis();
-    (redis.set as jest.Mock).mockResolvedValue('OK');
 
     const req = makeRequest({ email: 'test@example.com', password: 'Password1' });
     const res = await loginHandler(req);
@@ -299,9 +303,7 @@ describe('POST /api/auth/logout', () => {
   it('logs out successfully with valid refresh token', async () => {
     const userId = 'user-1';
     const refreshToken = makeRefreshToken(userId);
-    const redis = getRedis();
-    (redis.get as jest.Mock).mockResolvedValueOnce(userId);
-    (redis.del as jest.Mock).mockResolvedValueOnce(1);
+    mockDbUpdate(); // revoke in DB
 
     const req = makeRequest({ refreshToken });
     const res = await logoutHandler(req);
@@ -325,10 +327,11 @@ describe('POST /api/auth/refresh', () => {
   it('rotates tokens with valid refresh token', async () => {
     const userId = 'user-1';
     const refreshToken = makeRefreshToken(userId);
-    const redis = getRedis();
-    (redis.get as jest.Mock).mockResolvedValueOnce(userId);
-    (redis.del as jest.Mock).mockResolvedValueOnce(1);
-    (redis.set as jest.Mock).mockResolvedValue('OK');
+    
+    // Mock getRefreshTokenUserId to find user
+    mockDbSelect([{ userId }]);
+    mockDbUpdate(); // revoke old
+    mockDbInsert([]); // store new
 
     const req = makeRequest({ refreshToken });
     const res = await refreshHandler(req);
@@ -345,11 +348,10 @@ describe('POST /api/auth/refresh', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 401 for revoked refresh token', async () => {
+  it('returns 401 for revoked/invalid refresh token in DB', async () => {
     const userId = 'user-1';
     const refreshToken = makeRefreshToken(userId);
-    const redis = getRedis();
-    (redis.get as jest.Mock).mockResolvedValueOnce(null); // not in Redis = revoked
+    mockDbSelect([]); // not found / revoked in DB
 
     const req = makeRequest({ refreshToken });
     const res = await refreshHandler(req);

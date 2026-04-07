@@ -6,7 +6,8 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { campaignUpdates } from '@/db/schema/campaignUpdates';
 import { requireAuth } from '@/lib/auth/middleware';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { sendBackerUpdateEmails } from '@/workers/emailWorkers';
+// import { getQueue, QUEUE_NAMES } from '@/lib/queue'; // Removed
 
 const createUpdateSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or fewer'),
@@ -71,9 +72,8 @@ export async function POST(
     })
     .returning();
 
-  // Enqueue backer notification job
-  const backerUpdateQueue = getQueue(QUEUE_NAMES.EMAIL_BACKER_UPDATE);
-  await backerUpdateQueue.add({
+  // Enqueue backer notification job (Direct Call now)
+  await sendBackerUpdateEmails({
     campaignId,
     updateTitle: title,
     campaignTitle: campaign.title,

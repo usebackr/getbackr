@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+// import { getQueue, QUEUE_NAMES } from '@/lib/queue'; // Removed during Redis decommissioning
 
 // Initialise Resend with API key - Lazy loading to prevent build-time crashes
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
@@ -501,12 +501,12 @@ export async function sendEmail(data: ReceiptJobData) {
   }
 }
 
-export function registerEmailReceiptWorker(): void {
-  const queue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
-  queue.process(async (job: { data: ReceiptJobData }) => {
-    return await sendEmail(job.data);
-  });
-}
+// export function registerEmailReceiptWorker(): void {
+//   const queue = getQueue(QUEUE_NAMES.EMAIL_RECEIPT);
+//   queue.process(async (job: { data: ReceiptJobData }) => {
+//     return await sendEmail(job.data);
+//   });
+// }
 
 // ---------------------------------------------------------------------------
 // 22.2 — email:backer-update worker
@@ -519,48 +519,44 @@ interface BackerUpdateJobData {
   campaignTitle: string;
 }
 
-export function registerBackerUpdateWorker(): void {
-  const queue = getQueue(QUEUE_NAMES.EMAIL_BACKER_UPDATE);
+export async function sendBackerUpdateEmails(data: BackerUpdateJobData): Promise<{ sent: number }> {
+  const { campaignId, updateTitle, campaignTitle } = data;
 
-  queue.process(async (job: { data: BackerUpdateJobData }) => {
-    const { campaignId, updateTitle, campaignTitle } = job.data;
+  // Fetch distinct confirmed backer emails for this campaign
+  const backerRows = await db
+    .selectDistinct({ backerEmail: contributions.backerEmail })
+    .from(contributions)
+    .where(and(eq(contributions.campaignId, campaignId), eq(contributions.status, 'confirmed')));
 
-    // Fetch distinct confirmed backer emails for this campaign
-    const backerRows = await db
-      .selectDistinct({ backerEmail: contributions.backerEmail })
-      .from(contributions)
-      .where(and(eq(contributions.campaignId, campaignId), eq(contributions.status, 'confirmed')));
+  if (backerRows.length === 0) return { sent: 0 };
 
-    if (backerRows.length === 0) return { sent: 0 };
-
-    const emails = backerRows.map((row: { backerEmail: string }) => ({
-      to: row.backerEmail,
-      from: FROM_EMAIL,
-      subject: `New update on ${campaignTitle}: ${updateTitle}`,
-      html: `
-        <div style="${emailWrapperStyle}">
-          <div style="${emailCardStyle}">
-            <p>There's a new update on <strong>${campaignTitle}</strong>:</p>
-            <h3 style="color: #0f172a; font-size: 1.25rem;">${updateTitle}</h3>
-            <p>Log in to Backr to read the full update and see how your support is making an impact.</p>
-            <div style="margin-top: 32px; text-align: center;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                Read Full Update
-              </a>
-            </div>
+  const emails = backerRows.map((row: { backerEmail: string }) => ({
+    to: row.backerEmail,
+    from: FROM_EMAIL,
+    subject: `New update on ${campaignTitle}: ${updateTitle}`,
+    html: `
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <p>There's a new update on <strong>${campaignTitle}</strong>:</p>
+          <h3 style="color: #0f172a; font-size: 1.25rem;">${updateTitle}</h3>
+          <p>Log in to Backr to read the full update and see how your support is making an impact.</p>
+          <div style="margin-top: 32px; text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:12px 24px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+              Read Full Update
+            </a>
           </div>
         </div>
-      `,
-    }));
+      </div>
+    `,
+  }));
 
-    // Send in batches to respect Resend rate limits
-    const BATCH_SIZE = 100;
-    for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-      await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
-    }
+  // Send in batches to respect Resend rate limits
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
+  }
 
-    return { sent: backerRows.length };
-  });
+  return { sent: backerRows.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -573,34 +569,28 @@ interface AccountLockoutJobData {
   lockedUntil: string; // ISO date string
 }
 
-export function registerAccountLockoutWorker(): void {
-  const queue = getQueue(QUEUE_NAMES.EMAIL_ACCOUNT_LOCKOUT);
-
-  queue.process(async (job: { data: AccountLockoutJobData }) => {
-    const { email, lockedUntil } = job.data;
-
-    const lockedUntilDate = new Date(lockedUntil).toLocaleString('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
-
-    await getResend().emails.send({
-      to: email,
-      from: FROM_EMAIL,
-      subject: 'Your Backr account has been temporarily locked',
-      html: `
-        <p>Your Backr account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
-        <p>Your account will be unlocked at: <strong>${lockedUntilDate}</strong></p>
-      `,
-    });
-
-    return { sent: true, email };
+export async function sendAccountLockoutEmail(data: AccountLockoutJobData): Promise<{ sent: boolean }> {
+  const { email, lockedUntil } = data;
+  const lockedUntilDate = new Date(lockedUntil).toLocaleString('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
   });
+
+  await getResend().emails.send({
+    to: email,
+    from: FROM_EMAIL,
+    subject: 'Your Backr account has been temporarily locked',
+    html: `
+      <p>Your Backr account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
+      <p>Your account will be unlocked at: <strong>${lockedUntilDate}</strong></p>
+    `,
+  });
+
+  return { sent: true };
 }
 
 // ---------------------------------------------------------------------------
-// 22.4 — email:subscription-renewal worker
-// Notifies a user that their premium subscription payment failed.
+// 22.4 — Subscription Failure notification
 // ---------------------------------------------------------------------------
 
 interface SubscriptionRenewalJobData {
@@ -609,37 +599,74 @@ interface SubscriptionRenewalJobData {
   gracePeriodEndsAt: string; // ISO date string
 }
 
-export function registerSubscriptionRenewalWorker(): void {
-  const queue = getQueue(QUEUE_NAMES.EMAIL_SUBSCRIPTION_RENEWAL);
-
-  queue.process(async (job: { data: SubscriptionRenewalJobData }) => {
-    const { email, plan, gracePeriodEndsAt } = job.data;
-
-    const graceDate = new Date(gracePeriodEndsAt).toLocaleString('en-US', {
-      dateStyle: 'long',
-    });
-
-    await getResend().emails.send({
-      to: email,
-      from: FROM_EMAIL,
-      subject: 'Your Backr Premium subscription payment failed',
-      html: `
-        <p>Your Backr Premium (<strong>${plan}</strong>) subscription payment has failed.</p>
-        <p>Grace period ends on: <strong>${graceDate}</strong></p>
-      `,
-    });
-
-    return { sent: true, email, plan };
+export async function sendSubscriptionFailureEmail(data: SubscriptionRenewalJobData): Promise<{ sent: boolean }> {
+  const { email, plan, gracePeriodEndsAt } = data;
+  const graceDate = new Date(gracePeriodEndsAt).toLocaleString('en-US', {
+    dateStyle: 'long',
   });
+
+  await getResend().emails.send({
+    to: email,
+    from: FROM_EMAIL,
+    subject: 'Your Backr Premium subscription payment failed',
+    html: `
+      <p>Your Backr Premium (<strong>${plan}</strong>) subscription payment has failed.</p>
+      <p>Grace period ends on: <strong>${graceDate}</strong></p>
+    `,
+  });
+
+  return { sent: true };
 }
 
 // ---------------------------------------------------------------------------
-// Register all email workers
+// 22.5 — Bulk Email Campaign Processor
 // ---------------------------------------------------------------------------
 
-export function registerEmailWorkers(): void {
-  registerEmailReceiptWorker();
-  registerBackerUpdateWorker();
-  registerAccountLockoutWorker();
-  registerSubscriptionRenewalWorker();
+import { emailCampaigns } from '@/db/schema/emailCampaigns';
+import { users } from '@/db/schema/users';
+
+export async function processEmailCampaign(emailCampaignId: string): Promise<{ sent: number }> {
+  const campaign = await db.query.emailCampaigns.findFirst({
+    where: eq(emailCampaigns.id, emailCampaignId)
+  });
+
+  if (!campaign || campaign.status !== 'sending') return { sent: 0 };
+
+  // Fetch recipients based on source
+  let recipientEmails: string[] = [];
+  
+  if (campaign.recipientSource === 'backers' || campaign.recipientSource === 'both') {
+    const backerRows = await db
+      .selectDistinct({ email: contributions.backerEmail })
+      .from(contributions)
+      .where(eq(contributions.campaignId, campaign.campaignId || ''));
+    recipientEmails.push(...backerRows.map(r => r.email));
+  }
+
+  // Deduplicate
+  const uniqueRecipients = [...new Set(recipientEmails)];
+  if (uniqueRecipients.length === 0) {
+    await db.update(emailCampaigns).set({ status: 'sent', sentCount: 0 }).where(eq(emailCampaigns.id, emailCampaignId));
+    return { sent: 0 };
+  }
+
+  const emails = uniqueRecipients.map(to => ({
+    to,
+    from: FROM_EMAIL,
+    subject: campaign.subject,
+    html: campaign.bodyHtml
+  }));
+
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
+  }
+
+  await db.update(emailCampaigns).set({ 
+    status: 'sent', 
+    sentCount: uniqueRecipients.length,
+    sentAt: new Date()
+  }).where(eq(emailCampaigns.id, emailCampaignId));
+
+  return { sent: uniqueRecipients.length };
 }
