@@ -30,10 +30,10 @@ export async function GET(req: NextRequest) {
         description: campaigns.title,
       })
       .from(contributions)
-      .leftJoin(campaigns, eq(campaigns.id, contributions.campaignId))
+      .innerJoin(campaigns, eq(campaigns.id, contributions.campaignId))
       .where(
         and(
-          sql`(${campaigns.creatorId} = ${userId} OR ${contributions.backerEmail} = (SELECT email FROM ${users} WHERE id = ${userId} LIMIT 1))`,
+          eq(campaigns.creatorId, userId),
           eq(contributions.status, 'confirmed')
         )
       );
