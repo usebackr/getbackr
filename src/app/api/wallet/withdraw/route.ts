@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
       const [campaignWallet] = await tx
         .select({ 
           walletId: projectWallets.id,
-          recordedBalance: projectWallets.balance
+          recordedBalance: projectWallets.balance,
+          status: campaigns.status
         })
         .from(projectWallets)
         .innerJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
@@ -76,6 +77,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { error: 'Invalid campaign selected or no wallet configured.' },
           { status: 400 },
+        );
+      }
+
+      if (campaignWallet.status !== 'closed') {
+        return NextResponse.json(
+          { error: 'Withdrawals are only allowed from projects that have been "Ended". Please end the project before withdrawing.' },
+          { status: 403 },
         );
       }
 

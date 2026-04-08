@@ -4,14 +4,26 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 
 export default function WalletDashboard() {
-  const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState<{
+    totalRaised: number;
+    totalFees: number;
+    netEarning: number;
+    totalWithdrawn: number;
+    availableBalance: number;
+    campaigns: Array<{ id: string; title: string }>;
+    kycStatus: string;
+    hasBank: boolean;
+    campaignStatus: string;
+  }>({
     totalRaised: 0,
     totalFees: 0,
+    netEarning: 0,
     totalWithdrawn: 0,
     availableBalance: 0,
     campaigns: [],
     kycStatus: 'pending',
     hasBank: false,
+    campaignStatus: 'active',
   });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,9 +37,10 @@ export default function WalletDashboard() {
 
   const fetchWallet = async () => {
     try {
+      const urlParams = campaignId ? `?campaignId=${campaignId}` : '';
       const [sumRes, txRes] = await Promise.all([
-        fetch('/api/dashboard/wallet-summary'),
-        fetch('/api/dashboard/wallet-transactions')
+        fetch(`/api/dashboard/wallet-summary${urlParams}`),
+        fetch(`/api/dashboard/wallet-transactions${urlParams}`)
       ]);
 
       if (sumRes.status === 401 || txRes.status === 401) {
@@ -50,10 +63,25 @@ export default function WalletDashboard() {
 
   useEffect(() => {
     fetchWallet();
-    // Poll every 30 seconds for live feel
-    const interval = setInterval(fetchWallet, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [campaignId]);
+
+  const handleCloseCampaign = async () => {
+    if (!campaignId) return;
+    if (!confirm('Are you sure you want to end this project? This action is PERMANENT and will disable further donations. You must end the project to withdraw funds.')) return;
+    
+    setActing(true);
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/close`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSuccess(data.message);
+      fetchWallet();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setActing(false);
+    }
+  };
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,8 +146,26 @@ export default function WalletDashboard() {
                 Manage your creator earnings and payouts.
               </p>
             </div>
-            <div style={{ background: '#ecfdf5', color: '#059669', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-               LIVE BALANCE
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '280px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Selected Project</label>
+              <select
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: '2px solid #e2e8f0',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  background: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Aggregate View (All Projects)</option>
+                {(summary.campaigns || []).map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
             </div>
           </div>
         </header>
@@ -163,8 +209,8 @@ export default function WalletDashboard() {
               {[
                 { label: 'Total Raised', value: summary.totalRaised, color: '#ffffff', bg: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' },
                 { label: 'Total Fees', value: summary.totalFees, color: 'var(--text-primary)', bg: '#ffffff', border: '1px solid #f1f5f9' },
+                { label: 'Net Earning', value: summary.netEarning, color: '#059669', bg: '#f0fdf4', border: '1px solid #bbf7d0' },
                 { label: 'Total Withdrawn', value: summary.totalWithdrawn, color: 'var(--text-primary)', bg: '#ffffff', border: '1px solid #f1f5f9' },
-                { label: 'Available Balance', value: summary.availableBalance, color: '#059669', bg: '#ecfdf5', border: '1px solid #bae6fd' },
               ].map((stat, i) => (
                 <div key={i} className="dash-stat-card" style={{ 
                   background: stat.bg,
@@ -186,6 +232,51 @@ export default function WalletDashboard() {
               ))}
             </div>
 
+            {/* LIVE BALANCE - BIG CARD */}
+            <div style={{ 
+              background: '#ecfdf5', 
+              border: '2px solid #059669',
+              borderRadius: '24px',
+              padding: '32px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '12px'
+            }}>
+               <span style={{ color: '#059669', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                 {campaignId ? 'Project Balance' : 'Aggregated Available Balance'}
+               </span>
+               <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4rem)', fontWeight: 900, color: '#064e3b', margin: 0 }}>
+                 ₦{summary.availableBalance.toLocaleString()}
+               </h2>
+               <p style={{ color: '#065f46', fontSize: '0.85rem', fontWeight: 600 }}>
+                 Calculated as: (Gross Raised - Fees) - Total Withdrawn
+               </p>
+               
+               {campaignId && summary.campaignStatus === 'active' && (
+                 <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                   <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '12px 20px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700 }}>
+                     ⚠️ This project is still ACTIVE. You must "End Project" before you can withdraw funds.
+                   </div>
+                   <button 
+                     onClick={handleCloseCampaign}
+                     disabled={acting}
+                     style={{
+                       background: '#ef4444', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: 800, cursor: 'pointer', fontSize: '0.9rem'
+                     }}
+                   >
+                     {acting ? 'Closing...' : 'End Project Permanently'}
+                   </button>
+                 </div>
+               )}
+
+               {campaignId && summary.campaignStatus === 'closed' && (
+                 <div style={{ marginTop: '16px', background: '#ecfdf5', color: '#065f46', padding: '12px 20px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700, border: '1px solid #6ee7b7' }}>
+                   ✅ Project Ended. Withdrawals are enabled.
+                 </div>
+               )}
+            </div>
             {/* Withdraw Section */}
             <div className="dash-card" style={{ padding: 'clamp(16px, 5vw, 32px)' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', fontWeight: 800 }}>Request Withdrawal</h3>
@@ -213,18 +304,13 @@ export default function WalletDashboard() {
                    </div>
 
                    <div>
-                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Select Project</label>
-                     <select
-                        value={campaignId}
-                        onChange={(e) => setCampaignId(e.target.value)}
-                        required
-                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', fontWeight: 600, background: '#fff' }}
-                      >
-                        <option value="" disabled>Select Campaign...</option>
-                        {(summary.campaigns || []).map((c: any) => (
-                          <option key={c.id} value={c.id}>{c.title}</option>
-                        ))}
-                      </select>
+                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Project Context</label>
+                     <div style={{ 
+                       padding: '14px', borderRadius: '12px', border: '2px solid #e2e8f0', background: '#f8fafc',
+                       fontSize: '0.95rem', fontWeight: 700, color: campaignId ? '#1e293b' : '#64748b'
+                     }}>
+                        {campaignId ? (summary.campaigns.find((c:any) => c.id === campaignId)?.title || 'Selected Campaign') : 'Select a campaign above first'}
+                     </div>
                    </div>
                 </div>
 
@@ -246,11 +332,18 @@ export default function WalletDashboard() {
 
                   <button
                     onClick={handleWithdraw}
-                    disabled={acting || summary.availableBalance <= 0}
+                    disabled={acting || !campaignId || summary.campaignStatus !== 'closed'}
                     className="btn-primary"
-                    style={{ width: '100%', padding: '16px', fontSize: '1rem', fontWeight: 800 }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '16px', 
+                      fontSize: '1rem', 
+                      fontWeight: 800,
+                      opacity: acting || !campaignId || summary.campaignStatus !== 'closed' || summary.availableBalance <= 0 ? 0.7 : 1,
+                      cursor: acting ? 'wait' : (!campaignId || summary.campaignStatus !== 'closed' || summary.availableBalance <= 0 ? 'not-allowed' : 'pointer')
+                    }}
                   >
-                    {acting ? 'Processing...' : 'Submit Withdrawal Request'}
+                    {!campaignId ? 'Select a Campaign' : (summary.campaignStatus !== 'closed' ? 'End Project to Withdraw' : (acting ? 'Processing...' : 'Submit Withdrawal Request'))}
                   </button>
                 </div>
               </div>
