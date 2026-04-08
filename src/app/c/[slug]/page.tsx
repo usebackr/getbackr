@@ -18,34 +18,18 @@ import { getPublicUrl } from '@/lib/storage';
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
   let campaign, creator, wallet, logs, campaignContributions, latestBackers, goalAmount, raisedAmount, comments, totalDonors, coverUrl, avatarUrl, updates;
 
+  const campaignsResult = await db
+    .select()
+    .from(campaigns)
+    .where(eq(campaigns.slug, params.slug))
+    .limit(1);
+
+  campaign = campaignsResult[0];
+
+  if (!campaign) notFound();
+
   try {
-    const campaignsResult = await db
-      .select()
-      .from(campaigns)
-      .where(eq(campaigns.slug, params.slug))
-      .limit(1);
-
-    campaign = campaignsResult[0];
-
-    if (!campaign) notFound();
-
-    // Fetch updates
-    updates = await db
-      .select()
-      .from(campaignUpdates)
-      .where(and(eq(campaignUpdates.campaignId, campaign.id), sql`deleted_at IS NULL`))
-      .orderBy(desc(campaignUpdates.createdAt));
-
-
-    // Increment view count in background - wrapped in try/catch for stability
-    try {
-      await db.update(campaigns)
-        .set({ views: sql`${campaigns.views} + 1` })
-        .where(eq(campaigns.id, campaign.id));
-    } catch (err) {
-      console.error('[Views] Column might be missing, skipping increment:', err);
-    }
-
+    // 1. Fetch Creator & Basic Media
     const creatorsResult = await db
       .select({ 
         displayName: users.displayName, 
@@ -57,11 +41,10 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
       .limit(1);
     
     creator = creatorsResult[0];
-
-    // Apply self-healing URLs
     coverUrl = getPublicUrl(campaign.coverImageUrl);
     avatarUrl = getPublicUrl(creator?.avatarUrl);
 
+    // 2. Fetch Project Wallet & Goal Stats
     const walletsResult = await db
       .select()
       .from(projectWallets)
@@ -69,35 +52,57 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
       .limit(1);
     
     wallet = walletsResult[0];
+    goalAmount = parseFloat(campaign.goalAmount);
+    raisedAmount = parseFloat(wallet?.totalReceived || '0');
 
-    logs = await db
-      .select({
-        id: spendingLogs.id,
-        amount: spendingLogs.amount,
-        description: spendingLogs.description,
-        entryDate: spendingLogs.entryDate,
-        withdrawalStatus: withdrawals.status,
-      })
-      .from(spendingLogs)
-      .leftJoin(withdrawals, eq(spendingLogs.withdrawalId, withdrawals.id))
-      .where(
-        and(
-          eq(spendingLogs.campaignId, campaign.id),
-          or(
-            sql`${spendingLogs.withdrawalId} IS NULL`,
-            inArray(withdrawals.status, ['processing', 'completed'])
+    // 3. Increment views (silent fail)
+    db.update(campaigns)
+      .set({ views: sql`${campaigns.views} + 1` })
+      .where(eq(campaigns.id, campaign.id))
+      .catch(err => console.error('[Views] Increment failed:', err));
+
+    // 4. Fetch Secondary Data (Updates, Logs, Backers)
+    // Wrap these in a sub-try-catch to ensure the page renders even if these fail
+    try {
+      [updates, logs, campaignContributions] = await Promise.all([
+        db.select().from(campaignUpdates)
+          .where(and(eq(campaignUpdates.campaignId, campaign.id), sql`deleted_at IS NULL`))
+          .orderBy(desc(campaignUpdates.createdAt)),
+        
+        db.select({
+            id: spendingLogs.id,
+            amount: spendingLogs.amount,
+            description: spendingLogs.description,
+            entryDate: spendingLogs.entryDate,
+            withdrawalStatus: withdrawals.status,
+          })
+          .from(spendingLogs)
+          .leftJoin(withdrawals, eq(spendingLogs.withdrawalId, withdrawals.id))
+          .where(
+            and(
+              eq(spendingLogs.campaignId, campaign.id),
+              or(
+                sql`${spendingLogs.withdrawalId} IS NULL`,
+                inArray(withdrawals.status, ['processing', 'completed'])
+              )
+            )
           )
-        )
-      )
-      .orderBy(desc(spendingLogs.entryDate));
+          .orderBy(desc(spendingLogs.entryDate)),
 
-    campaignContributions = await db
-      .select()
-      .from(contributions)
-      .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
-      .orderBy(desc(contributions.createdAt));
+        db.select()
+          .from(contributions)
+          .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
+          .orderBy(desc(contributions.createdAt))
+      ]);
+    } catch (dataErr) {
+      console.error('[CampaignPublicPage] Data fetch error:', dataErr);
+      updates = [];
+      logs = [];
+      campaignContributions = [];
+    }
 
-    comments = campaignContributions
+    // Process list data
+    comments = (campaignContributions || [])
       .filter(c => c.message && c.message.trim() !== '')
       .map(c => ({
         id: c.id,
@@ -106,18 +111,14 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         createdAt: c.createdAt
       }));
 
-    totalDonors = campaignContributions.length;
-    // Map contributions correctly for the BackersList
-    latestBackers = campaignContributions.slice(0, 10).map(c => ({
+    totalDonors = (campaignContributions || []).length;
+    latestBackers = (campaignContributions || []).slice(0, 10).map(c => ({
       id: c.id,
       backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
       amount: c.amount,
       isAnonymous: c.anonymous,
       createdAt: c.createdAt
     }));
-
-    goalAmount = parseFloat(campaign.goalAmount);
-    raisedAmount = parseFloat(wallet?.totalReceived || '0');
 
   } catch (error) {
     console.error('[CampaignPublicPage] Critical Error:', error);
@@ -126,7 +127,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         <div style={{ textAlign: 'center', padding: '40px', background: '#fff', borderRadius: '24px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', maxWidth: '500px' }}>
           <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', marginBottom: '16px' }}>Campaign Unavailable</h1>
           <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '32px' }}>
-            We're having trouble loading this campaign page. This might be due to a temporary database sync issue.
+            We're having trouble loading some details for this campaign. Please try refreshing or check back later.
           </p>
           <a href="/explore" className="btn-primary" style={{ padding: '12px 32px', borderRadius: '12px', textDecoration: 'none' }}>
             Back to Explore
