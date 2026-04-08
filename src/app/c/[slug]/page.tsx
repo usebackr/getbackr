@@ -6,6 +6,7 @@ import { campaigns } from '@/db/schema/campaigns';
 import { users } from '@/db/schema/users';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { spendingLogs } from '@/db/schema/spendingLogs';
+import { campaignUpdates } from '@/db/schema/campaignUpdates';
 import { contributions } from '@/db/schema/contributions';
 import { withdrawals } from '@/db/schema/withdrawals';
 import CheckoutForm from './CheckoutForm';
@@ -15,7 +16,7 @@ import BackersList from './BackersList';
 import { getPublicUrl } from '@/lib/storage';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
-  let campaign, creator, wallet, logs, campaignContributions, latestBackers, goalAmount, raisedAmount, comments, totalDonors, coverUrl, avatarUrl;
+  let campaign, creator, wallet, logs, campaignContributions, latestBackers, goalAmount, raisedAmount, comments, totalDonors, coverUrl, avatarUrl, updates;
 
   try {
     const campaignsResult = await db
@@ -27,6 +28,14 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     campaign = campaignsResult[0];
 
     if (!campaign) notFound();
+
+    // Fetch updates
+    updates = await db
+      .select()
+      .from(campaignUpdates)
+      .where(and(eq(campaignUpdates.campaignId, campaign.id), sql`deleted_at IS NULL`))
+      .orderBy(desc(campaignUpdates.createdAt));
+
 
     // Increment view count in background - wrapped in try/catch for stability
     try {
@@ -312,6 +321,51 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               </div>
             </div>
           </div>
+
+          {/* Project Updates Section */}
+          {updates && updates.length > 0 && (
+            <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '32px', marginBottom: '40px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                  Project Updates 📢
+                </h3>
+                <span style={{ 
+                  background: 'var(--accent-primary)', 
+                  color: '#fff', 
+                  padding: '4px 12px', 
+                  borderRadius: '20px', 
+                  fontSize: '0.75rem', 
+                  fontWeight: 800 
+                }}>
+                  {updates.length} {updates.length === 1 ? 'Update' : 'Updates'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                {updates.map((update: any) => (
+                  <div key={update.id} style={{ borderLeft: '3px solid var(--accent-primary)', paddingLeft: '24px', position: 'relative' }}>
+                    <div style={{ 
+                      width: '12px', height: '12px', background: 'var(--accent-primary)', 
+                      borderRadius: '6px', position: 'absolute', left: '-7.5px', top: '0' 
+                    }} />
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                      {update.title}
+                    </h4>
+                    <p style={{ 
+                      fontSize: '0.95rem', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap', 
+                      marginBottom: '12px' 
+                    }}>
+                      {update.body}
+                    </p>
+                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                      Posted on {new Date(update.createdAt).toLocaleDateString(undefined, { 
+                        month: 'long', day: 'numeric', year: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Transparency Ledger & Comments section */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>

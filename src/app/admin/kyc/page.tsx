@@ -2,14 +2,23 @@ import React from 'react';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { kycProfiles } from '@/db/schema/kycProfiles';
-import { eq } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import KycActionButtons from './KycActionButtons';
 import { getPublicUrl } from '@/lib/storage';
+import { useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminKycPage() {
-  // Fetch pending users and their corresponding KYC submitted documents
+export default async function AdminKycPage({ searchParams }: { searchParams: { page?: string } }) {
+  const page = parseInt(searchParams.page || '1', 10);
+  const limitCount = 20;
+  const offsetCount = (page - 1) * limitCount;
+
+  // Fetch total count for pagination
+  const countResult = await db.select({ count: sql<number>`count(*)::int` }).from(kycProfiles);
+  const totalCount = countResult[0].count || 0;
+
+  // Fetch users and their corresponding KYC submitted documents
   const allRequests = await db
     .select({
       userId: users.id,
@@ -26,7 +35,9 @@ export default async function AdminKycPage() {
     })
     .from(kycProfiles)
     .innerJoin(users, eq(users.id, kycProfiles.userId))
-    .orderBy(kycProfiles.createdAt);
+    .orderBy(desc(kycProfiles.createdAt))
+    .limit(limitCount)
+    .offset(offsetCount);
 
   return (
     <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -189,6 +200,51 @@ export default async function AdminKycPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalCount > limitCount && (
+        <div style={{ marginTop: '40px', padding: '24px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>
+            Showing page {page} of {Math.ceil(totalCount / limitCount)} ({totalCount} total submissions)
+          </span>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <a
+              href={page <= 1 ? '#' : `/admin/kyc?page=${page - 1}`}
+              style={{
+                padding: '8px 16px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#0f172a',
+                textDecoration: 'none',
+                opacity: page <= 1 ? 0.5 : 1,
+                pointerEvents: page <= 1 ? 'none' : 'auto',
+              }}
+            >
+              Previous
+            </a>
+            <a
+              href={page * limitCount >= totalCount ? '#' : `/admin/kyc?page=${page + 1}`}
+              style={{
+                padding: '8px 16px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#0f172a',
+                textDecoration: 'none',
+                opacity: page * limitCount >= totalCount ? 0.5 : 1,
+                pointerEvents: page * limitCount >= totalCount ? 'none' : 'auto',
+              }}
+            >
+              Next
+            </a>
+          </div>
         </div>
       )}
     </div>

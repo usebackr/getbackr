@@ -225,7 +225,7 @@ export default function Sidebar() {
               >
                 {item.icon}
                 {item.label}
-                {item.count && item.count > 0 && (
+                {item.count !== undefined && item.count > 0 && (
                   <span style={{ 
                     marginLeft: 'auto', 
                     background: '#ef4444', 

@@ -1,97 +1,93 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { and, eq, desc, isNull } from 'drizzle-orm';
-import { z } from 'zod';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { campaignUpdates } from '@/db/schema/campaignUpdates';
+import { eq, desc, and } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
+import { z } from 'zod';
 import { sendBackerUpdateEmails } from '@/workers/emailWorkers';
-// import { getQueue, QUEUE_NAMES } from '@/lib/queue'; // Removed
+import { sql } from 'drizzle-orm';
 
 const createUpdateSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or fewer'),
-  body: z.string().min(1, 'Body is required').max(10000, 'Body must be 10,000 characters or fewer'),
-  mediaUrl: z.string().url('mediaUrl must be a valid URL').optional(),
+  title: z.string().min(1).max(200),
+  body: z.string().min(1),
+  mediaUrl: z.string().url().optional().nullable(),
 });
 
+// GET /api/campaigns/[id]/updates
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+
+    const activeUpdates = await db.query.campaignUpdates.findMany({
+      where: (table, { eq, isNull, and }) => and(eq(table.campaignId, id), isNull(table.deletedAt)),
+      orderBy: [desc(campaignUpdates.createdAt)],
+    });
+
+    return NextResponse.json({ updates: activeUpdates });
+  } catch (err) {
+    console.error('[GetUpdates] Error:', err);
+    return NextResponse.json({ error: 'Failed to fetch updates' }, { status: 500 });
+  }
+}
+
+// POST /api/campaigns/[id]/updates
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
-): Promise<NextResponse> {
+  { params }: { params: { id: string } }
+) {
   const auth = requireAuth(req);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id: campaignId } = params;
-
-  let body: unknown;
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    const { id } = params;
+    const body = await req.json();
+    const parsed = createUpdateSchema.parse(body);
+
+    // 1. Verify campaign existence and ownership
+    const campaign = await db.query.campaigns.findFirst({
+      where: eq(campaigns.id, id),
+    });
+
+    if (!campaign) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
+    if (campaign.creatorId !== auth.userId) {
+      return NextResponse.json({ error: 'Only the creator can post updates.' }, { status: 403 });
+    }
+
+    // 2. Create the update
+    const [newUpdate] = await db.insert(campaignUpdates).values({
+      campaignId: id,
+      title: parsed.title,
+      body: parsed.body,
+      mediaUrl: parsed.mediaUrl,
+    }).returning();
+
+    // 3. Trigger email notifications to backers
+    try {
+      await sendBackerUpdateEmails({
+        campaignId: id,
+        updateTitle: newUpdate.title,
+        campaignTitle: campaign.title,
+      });
+    } catch (emailErr) {
+      // Don't fail the request if emails fail, just log it
+      console.error('[CreateUpdate] Email notification failed:', emailErr);
+    }
+
+    return NextResponse.json({ update: newUpdate }, { status: 201 });
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 422 });
+    }
+    console.error('[CreateUpdate] Error:', err);
+    return NextResponse.json({ error: 'Failed to create update' }, { status: 500 });
   }
-
-  const parsed = createUpdateSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        errors: parsed.error.errors.map((e: z.ZodIssue) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        })),
-      },
-      { status: 422 },
-    );
-  }
-
-  const { title, body: updateBody, mediaUrl } = parsed.data;
-
-  // Fetch campaign and verify ownership
-  const campaign = await db.query.campaigns.findFirst({
-    where: eq(campaigns.id, campaignId),
-  });
-
-  if (!campaign) {
-    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
-  }
-
-  if (campaign.creatorId !== auth.userId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  // Insert campaign update
-  const [update] = await db
-    .insert(campaignUpdates)
-    .values({
-      campaignId,
-      title,
-      body: updateBody,
-      mediaUrl: mediaUrl ?? null,
-    })
-    .returning();
-
-  // Enqueue backer notification job (Direct Call now)
-  await sendBackerUpdateEmails({
-    campaignId,
-    updateTitle: title,
-    campaignTitle: campaign.title,
-  });
-
-  return NextResponse.json(update, { status: 201 });
-}
-
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } },
-): Promise<NextResponse> {
-  const { id: campaignId } = params;
-
-  const updates = await db.query.campaignUpdates.findMany({
-    where: and(eq(campaignUpdates.campaignId, campaignId), isNull(campaignUpdates.deletedAt)),
-    orderBy: [desc(campaignUpdates.createdAt)],
-  });
-
-  return NextResponse.json(updates);
 }

@@ -11,12 +11,17 @@ import { getTransferBalance } from '@/lib/payments/paystack';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminWithdrawalsPage() {
+export default async function AdminWithdrawalsPage({ searchParams }: { searchParams: { page?: string } }) {
+  const page = parseInt(searchParams.page || '1', 10);
+  const limitCount = 50;
+  const offsetCount = (page - 1) * limitCount;
+
   // ---------------------------------------------------------------------------
   // Data Fetching with Safety Net
   // ---------------------------------------------------------------------------
   let enrichedPayouts: any[] = [];
   let paystackBalance: number | null = null;
+  let totalCount = 0;
   let fetchError = false;
 
   try {
@@ -26,6 +31,9 @@ export default async function AdminWithdrawalsPage() {
     } catch (err) {
       console.error('[AdminWithdrawals] Paystack balance fetch failed:', err);
     }
+
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(withdrawals);
+    totalCount = Number(countResult[0].count) || 0;
 
     const payoutsWithContext = await db
       .select({
@@ -48,7 +56,9 @@ export default async function AdminWithdrawalsPage() {
       .innerJoin(users, eq(withdrawals.creatorId, users.id))
       .leftJoin(projectWallets, eq(projectWallets.id, withdrawals.walletId))
       .leftJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
-      .orderBy(desc(withdrawals.createdAt));
+      .orderBy(desc(withdrawals.createdAt))
+      .limit(limitCount)
+      .offset(offsetCount);
 
     // For each payout, we'll calculate financial context
     enrichedPayouts = await Promise.all(payoutsWithContext.map(async (payout) => {
@@ -313,6 +323,51 @@ export default async function AdminWithdrawalsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalCount > limitCount && (
+        <div style={{ marginTop: '40px', padding: '24px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>
+            Showing page {page} of {Math.ceil(totalCount / limitCount)} ({totalCount} total withdrawals)
+          </span>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <a
+              href={page <= 1 ? '#' : `/admin/withdrawals?page=${page - 1}`}
+              style={{
+                padding: '8px 16px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#0f172a',
+                textDecoration: 'none',
+                opacity: page <= 1 ? 0.5 : 1,
+                pointerEvents: page <= 1 ? 'none' : 'auto',
+              }}
+            >
+              Previous
+            </a>
+            <a
+              href={page * limitCount >= totalCount ? '#' : `/admin/withdrawals?page=${page + 1}`}
+              style={{
+                padding: '8px 16px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#0f172a',
+                textDecoration: 'none',
+                opacity: page * limitCount >= totalCount ? 0.5 : 1,
+                pointerEvents: page * limitCount >= totalCount ? 'none' : 'auto',
+              }}
+            >
+              Next
+            </a>
+          </div>
         </div>
       )}
     </div>

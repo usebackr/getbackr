@@ -13,7 +13,7 @@ interface User {
   createdAt: Date;
 }
 
-export function UserManagementTable({ initialUsers }: { initialUsers: any[] }) {
+export function UserManagementTable({ initialUsers, totalCount = 0, currentPage = 1 }: { initialUsers: any[], totalCount?: number, currentPage?: number }) {
   const [users, setUsers] = useState<any[]>(initialUsers);
   const [updating, setUpdating] = useState<string | null>(null);
   const router = useRouter();
@@ -174,6 +174,48 @@ export function UserManagementTable({ initialUsers }: { initialUsers: any[] }) {
           ))}
         </tbody>
       </table>
+
+      {totalCount > 50 && (
+        <div style={{ padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+            Showing page {currentPage} of {Math.ceil(totalCount / 50)} ({totalCount} total)
+          </span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              disabled={currentPage <= 1}
+              onClick={() => router.push(`/admin/users?page=${currentPage - 1}`)}
+              style={{
+                padding: '6px 12px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
+                opacity: currentPage <= 1 ? 0.5 : 1
+              }}
+            >
+              Previous
+            </button>
+            <button
+              disabled={currentPage * 50 >= totalCount}
+              onClick={() => router.push(`/admin/users?page=${currentPage + 1}`)}
+              style={{
+                padding: '6px 12px',
+                background: '#fff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: currentPage * 50 >= totalCount ? 'not-allowed' : 'pointer',
+                opacity: currentPage * 50 >= totalCount ? 0.5 : 1
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

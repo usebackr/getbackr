@@ -164,6 +164,125 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
   );
 };
 
+const UpdateModal = ({ campaignId, onClose }: { campaignId: string, onClose: () => void }) => {
+  const [title, setTitle] = React.useState('');
+  const [body, setBody] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/updates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body }),
+      });
+
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => onClose(), 1500);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to post update');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)',
+      zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
+    }}>
+      <div style={{
+        background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '32px',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+      }}>
+        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Post Project Update</h2>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Notify your backers about milestones or news</p>
+          </div>
+          <button onClick={onClose} style={{
+            width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {success ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚀</div>
+              <h3 style={{ fontWeight: 800, color: '#10b981' }}>Update Posted!</h3>
+              <p style={{ color: '#64748b' }}>Your backers are being notified.</p>
+            </div>
+          ) : (
+            <>
+              {error && (
+                <div style={{ padding: '12px 16px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', color: '#dc2626', fontSize: '0.85rem' }}>
+                  {error}
+                </div>
+              )}
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>Update Title</label>
+                <input 
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. We hit our first milestone!"
+                  style={{
+                    width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0',
+                    fontSize: '1rem', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>Content</label>
+                <textarea 
+                  required
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Share the details with your supporters..."
+                  style={{
+                    width: '100%', height: '200px', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0',
+                    fontSize: '1rem', outline: 'none', resize: 'none', fontFamily: 'inherit'
+                  }}
+                />
+              </div>
+
+              <button 
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+                style={{ 
+                  padding: '16px', borderRadius: '16px', fontWeight: 800, fontSize: '1rem',
+                  opacity: loading ? 0.7 : 1
+                }}
+              >
+                {loading ? 'Posting...' : 'Post Update & Notify Backers'}
+              </button>
+            </>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -181,6 +300,7 @@ export default function DashboardPage() {
   const [hasBank, setHasBank] = React.useState(false);
   const [showBankError, setShowBankError] = React.useState(false);
   const [selectedCampaignForBackers, setSelectedCampaignForBackers] = React.useState<string | null>(null);
+  const [selectedCampaignForUpdate, setSelectedCampaignForUpdate] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<any>(null);
 
   const fetchStatsAndBank = async (currentFilter: string) => {
@@ -312,6 +432,13 @@ export default function DashboardPage() {
         <BackersModal 
           campaignId={selectedCampaignForBackers} 
           onClose={() => setSelectedCampaignForBackers(null)} 
+        />
+      )}
+
+      {selectedCampaignForUpdate && (
+        <UpdateModal 
+          campaignId={selectedCampaignForUpdate} 
+          onClose={() => setSelectedCampaignForUpdate(null)} 
         />
       )}
 
@@ -756,19 +883,36 @@ export default function DashboardPage() {
                         )}
 
                         {!isDraft && (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                             <button
-                              onClick={() => setSelectedCampaignForBackers(camp.id)}
+                              onClick={() => setSelectedCampaignForUpdate(camp.id)}
                               className="btn-primary"
                               style={{ 
-                                flex: 2,
-                                padding: '12px', 
-                                fontSize: '0.9rem',
-                                background: 'var(--accent-primary)',
+                                flex: '1 1 100%',
+                                padding: '14px', 
+                                fontSize: '0.95rem',
+                                background: '#0f172a',
                                 color: '#fff',
                                 border: 'none',
-                                fontWeight: 700,
+                                fontWeight: 800,
                                 borderRadius: '14px',
+                                cursor: 'pointer',
+                                marginBottom: '4px'
+                              }}
+                            >
+                              📢 Post Project Update
+                            </button>
+                            <button
+                              onClick={() => setSelectedCampaignForBackers(camp.id)}
+                              style={{ 
+                                flex: 1,
+                                padding: '12px', 
+                                fontSize: '0.85rem',
+                                background: '#f1f5f9',
+                                color: '#0f172a',
+                                border: 'none',
+                                fontWeight: 700,
+                                borderRadius: '12px',
                                 cursor: 'pointer'
                               }}
                             >

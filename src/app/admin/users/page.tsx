@@ -9,17 +9,43 @@ import { UserManagementTable } from '@/components/admin/UserManagementTable';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({ searchParams }: { searchParams: { page?: string } }) {
   const token = cookies().get('accessToken')?.value;
   const isAdmin = await verifyAdminApi(token);
   if (!isAdmin) redirect('/login');
 
+  const page = parseInt(searchParams.page || '1', 10);
+  const limitCount = 50;
+  const offsetCount = (page - 1) * limitCount;
+
   // Use raw SQL for newer columns (is_beta, last_login_at) so the page
   // doesn't crash if the migration hasn't been applied to production yet.
   let allUsers: any[] = [];
+  let totalCount = 0;
+  let betaUsersCount = 0;
+  let verifiedCount = 0;
   let fetchError = false;
 
   try {
+    const statsQuery = await db.execute(sql`
+      SELECT 
+        COUNT(*)::int as total,
+        COALESCE(SUM(CASE WHEN is_beta = true THEN 1 ELSE 0 END), 0)::int as beta_count,
+        COALESCE(SUM(CASE WHEN kyc_status = 'verified' THEN 1 ELSE 0 END), 0)::int as verified_count
+      FROM users
+    `);
+    if (statsQuery.rows && statsQuery.rows[0]) {
+      const row: any = statsQuery.rows[0];
+      totalCount = Number(row.total);
+      betaUsersCount = Number(row.beta_count);
+      verifiedCount = Number(row.verified_count);
+    } else if (Array.isArray(statsQuery) && statsQuery[0]) {
+      const row: any = statsQuery[0];
+      totalCount = Number(row.total);
+      betaUsersCount = Number(row.beta_count);
+      verifiedCount = Number(row.verified_count);
+    }
+
     allUsers = await db
       .select({
         id: users.id,
@@ -31,14 +57,13 @@ export default async function AdminUsersPage() {
         kycStatus: sql<string>`COALESCE(kyc_status::text, 'pending')`,
       })
       .from(users)
-      .orderBy(desc(users.createdAt));
+      .orderBy(desc(users.createdAt))
+      .limit(limitCount)
+      .offset(offsetCount);
   } catch (err) {
     console.error('[AdminUsers] DB query failed:', err);
     fetchError = true;
   }
-
-  const betaUsersCount = allUsers.filter(u => u.isBeta).length;
-  const verifiedCount = allUsers.filter(u => u.kycStatus === 'verified').length;
 
   return (
     <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -67,7 +92,7 @@ export default async function AdminUsersPage() {
         </div>
       )}
 
-      <UserManagementTable initialUsers={allUsers} />
+      <UserManagementTable initialUsers={allUsers} totalCount={totalCount} currentPage={page} />
       
       <div style={{ marginTop: '40px', padding: '24px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
         <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#475569', marginBottom: '8px' }}>Security &amp; Compliance Tip</h4>
