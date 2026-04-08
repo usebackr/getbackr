@@ -5,7 +5,7 @@ import { withdrawals } from '@/db/schema/withdrawals';
 import { users } from '@/db/schema/users';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { campaigns } from '@/db/schema/campaigns';
-import { notifications } from '@/db/schema/notifications';
+import { sendAppNotification } from '@/lib/notifications/push';
 import { sendEmail } from '@/workers/emailWorkers';
 import { eq } from 'drizzle-orm';
 import { verifyAdminApi } from '@/lib/auth/admin';
@@ -168,13 +168,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
         // Notify Creator
         if (request) {
-          await db.insert(notifications).values({
-            userId: request.creatorId,
-            type: 'payout_processed',
-            title: 'Withdrawal Approved!',
-            message: `Your request for ₦${Number(request.amount).toLocaleString()} has been fully processed and sent.`,
-            metadata: JSON.stringify({ withdrawalId: request.id, amount: request.amount }),
-          });
+          await sendAppNotification(
+            request.creatorId,
+            'Withdrawal Approved!',
+            `Your request for ₦${Number(request.amount).toLocaleString()} has been fully processed and sent.`,
+            'payout_processed',
+            '/dashboard/wallet',
+            JSON.stringify({ withdrawalId: request.id, amount: request.amount })
+          );
 
           await sendEmail({
             type: 'payment_approved',
@@ -293,14 +294,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Trigger Email & In-App Notification
       try {
         if (status === 'completed') {
-          // In-App
-          await db.insert(notifications).values({
-            userId: existingRequest.creatorId,
-            type: 'payout_processed',
-            title: 'Withdrawal Approved!',
-            message: `Your request for ₦${Number(existingRequest.amount).toLocaleString()} has been processed and and transfer has been initiated.`,
-            metadata: JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount }),
-          });
+          // In-App & Web Push
+          await sendAppNotification(
+            existingRequest.creatorId,
+            'Withdrawal Approved!',
+            `Your request for ₦${Number(existingRequest.amount).toLocaleString()} has been processed and transfer has been initiated.`,
+            'payout_processed',
+            '/dashboard/wallet',
+            JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount })
+          );
 
           // Email
           await sendEmail({
@@ -310,14 +312,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             campaignTitle: existingRequest.campaignTitle || 'Your Campaign',
           });
         } else if (status === 'rejected') {
-          // In-App
-          await db.insert(notifications).values({
-            userId: existingRequest.creatorId,
-            type: 'payout_processed',
-            title: 'Withdrawal Rejected',
-            message: `Your withdrawal for ₦${Number(existingRequest.amount).toLocaleString()} was bounced back. Reason: ${feedbackReason}`,
-            metadata: JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount, reason: feedbackReason }),
-          });
+          // In-App & Web Push
+          await sendAppNotification(
+            existingRequest.creatorId,
+            'Withdrawal Rejected',
+            `Your withdrawal for ₦${Number(existingRequest.amount).toLocaleString()} was bounced back. Reason: ${feedbackReason}`,
+            'payout_processed',
+            '/dashboard/wallet',
+            JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount, reason: feedbackReason })
+          );
 
           // Email
           await sendEmail({

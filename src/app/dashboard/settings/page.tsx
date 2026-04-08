@@ -3,12 +3,40 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useRouter } from 'next/navigation';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
+function PushToggle() {
+  const { isSupported, isSubscribed, loading, permission, subscribe, unsubscribe } = usePushNotifications();
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <button
+        onClick={isSubscribed ? unsubscribe : subscribe}
+        disabled={loading || !isSupported || permission === 'denied'}
+        className={isSubscribed ? 'btn-secondary' : 'btn-primary'}
+        style={{ padding: '12px 24px' }}
+      >
+        {loading ? 'Updating...' : isSubscribed ? 'Disable Push Notifications' : 'Enable Push Notifications'}
+      </button>
+      {permission === 'denied' && (
+        <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>
+          Push notifications are blocked by your browser. Please unblock them in settings.
+        </span>
+      )}
+      {!isSupported && !loading && (
+        <span style={{ color: '#64748b', fontSize: '0.85rem' }}>
+          Push notifications are not supported on this browser.
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Payment and Payouts');
 
-  const tabs = ['Profile', 'Password', 'Payment and Payouts'];
+  const tabs = ['Profile', 'Password', 'Payment and Payouts', 'Notifications'];
 
   // Payout states
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
@@ -245,7 +273,17 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {activeTab !== 'Payment and Payouts' && (
+          {activeTab === 'Notifications' && (
+            <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>Push Notifications</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: 1.6 }}>
+                Receive instant alerts on this device when you get a new donation, withdrawal update, or KYC approval.
+              </p>
+              <PushToggle />
+            </div>
+          )}
+
+          {activeTab !== 'Payment and Payouts' && activeTab !== 'Notifications' && (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
               <p style={{ fontWeight: 600 }}>The {activeTab} section is currently being optimized.</p>
             </div>

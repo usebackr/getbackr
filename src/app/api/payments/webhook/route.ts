@@ -4,7 +4,6 @@ import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { campaigns } from '@/db/schema/campaigns';
-import { notifications } from '@/db/schema/notifications';
 import { users } from '@/db/schema/users';
 import { verifyWebhookSignature } from '@/lib/payments/paystack';
 import { eq, sql } from 'drizzle-orm';
@@ -141,32 +140,44 @@ export async function POST(req: NextRequest) {
           .where(eq(projectWallets.campaignId, campaignId))
           .limit(1);
 
-        if (campaignDetails && campaignDetails.creatorId) {
-          // E. Create internal notification for creator
-          await tx.insert(notifications).values({
+        // Create internal notification for creator (Done outside transaction to avoid rollback on push failure)
+        const notificationData = campaignDetails && campaignDetails.creatorId ? {
             userId: campaignDetails.creatorId,
-            type: 'donation_received',
+            type: 'donation_received' as const,
             title: 'New Donation Received!',
             message: `You received a donation of ${data.currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
             metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
-          });
-        }
+        } : null;
         
         return {
           campaignDetails,
           wallet,
-          backerName: finalBackerName
+          backerName: finalBackerName,
+          notificationData
         };
       });
 
-      // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
-      // Direct sending ensures reliability in serverless environments like Vercel.
-      if (txResult && txResult.campaignDetails) {
-        try {
-          const { campaignDetails, wallet, backerName } = txResult;
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
+        // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
+        // Direct sending ensures reliability in serverless environments like Vercel.
+        if (txResult && txResult.campaignDetails) {
+          try {
+            const { campaignDetails, wallet, backerName, notificationData } = txResult;
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
+  
+            // In-App & Web Push Notification
+            if (notificationData) {
+              const { sendAppNotification } = await import('@/lib/notifications/push');
+              await sendAppNotification(
+                notificationData.userId,
+                notificationData.title,
+                notificationData.message,
+                notificationData.type,
+                '/dashboard/notifications',
+                notificationData.metadata
+              );
+            }
 
-          // Email to Donor (Receipt)
+            // Email to Donor (Receipt)
           await sendEmail({
             type: 'donor_receipt',
             backerEmail: data.customer.email,

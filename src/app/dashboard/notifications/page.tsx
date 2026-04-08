@@ -60,7 +60,7 @@ export default function NotificationsPage() {
           <div>
             <h1 style={{ fontSize: '2rem', marginBottom: '4px', fontWeight: 900 }}>Notifications</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
-              Showing your last 3 updates
+              Showing your last 10 updates
             </p>
           </div>
         </header>
@@ -73,7 +73,7 @@ export default function NotificationsPage() {
               <p style={{ color: '#64748b', fontWeight: 600 }}>All caught up! No new notifications.</p>
             </div>
           ) : (
-            notifications.slice(0, 3).map((n) => (
+            notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
                 className="dash-card"

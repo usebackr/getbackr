@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
-import { notifications } from '@/db/schema/notifications';
+import { sendAppNotification } from '@/lib/notifications/push';
 import { eq } from 'drizzle-orm';
 import { verifyAdminApi } from '@/lib/auth/admin';
 import { sendEmail } from '@/workers/emailWorkers';
@@ -41,13 +41,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Notifications
       try {
         if (user?.email) {
-          // In-App
-          await db.insert(notifications).values({
+          // In-App & Web Push
+          await sendAppNotification(
             userId,
-            type: 'kyc_status_updated',
-            title: 'Identity Verified!',
-            message: 'Your identity has been successfully verified. Withdrawal access is now unlocked.',
-          });
+            'Identity Verified!',
+            'Your identity has been successfully verified. Withdrawal access is now unlocked.',
+            'kyc_status_updated'
+          );
 
           // Email
           await sendEmail({
@@ -87,12 +87,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Notify user via email with the reason
       try {
         if (user?.email) {
-          await db.insert(notifications).values({
+          // In-App & Web Push
+          await sendAppNotification(
             userId,
-            type: 'kyc_status_updated',
-            title: 'Verification Update',
-            message: `Your KYC submission was not approved. Reason: ${reason}`,
-          });
+            'Verification Update',
+            `Your KYC submission was not approved. Reason: ${reason}`,
+            'kyc_status_updated',
+            '/dashboard/notifications',
+            JSON.stringify({ reason })
+          );
 
           const { sendEmail } = await import('@/workers/emailWorkers');
           await sendEmail({ type: 'kyc_rejected', email: user.email, rejectionReason: reason }).catch(

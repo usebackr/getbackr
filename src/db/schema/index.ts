@@ -18,3 +18,4 @@ export * from './notifications';
 export * from './passwordResets';
 export * from './verificationTokens';
 export * from './refreshTokens';
+export * from './pushSubscriptions';

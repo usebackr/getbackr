@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
-import { notifications } from '@/db/schema/notifications';
+import { sendAppNotification } from '@/lib/notifications/push';
 import { sendEmail } from '@/workers/emailWorkers';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -53,13 +53,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       .limit(1);
 
     if (status === 'verified') {
-      // In-App
-      await db.insert(notifications).values({
+      // In-App & Web Push
+      await sendAppNotification(
         userId,
-        type: 'kyc_status_updated',
-        title: 'Identity Verified!',
-        message: 'Your identity has been successfully verified. Withdrawal access is now unlocked.',
-      });
+        'Identity Verified!',
+        'Your identity has been successfully verified. Withdrawal access is now unlocked.',
+        'kyc_status_updated'
+      );
 
       // Email
       if (user?.email) {
@@ -71,14 +71,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     } else if (status === 'rejected') {
       const reason = rejectionReason ?? 'Please re-upload clearer documents.';
       
-      // In-App
-      await db.insert(notifications).values({
+      // In-App & Web Push
+      await sendAppNotification(
         userId,
-        type: 'kyc_status_updated',
-        title: 'Verification Failed',
-        message: `Your identity verification failed. Reason: ${reason}`,
-        metadata: JSON.stringify({ reason }),
-      });
+        'Verification Failed',
+        `Your identity verification failed. Reason: ${reason}`,
+        'kyc_status_updated',
+        '/dashboard/notifications',
+        JSON.stringify({ reason })
+      );
 
       // Email
       if (user?.email) {
