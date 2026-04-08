@@ -16,6 +16,7 @@ const checkoutSchema = z.object({
   isAnonymous: z.boolean().optional(),
   shareDetails: z.boolean().optional(),
   message: z.string().optional().nullable(),
+  referralSource: z.string().optional().nullable(),
 });
 
 import { rateLimit } from '@/lib/rateLimit';
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid checkout data' }, { status: 422 });
     }
 
-    const { campaignId, amount, isAnonymous, shareDetails, message } = parsed.data;
+    const { campaignId, amount, isAnonymous, shareDetails, message, referralSource } = parsed.data;
     
     // If not logged in, we must have an email from the body
     if (!userId) {
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
       anonymous: isAnonymous || false,
       shareDetails: shareDetails ?? true,
       message: message || null,
+      referralSource: referralSource || null,
       type: 'contribution',
     };
     

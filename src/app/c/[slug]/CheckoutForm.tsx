@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function CheckoutForm({
   campaignId,
@@ -24,6 +25,17 @@ export default function CheckoutForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
+  const [referralSource, setReferralSource] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const ref = searchParams.get('ref') || searchParams.get('source');
+    if (ref) {
+      setReferralSource(ref);
+      console.log('[CheckoutForm] Captured referral source:', ref);
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     async function checkSession() {
@@ -71,7 +83,8 @@ export default function CheckoutForm({
           name,
           message,
           isAnonymous,
-          shareDetails
+          shareDetails,
+          referralSource
         }), 
       });
       const data = await res.json();

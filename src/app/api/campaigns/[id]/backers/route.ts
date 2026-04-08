@@ -41,6 +41,7 @@ export async function GET(
       createdAt: contributions.createdAt,
       backerEmail: contributions.backerEmail,
       backerName: users.displayName,
+      referralSource: contributions.referralSource,
     })
     .from(contributions)
     .leftJoin(users, eq(users.id, contributions.backerId))

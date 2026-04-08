@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
         const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
         let backerName = (metadata.backerName || 'A Supporter').trim();
         const contributionMessage = (metadata.message || '').trim();
+        const referralSource = (metadata.referralSource || '').trim();
 
         if (backerId && !isAnonymous) {
           const [backer] = await tx
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
           paymentReference: reference,
           paymentMethod: data.channel || 'paystack',
           status: 'confirmed',
+          referralSource: referralSource || null,
         });
 
         // C. Update campaign's project wallet (atomic increment)

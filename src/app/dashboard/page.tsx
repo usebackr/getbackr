@@ -57,14 +57,15 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
 
   const handleDownloadCSV = () => {
     if (backers.length === 0) return;
-    const headers = ['Name', 'Email', 'Amount', 'Currency', 'Date', 'Anonymous'];
+    const headers = ['Name', 'Email', 'Amount', 'Currency', 'Date', 'Anonymous', 'Source'];
     const rows = backers.map(b => [
       b.backerName || 'Guest Contributor',
       b.backerEmail,
       b.amount,
       b.currency,
       new Date(b.createdAt).toLocaleDateString(),
-      b.anonymous ? 'Yes' : 'No'
+      b.anonymous ? 'Yes' : 'No',
+      b.referralSource || 'Direct'
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -128,6 +129,7 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
                   <th style={{ padding: '12px' }}>Name</th>
                   <th style={{ padding: '12px' }}>Email</th>
                   <th style={{ padding: '12px' }}>Amount</th>
+                  <th style={{ padding: '12px' }}>Source</th>
                   <th style={{ padding: '12px' }}>Date</th>
                 </tr>
               </thead>
@@ -148,6 +150,11 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
                     <td style={{ padding: '16px 12px' }}>
                       <p style={{ fontWeight: 800, color: 'var(--accent-primary)', margin: 0 }}>
                         {b.currency} {Number(b.amount).toLocaleString()}
+                      </p>
+                    </td>
+                    <td style={{ padding: '16px 12px' }}>
+                      <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0, fontWeight: 700 }}>
+                        {b.referralSource || 'Direct'}
                       </p>
                     </td>
                     <td style={{ padding: '16px 12px', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>

@@ -25,6 +25,7 @@ export const contributions = pgTable('contributions', {
   status: contributionStatusEnum('status').notNull().default('pending'),
   backerName: varchar('backer_name', { length: 255 }),
   message: varchar('message', { length: 500 }),
+  referralSource: varchar('referral_source', { length: 50 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
