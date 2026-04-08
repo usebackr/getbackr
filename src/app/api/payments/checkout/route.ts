@@ -69,11 +69,13 @@ export async function POST(req: NextRequest) {
 
     // Fetch campaign details to verify it exists
     const [campaign] = await db
-      .select({ id: campaigns.id, slug: campaigns.slug })
+      .select({ id: campaigns.id, slug: campaigns.slug, status: campaigns.status })
       .from(campaigns)
       .where(eq(campaigns.id, campaignId))
       .limit(1);
+    
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    if (campaign.status === 'closed') return NextResponse.json({ error: 'Campaign is permanently closed and no longer accepts contributions.' }, { status: 400 });
 
     const origin = req.headers.get('origin') || req.headers.get('referer');
     const appUrl = (origin && !origin.includes('localhost:3000')) 

@@ -6,10 +6,12 @@ export default function CheckoutForm({
   campaignId,
   goalAmount,
   raisedAmount,
+  isClosed,
 }: {
   campaignId: string;
   goalAmount: number;
   raisedAmount: number;
+  isClosed?: boolean;
 }) {
   const [amount, setAmount] = useState<number | ''>('');
   const [name, setName] = useState('');
@@ -173,7 +175,19 @@ export default function CheckoutForm({
         </div>
       )}
 
-      {/* Preset Grid */}
+      {isClosed ? (
+        <div style={{ textAlign: 'center', padding: '32px 24px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔒</div>
+          <p style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '8px', fontWeight: 800 }}>
+            This campaign has ended
+          </p>
+          <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+            The creator has permanently closed this project, so it is no longer accepting new contributions.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Preset Grid */}
       <div
         className="amount-grid"
         style={{
@@ -463,6 +477,8 @@ export default function CheckoutForm({
         >
           {loading ? 'Processing...' : `Fund with ₦${inputAmt.toLocaleString()}`}
         </button>
+      )}
+      </>
       )}
     </div>
   );

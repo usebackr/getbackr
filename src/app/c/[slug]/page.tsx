@@ -364,6 +364,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             campaignId={campaign.id}
             goalAmount={goalAmount}
             raisedAmount={raisedAmount}
+            isClosed={campaign.status === 'closed'}
           />
 
           <BackersList 
