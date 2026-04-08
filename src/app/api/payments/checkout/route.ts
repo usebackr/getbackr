@@ -18,8 +18,17 @@ const checkoutSchema = z.object({
   message: z.string().optional().nullable(),
 });
 
+import { rateLimit } from '@/lib/rateLimit';
+
 export async function POST(req: NextRequest) {
   try {
+    // 1. IP Rate Limiting (Max 20 checkout attempts per 10 minutes)
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const limitRes = rateLimit(`checkout_${ip}`, 20, 10 * 60 * 1000);
+    if (!limitRes.success) {
+      return NextResponse.json({ error: 'Too many checkout attempts. Please try again later.' }, { status: 429 });
+    }
+
     const token = req.cookies.get('accessToken')?.value;
     let userId: string | null = null;
     let email: string | null = null;

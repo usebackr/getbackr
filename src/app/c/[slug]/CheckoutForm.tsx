@@ -123,10 +123,15 @@ export default function CheckoutForm({
 
       {/* Progress Stats */}
       <div style={{ marginBottom: '32px' }}>
-        <p style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 600, marginBottom: '8px' }}>
-          Target ₦{raisedAmount.toLocaleString()} /{' '}
-          <span style={{ color: '#64748b', fontWeight: 600 }}>₦{goalAmount.toLocaleString()}</span>
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <p style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 600, margin: 0 }}>
+            Target ₦{raisedAmount.toLocaleString()} /{' '}
+            <span style={{ color: '#64748b', fontWeight: 600 }}>₦{goalAmount.toLocaleString()}</span>
+          </p>
+          <span style={{ color: 'var(--accent-primary)', fontWeight: 800, fontSize: '0.95rem' }}>
+            {Math.floor((raisedAmount / goalAmount) * 100)}%
+          </span>
+        </div>
         <div
           style={{
             width: '100%',

@@ -149,7 +149,8 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
             {filteredCampaigns.map((camp) => {
               const goal = parseFloat(camp.goalAmount || '1');
               const raised = parseFloat(camp.raised || '0');
-              const pct = Math.floor(Math.min((raised / goal) * 100, 100));
+              const actualPct = Math.floor((raised / goal) * 100);
+              const visualPct = Math.min(actualPct, 100);
               const daysLeft = Math.ceil((new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000);
 
               return (
@@ -177,10 +178,10 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
                       <div style={{ marginTop: 'auto' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700 }}>
                           <span style={{ color: '#0f172a' }}>₦{raised.toLocaleString()} <span style={{ fontWeight: 500, color: '#94a3b8' }}>of ₦{goal.toLocaleString()}</span></span>
-                          <span style={{ color: 'var(--accent-primary)' }}>{pct}%</span>
+                          <span style={{ color: 'var(--accent-primary)' }}>{actualPct}%</span>
                         </div>
                         <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '16px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)' }} />
+                          <div style={{ width: `${visualPct}%`, height: '100%', background: 'var(--accent-primary)' }} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>{daysLeft > 0 ? `${daysLeft} days left` : 'Ends soon'}</span>

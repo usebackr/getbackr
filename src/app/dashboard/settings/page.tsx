@@ -48,6 +48,12 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const [hasExistingBank, setHasExistingBank] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
+
   // Fetch banks on mount
   useEffect(() => {
     fetch('/api/payments/banks')
@@ -62,6 +68,7 @@ export default function SettingsPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.account) {
+          setHasExistingBank(true);
           setSelectedBankCode(data.account.bankCode);
           setAccountNumber(data.account.accountNumber);
           setAccountName(data.account.accountName);
@@ -98,10 +105,34 @@ export default function SettingsPage() {
     }
   }, [accountNumber, selectedBankCode]);
 
-  const handleSave = async () => {
+  const initiateSave = async () => {
     if (!accountName) return;
+    
+    if (hasExistingBank) {
+      setSendingOtp(true);
+      try {
+        const res = await fetch('/api/auth/otp/bank-change', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          setShowOtpModal(true);
+        } else {
+          setResolveError(data.error || 'Failed to send OTP.');
+        }
+      } catch (err) {
+        setResolveError('Network error sending OTP.');
+      } finally {
+        setSendingOtp(false);
+      }
+      return;
+    }
+
+    executeSave();
+  };
+
+  const executeSave = async (otp?: string) => {
     setSaving(true);
     setSaveSuccess(false);
+    setOtpError('');
 
     const bank = banks.find((b) => b.code === selectedBankCode);
 
@@ -113,11 +144,20 @@ export default function SettingsPage() {
           bankName: bank?.name,
           bankCode: selectedBankCode,
           accountNumber,
+          otp,
         }),
       });
       const data = await res.json();
-      if (!data.error) {
+      if (!res.ok) {
+        if (otp) {
+          setOtpError(data.error);
+        } else {
+          setResolveError(data.error);
+        }
+      } else {
         setSaveSuccess(true);
+        setShowOtpModal(false);
+        setHasExistingBank(true);
         setTimeout(() => setSaveSuccess(false), 5000);
       }
     } catch (err) {
@@ -257,12 +297,12 @@ export default function SettingsPage() {
 
                 <div style={{ marginTop: '8px' }}>
                   <button
-                    onClick={handleSave}
-                    disabled={!accountName || saving}
+                    onClick={initiateSave}
+                    disabled={!accountName || saving || sendingOtp}
                     className="btn-primary"
-                    style={{ width: '100%', padding: '16px', opacity: !accountName || saving ? 0.5 : 1 }}
+                    style={{ width: '100%', padding: '16px', opacity: !accountName || saving || sendingOtp ? 0.5 : 1 }}
                   >
-                    {saving ? 'Saving Details...' : 'Save Bank Account'}
+                    {saving ? 'Saving Details...' : sendingOtp ? 'Sending OTP...' : 'Save Bank Account'}
                   </button>
                 </div>
 
@@ -289,6 +329,62 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+
+        {/* OTP Prompt Modal */}
+        {showOtpModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+            <div style={{
+              background: '#fff', padding: '32px', borderRadius: '16px',
+              maxWidth: '400px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '16px', color: '#0f172a' }}>Security Check</h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
+                To protect your platform earnings, we've sent a 6-digit confirmation code to your email. Please enter it to authorize updating your bank details.
+              </p>
+
+              {otpError && (
+                <div style={{ background: '#fef2f2', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {otpError}
+                </div>
+              )}
+
+              <input
+                type="text"
+                placeholder="123456"
+                maxLength={6}
+                value={otpInput}
+                onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
+                style={{
+                  width: '100%', padding: '16px', borderRadius: '12px', border: '2px solid #e2e8f0',
+                  fontSize: '1.25rem', textAlign: 'center', letterSpacing: '4px', fontWeight: 700, marginBottom: '24px'
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setShowOtpModal(false)}
+                  className="btn-secondary"
+                  style={{ flex: 1, padding: '14px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => executeSave(otpInput)}
+                  disabled={otpInput.length !== 6 || saving}
+                  className="btn-primary"
+                  style={{ flex: 1, padding: '14px', opacity: otpInput.length !== 6 || saving ? 0.5 : 1 }}
+                >
+                  {saving ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
       <style jsx>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }

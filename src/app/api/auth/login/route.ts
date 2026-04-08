@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { verifyPassword } from '@/lib/auth/password';
 import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
+import { rateLimit } from '@/lib/rateLimit';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -14,6 +15,13 @@ const loginSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. IP Rate Limiting (Max 10 login attempts per 15 minutes)
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const limitRes = rateLimit(`login_${ip}`, 10, 15 * 60 * 1000);
+    if (!limitRes.success) {
+      return NextResponse.json({ error: 'Too many login attempts. Please try again later.' }, { status: 429 });
+    }
+
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);
 
