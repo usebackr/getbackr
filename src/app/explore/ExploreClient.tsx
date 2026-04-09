@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 
 const categories = [
   { name: 'All' },
@@ -152,21 +153,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
         }}
       >
         <header style={{ marginBottom: '40px' }}>
-          <a
-            href="/dashboard"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              marginBottom: '16px',
-            }}
-          >
-            <Icons.ArrowLeft /> Back to Dashboard
-          </a>
+          <BackToDashboardButton />
           <h1
             style={{ fontSize: '2.8rem', marginBottom: '8px', color: '#0f172a', fontWeight: 900, letterSpacing: '-0.02em' }}
           >

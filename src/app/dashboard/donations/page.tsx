@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 
 export default function DonationsPage() {
   const [donations, setDonations] = useState<any[]>([]);
@@ -21,24 +22,7 @@ export default function DonationsPage() {
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
         <header style={{ marginBottom: '40px' }}>
-          <button
-            onClick={() => (window.location.href = '/dashboard')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 600,
-              padding: '0',
-              fontSize: '0.9rem',
-            }}
-          >
-            ← Back to Dashboard
-          </button>
+          <BackToDashboardButton />
           <h1 style={{ fontSize: '2rem', marginBottom: '4px' }}>My Donations</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Projects you have backed

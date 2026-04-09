@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useRouter } from 'next/navigation';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -243,22 +244,7 @@ export default function SettingsPage() {
 
       <main className="dash-main" style={{ flex: 1, background: '#f8fafc' }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <button
-            onClick={() => router.push('/dashboard')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 600,
-            }}
-          >
-            ← Back to Dashboard
-          </button>
+          <BackToDashboardButton />
 
           <header style={{ marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '8px' }}>Settings</h1>

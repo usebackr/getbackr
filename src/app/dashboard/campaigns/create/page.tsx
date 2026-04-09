@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 
 function CreateCampaignForm() {
   const router = useRouter();
@@ -235,22 +236,7 @@ function CreateCampaignForm() {
       style={{ minHeight: '100vh', background: '#f8fafc', padding: 'clamp(20px, 5vw, 60px) 24px' }}
     >
       <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-        <button
-          onClick={() => router.push('/dashboard')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 600,
-          }}
-        >
-          ← Back to Dashboard
-        </button>
+        <BackToDashboardButton />
 
         <h1 style={{ fontSize: '2rem', marginBottom: '8px', fontWeight: 900 }}>
           {editId ? 'Finalize Your Project' : 'Launch a Project'}

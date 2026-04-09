@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import SpendingLogManager from '@/components/dashboard/SpendingLogManager';
 import UpdateManager from '@/components/dashboard/UpdateManager';
 import BackerListManager from '@/components/dashboard/BackerListManager';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 import { 
   Rocket, 
   Users, 
@@ -120,21 +121,7 @@ export default function CampaignManagePage() {
       <main className="manage-main">
         {/* Navigation Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
-          <button 
-            onClick={() => router.push('/dashboard')}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: '#64748b', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center',
-              fontWeight: 600,
-              fontSize: '0.9rem'
-            }}
-          >
-            <ChevronLeft size={16} /> Dashboard
-          </button>
+          <BackToDashboardButton style={{ marginBottom: 0 }} />
           <span style={{ color: '#cbd5e1' }}>/</span>
           <span style={{ color: '#0f172a', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{campaign.title}</span>
         </div>
