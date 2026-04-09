@@ -4,52 +4,80 @@ import { projectWallets } from '../src/db/schema/projectWallets';
 import { sql, eq } from 'drizzle-orm';
 
 /**
- * DATABASE CLEANUP SCRIPT
- * Rounds all existing messy contribution amounts and re-syncs wallet totals.
- * Run this once after deployment to "standardize" old data.
+ * SMART DATABASE CLEANUP SCRIPT (DRY RUN MODE)
+ * Reconstructs intended donation amounts by reversing Paystack's surcharge math.
  */
-async function cleanup() {
-  console.log('Starting Database Cleanup: Standardizing Currency Amounts (No Decimals)...');
+async function cleanup(dryRun = true) {
+  console.log(`--- ${dryRun ? 'DRY RUN' : 'PRODUCTION'} CLEANUP START ---`);
+  console.log('Target: Filtering out Paystack 1.5% (+ ₦100) surcharges from legacy data.');
 
   try {
-    // 1. Fetch all confirmed contributions
     const confirmedContributions = await db
       .select()
       .from(contributions)
       .where(eq(contributions.status, 'confirmed'));
 
-    console.log(`Found ${confirmedContributions.length} confirmed contributions to process.`);
+    let processedCount = 0;
+    let fixableCount = 0;
 
-    let roundedCount = 0;
     for (const c of confirmedContributions) {
-      const originalAmount = parseFloat(c.amount || '0');
-      const roundedAmount = Math.floor(originalAmount);
-
-      if (originalAmount !== roundedAmount) {
-        // Also update platformFee and netAmount to be clean relative to the rounded amount
-        // Assuming Backr 5%
-        const newPlatformFee = roundedAmount * 0.05;
-        const newNetAmount = roundedAmount - newPlatformFee;
-
-        await db
-          .update(contributions)
-          .set({
-            amount: roundedAmount.toString(),
-            platformFee: newPlatformFee.toString(),
-            netAmount: newNetAmount.toString(),
-          })
-          .where(eq(contributions.id, c.id));
+      const gross = parseFloat(c.amount || '0');
+      
+      // If it has decimals or looks like a typical Paystack gross-up (e.g. 1015)
+      // We check if it's already a clean round number like 1000, 5000, etc.
+      const isClean = Number.isInteger(gross) && (gross % 50 === 0);
+      
+      if (!isClean) {
+        // Reverse Formula
+        // cand1: No 100 fee (< 2500)
+        // cand2: With 100 fee (>= 2500)
+        const cand1 = Math.round(gross * 0.985);
+        const cand2 = Math.round(gross * 0.985 - 100);
         
-        roundedCount++;
+        let intended = cand1;
+        if (cand2 >= 2500) intended = cand2;
+
+        console.log(`[Reconstruct] Original: ₦${gross} -> Detected Intended: ₦${intended} (Fee removed: ₦${(gross - intended).toFixed(2)})`);
+        fixableCount++;
+
+        if (!dryRun) {
+          const newPlatformFee = intended * 0.05;
+          const newNetAmount = intended - newPlatformFee;
+
+          await db
+            .update(contributions)
+            .set({
+              amount: intended.toString(),
+              platformFee: newPlatformFee.toString(),
+              netAmount: newNetAmount.toString(),
+            })
+            .where(eq(contributions.id, c.id));
+        }
       }
+      processedCount++;
     }
 
-    console.log(`Finished rounding ${roundedCount} messy contributions.`);
+    console.log(`\nSummary:`);
+    console.log(`Total records checked: ${processedCount}`);
+    console.log(`Messy records found: ${fixableCount}`);
+    
+    if (dryRun) {
+      console.log('--- DRY RUN COMPLETE. No changes made to Database. ---');
+    } else {
+      console.log('--- DATA FIXED. Re-syncing wallets... ---');
+      await syncWallets();
+      console.log('--- ALL SYSTEMS CLEAN. ---');
+    }
 
-    // 2. Re-sync Project Wallets
+    process.exit(0);
+  } catch (error) {
+    console.error('Cleanup failed:', error);
+    process.exit(1);
+  }
+}
+
+async function syncWallets() {
     const wallets = await db.select().from(projectWallets);
-    console.log(`Re-syncing ${wallets.length} campaign wallets...`);
-
     for (const wallet of wallets) {
       const totalsResult = await db
         .select({
@@ -67,18 +95,13 @@ async function cleanup() {
         .update(projectWallets)
         .set({
           totalReceived: sumAmount.toString(),
-          balance: sumNet.toString(), // Note: This assumes current balance matches net earnings for simplicity
+          balance: sumNet.toString(),
           updatedAt: new Date(),
         })
         .where(eq(projectWallets.id, wallet.id));
     }
-
-    console.log('Wallet totals successfully re-synchronized with clean data.');
-    process.exit(0);
-  } catch (error) {
-    console.error('Cleanup failed:', error);
-    process.exit(1);
-  }
 }
 
-cleanup();
+// Default to Dry Run
+const isProduction = process.argv.includes('--run');
+cleanup(!isProduction);

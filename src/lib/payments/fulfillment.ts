@@ -24,6 +24,21 @@ export interface FulfillmentPayload {
   };
 }
 
+/**
+ * Helper to reverse Paystack's surcharge math if intendedAmount is missing.
+ * This handles the "₦1,015.23 -> ₦1,000" reconstruction.
+ */
+function reconstructIntended(gross: number): number {
+  if (Number.isInteger(gross) && gross % 50 === 0) return gross; // Likely already clean
+
+  // cand1: No 100 fee (< 2500)
+  // cand2: With 100 fee (>= 2500)
+  const cand1 = Math.round(gross * 0.985);
+  const cand2 = Math.round(gross * 0.985 - 100);
+  
+  return cand2 >= 2500 ? cand2 : cand1;
+}
+
 export async function processSuccessfulPayment(payload: FulfillmentPayload) {
   const { reference, amountInMajor, currency, customerEmail, channel, metadata } = payload;
   const campaignId = (metadata.campaignId || '').trim();
@@ -34,15 +49,17 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
     return { status: 'ignored', message: 'Missing campaignId' };
   }
 
-  // Use intendedAmount from metadata if available (to exclude automated Paystack fees)
-  // Otherwise fallback to the actual amount received (amountInMajor)
-  const baseAmount = metadata.intendedAmount ? Number(metadata.intendedAmount) : amountInMajor;
+  // Use intendedAmount from metadata if available.
+  // FALLBACK: If missing (legacy or edge case), use reconstruction logic to strip Paystack fees.
+  const baseAmount = metadata.intendedAmount 
+    ? Number(metadata.intendedAmount) 
+    : reconstructIntended(amountInMajor);
   
   const platformFee = baseAmount * 0.05;
   const netAmount = baseAmount - platformFee;
 
   try {
-    console.log(`[Fulfillment] Processing success. Campaign: ${campaignId}, Reference: ${reference}, Intended: ${baseAmount}`);
+    console.log(`[Fulfillment] Processing success. Campaign: ${campaignId}, Reference: ${reference}, Intended: ${baseAmount} (Actual: ${amountInMajor})`);
 
     const txResult = await db.transaction(async (tx) => {
       // 1. Check for existing contribution with this reference
