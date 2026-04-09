@@ -199,7 +199,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         }}
       >
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <a href="/" style={{ textDecoration: 'none', color: 'var(--accent-primary)' }}>
+          <a href="/" style={{ textDecoration: 'none' }}>
             <h2
               style={{
                 fontSize: '1.5rem',
@@ -207,6 +207,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                 fontFamily: 'Outfit, sans-serif',
                 letterSpacing: '-0.02em',
                 margin: 0,
+                color: 'var(--accent-primary)',
               }}
             >
               Backr
