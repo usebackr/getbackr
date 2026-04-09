@@ -16,6 +16,7 @@ export interface FulfillmentPayload {
     campaignId?: string;
     backerId?: string | null;
     backerName?: string;
+    intendedAmount?: number | string; // The "clean" amount intended by donor
     anonymous?: boolean | string;
     message?: string | null;
     referralSource?: string | null;
@@ -33,11 +34,15 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
     return { status: 'ignored', message: 'Missing campaignId' };
   }
 
-  const platformFee = amountInMajor * 0.05;
-  const netAmount = amountInMajor - platformFee;
+  // Use intendedAmount from metadata if available (to exclude automated Paystack fees)
+  // Otherwise fallback to the actual amount received (amountInMajor)
+  const baseAmount = metadata.intendedAmount ? Number(metadata.intendedAmount) : amountInMajor;
+  
+  const platformFee = baseAmount * 0.05;
+  const netAmount = baseAmount - platformFee;
 
   try {
-    console.log(`[Fulfillment] Processing success. Campaign: ${campaignId}, Reference: ${reference}`);
+    console.log(`[Fulfillment] Processing success. Campaign: ${campaignId}, Reference: ${reference}, Intended: ${baseAmount}`);
 
     const txResult = await db.transaction(async (tx) => {
       // 1. Check for existing contribution with this reference
@@ -76,7 +81,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
           .update(contributions)
           .set({
             status: 'confirmed',
-            amount: amountInMajor.toString(),
+            amount: baseAmount.toString(),
             platformFee: platformFee.toString(),
             netAmount: netAmount.toString(),
             backerName: finalBackerName,
@@ -93,7 +98,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
           backerId: backerId || null,
           backerEmail: customerEmail,
           backerName: finalBackerName,
-          amount: amountInMajor.toString(),
+          amount: baseAmount.toString(),
           platformFee: platformFee.toString(),
           netAmount: netAmount.toString(),
           currency: currency || 'NGN',
@@ -111,7 +116,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
         .update(projectWallets)
         .set({
           balance: sql`${projectWallets.balance} + ${netAmount}::numeric`,
-          totalReceived: sql`${projectWallets.totalReceived} + ${amountInMajor}::numeric`,
+          totalReceived: sql`${projectWallets.totalReceived} + ${baseAmount}::numeric`,
           updatedAt: new Date(),
         })
         .where(eq(projectWallets.campaignId, campaignId))
@@ -122,7 +127,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
         await tx.insert(projectWallets).values({
           campaignId,
           balance: netAmount.toString(),
-          totalReceived: amountInMajor.toString(),
+          totalReceived: baseAmount.toString(),
           currency: currency || 'NGN',
         });
       } else {
@@ -156,8 +161,8 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
               userId: campaignDetails.creatorId,
               type: 'donation_received' as const,
               title: 'New Donation Received!',
-              message: `You received a donation of ${currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
-              metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
+              message: `You received a donation of ${currency} ${baseAmount.toLocaleString()} for your campaign "${campaignDetails.title}".`,
+              metadata: JSON.stringify({ campaignId, amount: baseAmount }),
             }
           : null;
 
@@ -190,7 +195,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
           type: 'donor_receipt',
           backerEmail: customerEmail,
           backerName: backerName,
-          amount: amountInMajor,
+          amount: baseAmount,
           currency: currency,
           campaignTitle: campaignDetails.title,
           contributionId: reference,
@@ -201,7 +206,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
           await sendEmail({
             type: 'creator_alert',
             backerEmail: campaignDetails.creatorEmail || undefined,
-            amount: amountInMajor,
+            amount: baseAmount,
             currency: currency,
             campaignTitle: campaignDetails.title,
             creatorName: campaignDetails.creatorName || undefined,

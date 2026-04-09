@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
       backerId: userId, // null for guests
       backerName: name || 'A Supporter',
       backerEmail: email,
+      intendedAmount: amount, // The original amount intended by the donor (clean)
       anonymous: isAnonymous || false,
       shareDetails: shareDetails ?? true,
       message: message || null,
