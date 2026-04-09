@@ -90,7 +90,7 @@ const Icons = {
 export default function ExploreClient({ initialCampaigns }: { initialCampaigns: any[] }) {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [sortBy, setSortBy] = useState<'newest' | 'raised' | 'ending'>('newest');
+  const [sortBy, setSortBy] = useState<'newest' | 'raised' | 'ending' | 'trending'>('trending');
 
   const filteredCampaigns = useMemo(() => {
     let list = [...initialCampaigns];
@@ -111,6 +111,11 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
 
     // Sort
     list.sort((a, b) => {
+      if (sortBy === 'trending') {
+        const aScore = (a.backers || 0) * 10 + parseFloat(a.raised || '0') / 1000;
+        const bScore = (b.backers || 0) * 10 + parseFloat(b.raised || '0') / 1000;
+        return bScore - aScore;
+      }
       if (sortBy === 'raised') {
         return parseFloat(b.raised || '0') - parseFloat(a.raised || '0');
       }
@@ -146,7 +151,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
           overflowX: 'hidden',
         }}
       >
-        <header style={{ marginBottom: '32px' }}>
+        <header style={{ marginBottom: '40px' }}>
           <a
             href="/dashboard"
             style={{
@@ -163,13 +168,73 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
             <Icons.ArrowLeft /> Back to Dashboard
           </a>
           <h1
-            style={{ fontSize: '2.5rem', marginBottom: '8px', color: '#0f172a', fontWeight: 900 }}
+            style={{ fontSize: '2.8rem', marginBottom: '8px', color: '#0f172a', fontWeight: 900, letterSpacing: '-0.02em' }}
           >
             Explore Projects
           </h1>
-          <p style={{ color: '#475569', fontSize: '1rem', fontWeight: 500 }}>
-            Find and back any creative project on the platform.
+          <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500, marginBottom: '32px' }}>
+            Back the future of creative independence.
           </p>
+
+          {/* Featured Hero */}
+          {filteredCampaigns.length > 0 && activeCategory === 'All' && !search && (
+            <div 
+              style={{ 
+                width: '100%', 
+                height: '380px', 
+                borderRadius: '32px', 
+                background: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.8)), url(${filteredCampaigns[0].coverImageUrl}) center/cover no-repeat`,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                padding: '40px',
+                color: '#fff',
+                marginBottom: '40px',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ 
+                position: 'absolute', 
+                top: '40px', 
+                left: '40px', 
+                background: '#10b981', 
+                color: '#fff', 
+                padding: '6px 16px', 
+                borderRadius: '20px', 
+                fontSize: '0.85rem', 
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 10px #fff' }} /> #1 TRENDING
+              </div>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '12px', maxWidth: '600px', lineHeight: 1.1 }}>{filteredCampaigns[0].title}</h2>
+              <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '500px', marginBottom: '24px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {filteredCampaigns[0].description}
+              </p>
+              <a 
+                href={`/c/${filteredCampaigns[0].slug}`} 
+                style={{ 
+                  width: 'fit-content', 
+                  padding: '14px 32px', 
+                  borderRadius: '16px', 
+                  background: '#fff', 
+                  color: '#0f172a', 
+                  fontWeight: 800, 
+                  textDecoration: 'none',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+              >
+                View Project Details <Icons.Search />
+              </a>
+            </div>
+          )}
         </header>
 
         {/* Search and Sort */}
@@ -221,6 +286,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
               boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
             }}
           >
+            <option value="trending">Trending Now</option>
             <option value="newest">Newest First</option>
             <option value="raised">Most Funded</option>
             <option value="ending">Ending Soon</option>

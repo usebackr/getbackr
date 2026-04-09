@@ -4,7 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import { VerificationBanner, OnboardingChecklist } from '@/components/dashboard/Onboarding';
-import { Download, Rocket, Clapperboard, Users, Megaphone, X } from 'lucide-react';
+import CampaignActions from '@/components/dashboard/CampaignActions';
+import { Download, Rocket, Clapperboard, Users, Megaphone, X, Settings } from 'lucide-react';
 
 const Icons = {
   Empty: () => (
@@ -1207,87 +1208,7 @@ export default function DashboardPage() {
                         </div>
                       )}
 
-                      {!isDraft && (
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: '8px',
-                            marginTop: '12px',
-                            flexWrap: 'wrap',
-                          }}
-                        >
-                          <button
-                            onClick={() => setSelectedCampaignForUpdate(camp.id)}
-                            className="btn-primary"
-                            style={{
-                              flex: '1 1 100%',
-                              padding: '14px',
-                              fontSize: '0.95rem',
-                              background: '#0f172a',
-                              color: '#fff',
-                              border: 'none',
-                              fontWeight: 800,
-                              borderRadius: '14px',
-                              cursor: 'pointer',
-                              marginBottom: '4px',
-                            }}
-                          >
-                            <Megaphone size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }} /> Post Project Update
-                          </button>
-                          <button
-                            onClick={() => setSelectedCampaignForBackers(camp.id)}
-                            style={{
-                              flex: 1,
-                              padding: '12px',
-                              fontSize: '0.85rem',
-                              background: '#f1f5f9',
-                              color: '#0f172a',
-                              border: 'none',
-                              fontWeight: 700,
-                              borderRadius: '12px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            View Backers
-                          </button>
-                          <button
-                            onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
-                            style={{
-                              flex: 2,
-                              padding: '12px',
-                              borderRadius: '14px',
-                              border: '1px solid #e2e8f0',
-                              background: '#fff',
-                              color: '#0f172a',
-                              fontWeight: 700,
-                              fontSize: '0.9rem',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Edit Project
-                          </button>
-                          {camp.status?.toLowerCase() === 'active' && (
-                            <button
-                              onClick={() => handleEndCampaign(camp.id)}
-                              style={{
-                                flex: 1.5,
-                                padding: '12px',
-                                borderRadius: '14px',
-                                border: '1px solid #fee2e2',
-                                background: '#fff5f5',
-                                color: '#ef4444',
-                                fontWeight: 700,
-                                fontSize: '0.85rem',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                              }}
-                              title="End Campaign"
-                            >
-                              End Project
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      <CampaignActions campaign={camp} onEnd={handleEndCampaign} />
                     </div>
                   );
                 });
