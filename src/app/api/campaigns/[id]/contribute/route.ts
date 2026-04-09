@@ -105,7 +105,7 @@ export async function POST(
     anonymous,
   };
   if (auth?.userId) {
-    metadata.backerUserId = auth.userId;
+    metadata.backerId = auth.userId;
   }
 
   let paystackResult;

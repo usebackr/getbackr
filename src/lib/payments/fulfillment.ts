@@ -40,17 +40,12 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
     console.log(`[Fulfillment] Processing success. Campaign: ${campaignId}, Reference: ${reference}`);
 
     const txResult = await db.transaction(async (tx) => {
-      // Idempotency: skip if already processed
+      // 1. Check for existing contribution with this reference
       const existing = await tx
-        .select({ id: contributions.id })
+        .select({ id: contributions.id, status: contributions.status })
         .from(contributions)
-        .where(sql`${contributions.paymentReference} = ${reference}`)
+        .where(eq(contributions.paymentReference, reference))
         .limit(1);
-
-      if (existing.length > 0) {
-        console.log(`[Fulfillment] Duplicate reference detected: ${reference}. Skipping.`);
-        return null;
-      }
 
       const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
       let backerName = (metadata.backerName || 'A Supporter').trim();
@@ -68,24 +63,49 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
 
       const finalBackerName = isAnonymous ? 'Anonymous Supporter' : backerName;
 
-      console.log(`[Fulfillment] Recording contribution in database...`);
-
-      await tx.insert(contributions).values({
-        campaignId,
-        backerId: backerId || null,
-        backerEmail: customerEmail,
-        backerName: finalBackerName,
-        amount: amountInMajor.toString(),
-        platformFee: platformFee.toString(),
-        netAmount: netAmount.toString(),
-        currency: currency || 'NGN',
-        anonymous: isAnonymous,
-        message: contributionMessage || null,
-        paymentReference: reference,
-        paymentMethod: channel || 'paystack',
-        status: 'confirmed',
-        referralSource: referralSource || null,
-      });
+      // Idempotency: skip if already confirmed
+      if (existing.length > 0) {
+        if (existing[0].status === 'confirmed') {
+          console.log(`[Fulfillment] Reference ${reference} already confirmed. Skipping.`);
+          return null;
+        }
+        
+        console.log(`[Fulfillment] Existing 'pending' record found for ${reference}. Transitioning to 'confirmed'...`);
+        // Update existing record
+        await tx
+          .update(contributions)
+          .set({
+            status: 'confirmed',
+            amount: amountInMajor.toString(),
+            platformFee: platformFee.toString(),
+            netAmount: netAmount.toString(),
+            backerName: finalBackerName,
+            message: contributionMessage || null,
+            referralSource: referralSource || null,
+            paymentMethod: channel || 'paystack',
+            updatedAt: new Date(),
+          })
+          .where(eq(contributions.id, existing[0].id));
+      } else {
+        console.log(`[Fulfillment] No existing record for ${reference}. Inserting new 'confirmed' contribution.`);
+        // Insert new record (fallback if initialization was missed)
+        await tx.insert(contributions).values({
+          campaignId,
+          backerId: backerId || null,
+          backerEmail: customerEmail,
+          backerName: finalBackerName,
+          amount: amountInMajor.toString(),
+          platformFee: platformFee.toString(),
+          netAmount: netAmount.toString(),
+          currency: currency || 'NGN',
+          anonymous: isAnonymous,
+          message: contributionMessage || null,
+          paymentReference: reference,
+          paymentMethod: channel || 'paystack',
+          status: 'confirmed',
+          referralSource: referralSource || null,
+        });
+      }
 
       console.log(`[Fulfillment] Updating wallet for campaign: ${campaignId}`);
       const walletUpdate = await tx
