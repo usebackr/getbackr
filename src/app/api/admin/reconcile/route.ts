@@ -11,13 +11,50 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const hours = parseInt(searchParams.get('hours') || '24', 10);
+    const manualRef = searchParams.get('reference');
     
-    console.log(`--- Starting Payment Reconciliation via API (Last ${hours} Hours) ---`);
-    
-    // Get current time - specified hours
+    const results = [];
+
+    // --- CASE 1: Specific Reference Check ---
+    if (manualRef) {
+      console.log(`--- Manually Reconciling Reference: ${manualRef} ---`);
+      try {
+        const paystackData = await verifyTransaction(manualRef);
+        if (paystackData.status === 'success') {
+          // Check if we have a campaignId in metadata (required for fulfillment)
+          const campaignId = paystackData.metadata?.campaignId;
+          
+          if (!campaignId) {
+            results.push({ 
+              reference: manualRef, 
+              status: 'error', 
+              error: 'No campaignId found in Paystack metadata. Cannot fulfill manually without knowing which campaign it belongs to.' 
+            });
+          } else {
+            await processSuccessfulPayment({
+              reference: paystackData.reference,
+              amountInMajor: paystackData.amount / 100,
+              currency: paystackData.currency || 'NGN',
+              customerEmail: paystackData.customer?.email || '',
+              channel: paystackData.channel || 'paystack',
+              metadata: paystackData.metadata || {},
+            });
+            results.push({ reference: manualRef, status: 'fulfilled' });
+          }
+        } else {
+          results.push({ reference: manualRef, status: paystackData.status });
+        }
+      } catch (err: any) {
+        results.push({ reference: manualRef, status: 'error', error: err.message });
+      }
+      
+      return NextResponse.json({ processed: 1, results });
+    }
+
+    // --- CASE 2: Bulk Reconciliation (Pending from Last X Hours) ---
+    console.log(`--- Starting Bulk Reconciliation (Last ${hours} Hours) ---`);
     const lookbackTime = new Date(Date.now() - hours * 60 * 60 * 1000);
     
-    // Fetch all pending contributions from the lookback period
     const pendingContributions = await db
       .select()
       .from(contributions)
@@ -29,14 +66,10 @@ export async function GET(req: NextRequest) {
       )
       .orderBy(desc(contributions.createdAt));
 
-    const results = [];
-
     for (const contribution of pendingContributions) {
       if (!contribution.paymentReference) continue;
-
       try {
         const paystackData = await verifyTransaction(contribution.paymentReference);
-        
         if (paystackData.status === 'success') {
           await processSuccessfulPayment({
             reference: paystackData.reference,
@@ -50,8 +83,8 @@ export async function GET(req: NextRequest) {
         } else {
           results.push({ reference: contribution.paymentReference, status: paystackData.status });
         }
-      } catch (err) {
-        results.push({ reference: contribution.paymentReference, status: 'error', error: String(err) });
+      } catch (err: any) {
+        results.push({ reference: contribution.paymentReference, status: 'error', error: err.message });
       }
     }
 
