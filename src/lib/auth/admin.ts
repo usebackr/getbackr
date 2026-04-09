@@ -61,4 +61,16 @@ export async function verifyAdminApi(tokenValue: string | undefined) {
   } catch (err) {
     return false;
   }
+/**
+ * Verify administrative access via a shared secret (for cron/automated tools)
+ */
+export async function verifyAdminSecret(req: Request) {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) {
+    console.error('[Admin Auth] ADMIN_SECRET not set in environment variables');
+    return false;
+  }
+
+  const providedSecret = req.headers.get('x-admin-secret');
+  return providedSecret === secret;
 }

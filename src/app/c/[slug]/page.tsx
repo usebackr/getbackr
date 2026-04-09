@@ -14,6 +14,7 @@ import ShareButton from './ShareButton';
 import TransparencyLedger from './TransparencyLedger';
 import BackersList from './BackersList';
 import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
+import BrandLogo from '@/components/BrandLogo';
 import { getPublicUrl } from '@/lib/storage';
 import { Megaphone, ShieldCheck, ChevronLeft } from 'lucide-react';
 
@@ -199,20 +200,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         }}
       >
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <h2
-              style={{
-                fontSize: '1.5rem',
-                fontWeight: 900,
-                fontFamily: 'Outfit, sans-serif',
-                letterSpacing: '-0.02em',
-                margin: 0,
-                color: 'var(--accent-primary)',
-              }}
-            >
-              Backr
-            </h2>
-          </a>
+          <BrandLogo fontSize="1.5rem" />
         </div>
 
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>

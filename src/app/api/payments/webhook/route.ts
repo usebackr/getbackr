@@ -34,13 +34,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: 'ignored', message: 'Missing campaignId' });
     }
 
-    // Calculate 5% Platform Fee
-    const platformFee = amountInMajor * 0.05;
-    const netAmount = amountInMajor - platformFee;
     try {
       console.log(`[Paystack Webhook] Found charge.success for ${reference}`);
       
-      await processSuccessfulPayment({
+      const result = await processSuccessfulPayment({
         reference,
         amountInMajor,
         currency: data.currency || 'NGN',
@@ -49,9 +46,15 @@ export async function POST(req: NextRequest) {
         metadata,
       });
 
-      return NextResponse.json({ status: 'success' });
+      if (result.status === 'success') {
+        console.log(`[Paystack Webhook] Successfully processed reference ${reference}`);
+        return NextResponse.json({ status: 'success' });
+      } else {
+        console.log(`[Paystack Webhook] Reference ${reference} was skipped/ignored: ${result.message}`);
+        return NextResponse.json({ status: 'ignored', message: result.message });
+      }
     } catch (err: any) {
-      console.error('[Paystack Webhook] Database error:', err);
+      console.error(`[Paystack Webhook] Error processing reference ${reference}:`, err.message);
       // Return 500 so Paystack retries if it's a transient error
       return new NextResponse('Internal Server Error', { status: 500 });
     }

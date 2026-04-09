@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import BrandLogo from './BrandLogo';
 
 const Icons = {
   Menu: () => (
@@ -161,11 +163,7 @@ export default function Navbar() {
           padding: '0 24px',
         }}
       >
-        <a href="/" style={{ textDecoration: 'none' }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
-            Backr
-          </h2>
-        </a>
+        <BrandLogo fontSize="1.8rem" />
 
         <div className="nav-links-desktop">
           <a href="/explore">Explore</a>
@@ -188,11 +186,7 @@ export default function Navbar() {
 
       <div className={`nav-overlay ${isOpen ? 'open' : ''}`}>
         <div className="nav-overlay-header">
-          <a href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
-              Backr
-            </h2>
-          </a>
+          <BrandLogo fontSize="1.4rem" href="/" />
           <button
             onClick={() => setIsOpen(false)}
             style={{ border: 'none', background: 'none', padding: '8px' }}

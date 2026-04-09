@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import BrandLogo from './BrandLogo';
 
 const Icons = {
   Menu: () => (
@@ -275,11 +276,7 @@ export default function Sidebar() {
 
       {/* Mobile Header (Dashboard specific) */}
       <header className="mobile-header">
-        <a href="/" style={{ textDecoration: 'none' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
-            Backr
-          </h2>
-        </a>
+        <BrandLogo fontSize="1.4rem" />
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <a
             href="/dashboard/notifications"
@@ -310,11 +307,7 @@ export default function Sidebar() {
             alignItems: 'center',
           }}
         >
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
-              Backr
-            </h2>
-          </a>
+          <BrandLogo fontSize="1.8rem" />
           <button className="mobile-only-close" onClick={() => setIsOpen(false)}>
             <Icons.Close />
           </button>
