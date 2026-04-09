@@ -5,6 +5,8 @@ import Sidebar from '@/components/Sidebar';
 import { useRouter } from 'next/navigation';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
+import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+
 function PushToggle() {
   const { isSupported, isSubscribed, loading, permission, subscribe, unsubscribe } =
     usePushNotifications();
@@ -304,12 +306,30 @@ export default function SettingsPage() {
 
                 <div style={{ minHeight: '60px' }}>
                   {resolving && (
-                    <span style={{ color: 'var(--accent-secondary)', fontWeight: 600 }}>
-                      Resolving account name... ⏳
+                    <span
+                      style={{
+                        color: 'var(--accent-secondary)',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <Loader2 className="animate-spin" size={18} /> Resolving account name...
                     </span>
                   )}
                   {resolveError && (
-                    <span style={{ color: '#ef4444', fontWeight: 600 }}>{resolveError} ❌</span>
+                    <span
+                      style={{
+                        color: '#ef4444',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <AlertCircle size={18} /> {resolveError}
+                    </span>
                   )}
                   {accountName && !resolving && (
                     <div
@@ -324,9 +344,19 @@ export default function SettingsPage() {
                         Account Name:
                       </span>
                       <br />
-                      <strong style={{ color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
-                        {accountName} ✅
-                      </strong>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          color: 'var(--accent-primary)',
+                          fontSize: '1.1rem',
+                          fontWeight: 700,
+                          marginTop: '4px',
+                        }}
+                      >
+                        {accountName} <CheckCircle2 size={20} />
+                      </div>
                     </div>
                   )}
                 </div>

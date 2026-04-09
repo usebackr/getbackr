@@ -121,7 +121,7 @@ export default function Navbar() {
           Log In
         </a>
         <a
-          href="/login"
+          href="/dashboard"
           className="btn-primary"
           style={{
             padding: '12px 32px',

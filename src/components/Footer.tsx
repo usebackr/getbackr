@@ -5,7 +5,7 @@ export default function Footer() {
     <footer
       style={{
         padding: '100px 24px 60px',
-        background: 'var(--accent-secondary)',
+        background: '#020617',
         color: '#ffffff',
       }}
     >

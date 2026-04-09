@@ -28,7 +28,7 @@ export default function TransparencySection() {
     <section
       style={{
         padding: 'clamp(80px, 12vw, 160px) 24px',
-        background: '#f8fafc',
+        background: '#020617',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -53,7 +53,7 @@ export default function TransparencySection() {
             style={{
               fontSize: 'clamp(2.5rem, 6vw, 4rem)',
               marginBottom: '28px',
-              color: 'var(--accent-secondary)',
+              color: '#ffffff',
               fontWeight: 900,
               letterSpacing: '-0.03em',
             }}
@@ -62,7 +62,7 @@ export default function TransparencySection() {
           </h2>
           <p
             style={{
-              color: 'var(--text-secondary)',
+              color: 'rgba(255,255,255,0.7)',
               maxWidth: '600px',
               margin: '0 auto',
               fontSize: '1.2rem',
@@ -77,7 +77,7 @@ export default function TransparencySection() {
 
         <div className="steps-container">
           {steps.map((step, i) => (
-            <div key={i} className="step-card glass">
+            <div key={i} className="step-card">
               <div className="step-index" style={{ color: step.color }}>
                 {step.idx}
               </div>
@@ -101,8 +101,9 @@ export default function TransparencySection() {
         .step-card {
           padding: 60px 40px;
           border-radius: 32px;
-          background: #ffffff;
-          border: 1px solid rgba(226, 232, 240, 0.5);
+          background: rgba(15, 23, 42, 0.4);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
           overflow: hidden;
@@ -111,8 +112,9 @@ export default function TransparencySection() {
 
         .step-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
-          border-color: rgba(16, 185, 129, 0.2);
+          background: rgba(15, 23, 42, 0.6);
+          border-color: rgba(16, 185, 129, 0.3);
+          box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
         }
 
         .step-index {
@@ -121,25 +123,25 @@ export default function TransparencySection() {
           font-weight: 900;
           line-height: 1;
           margin-bottom: 32px;
-          opacity: 0.15;
+          opacity: 0.2;
           transition: opacity 0.3s;
         }
 
         .step-card:hover .step-index {
-          opacity: 0.6;
+          opacity: 0.8;
         }
 
         .step-title {
           font-size: 1.6rem;
           font-weight: 800;
-          color: var(--accent-secondary);
+          color: #ffffff;
           margin-bottom: 20px;
           letter-spacing: -0.02em;
         }
 
         .step-desc {
           font-size: 1.05rem;
-          color: var(--text-secondary);
+          color: rgba(255, 255, 255, 0.6);
           line-height: 1.7;
           font-weight: 500;
         }
@@ -157,7 +159,7 @@ export default function TransparencySection() {
         }
 
         .step-card:hover .step-glow {
-          opacity: 0.15;
+          opacity: 0.25;
         }
       `}</style>
     </section>

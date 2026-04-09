@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import { VerificationBanner, OnboardingChecklist } from '@/components/dashboard/Onboarding';
+import { Download, Rocket, Clapperboard, Users, Megaphone, X } from 'lucide-react';
 
 const Icons = {
   Empty: () => (
@@ -152,7 +153,7 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string; onClose: ()
                   gap: '8px',
                 }}
               >
-                📥 Export CSV
+                <Download size={16} /> Export CSV
               </button>
             )}
             <button
@@ -169,7 +170,7 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string; onClose: ()
                 justifyContent: 'center',
               }}
             >
-              ✕
+              <X size={20} />
             </button>
           </div>
         </div>
@@ -365,7 +366,7 @@ const UpdateModal = ({ campaignId, onClose }: { campaignId: string; onClose: () 
               justifyContent: 'center',
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -375,7 +376,9 @@ const UpdateModal = ({ campaignId, onClose }: { campaignId: string; onClose: () 
         >
           {success ? (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚀</div>
+              <div style={{ color: '#10b981', marginBottom: '16px' }}>
+                <Rocket size={48} style={{ margin: '0 auto' }} />
+              </div>
               <h3 style={{ fontWeight: 800, color: '#10b981' }}>Update Posted!</h3>
               <p style={{ color: '#64748b' }}>Your backers are being notified.</p>
             </div>

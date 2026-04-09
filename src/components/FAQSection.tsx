@@ -94,7 +94,11 @@ export default function FAQSection() {
 
   return (
     <section
-      style={{ padding: '100px 24px', background: '#fafafa', borderTop: '1px solid #e2e8f0' }}
+      style={{
+        padding: '100px 24px',
+        background: '#020617',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+      }}
     >
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
@@ -102,14 +106,14 @@ export default function FAQSection() {
             style={{
               fontSize: '2.5rem',
               fontWeight: 900,
-              color: '#0f172a',
+              color: '#ffffff',
               marginBottom: '16px',
               fontFamily: 'Outfit, sans-serif',
             }}
           >
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: '1.15rem', color: '#475569', fontWeight: 500 }}>
+          <p style={{ fontSize: '1.15rem', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
             Everything you need to know about the product and billing.
           </p>
         </div>
@@ -121,12 +125,12 @@ export default function FAQSection() {
                 style={{
                   fontSize: '1.2rem',
                   fontWeight: 800,
-                  color: '#0f172a',
+                  color: '#ffffff',
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
                   marginBottom: '24px',
                   paddingBottom: '12px',
-                  borderBottom: '2px solid #e2e8f0',
+                  borderBottom: '2px solid rgba(255,255,255,0.1)',
                 }}
               >
                 {section.category}
@@ -141,12 +145,12 @@ export default function FAQSection() {
                     <div
                       key={uniqueId}
                       style={{
-                        background: '#ffffff',
+                        background: 'rgba(15, 23, 42, 0.5)',
                         borderRadius: '12px',
-                        border: isOpen ? '1px solid var(--accent-primary)' : '1px solid #e2e8f0',
+                        border: isOpen ? '1px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.1)',
                         overflow: 'hidden',
                         transition: 'all 0.2s',
-                        boxShadow: isOpen ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
+                        boxShadow: isOpen ? '0 10px 30px rgba(0,0,0,0.3)' : 'none',
                       }}
                     >
                       <button
@@ -168,7 +172,7 @@ export default function FAQSection() {
                           style={{
                             fontSize: '1.1rem',
                             fontWeight: 700,
-                            color: isOpen ? 'var(--accent-primary)' : '#0f172a',
+                            color: isOpen ? 'var(--accent-primary)' : '#ffffff',
                             lineHeight: 1.4,
                             paddingRight: '24px',
                           }}
@@ -177,7 +181,7 @@ export default function FAQSection() {
                         </span>
                         <span
                           style={{
-                            color: isOpen ? 'var(--accent-primary)' : '#64748b',
+                            color: isOpen ? 'var(--accent-primary)' : 'rgba(255,255,255,0.5)',
                             fontSize: '1.5rem',
                             fontWeight: 300,
                             transition: 'transform 0.2s',
@@ -192,7 +196,7 @@ export default function FAQSection() {
                         <div
                           style={{
                             padding: '0 24px 24px',
-                            color: '#475569',
+                            color: 'rgba(255,255,255,0.6)',
                             fontSize: '1.05rem',
                             lineHeight: 1.6,
                             animation: 'fadeIn 0.3s ease-in-out',

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function WalletDashboard() {
   const [summary, setSummary] = useState<{
@@ -461,10 +462,16 @@ export default function WalletDashboard() {
                       borderRadius: '12px',
                       fontSize: '0.85rem',
                       fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
                     }}
                   >
-                    ⚠️ This project is still ACTIVE. You must &quot;End Project&quot; before you can
-                    withdraw funds.
+                    <AlertTriangle size={18} />
+                    <span>
+                      This project is still ACTIVE. You must &quot;End Project&quot; before you can
+                      withdraw funds.
+                    </span>
                   </div>
                   <button
                     onClick={handleCloseCampaign}
@@ -496,9 +503,13 @@ export default function WalletDashboard() {
                     fontSize: '0.85rem',
                     fontWeight: 700,
                     border: '1px solid #6ee7b7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
                   }}
                 >
-                  ✅ Project Ended. Withdrawals are enabled.
+                  <CheckCircle2 size={18} />
+                  <span>Project Ended. Withdrawals are enabled.</span>
                 </div>
               )}
             </div>
