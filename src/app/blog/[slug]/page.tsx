@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
@@ -130,9 +131,20 @@ export default function BlogPostPage({ params }: Props) {
             height: 'clamp(280px, 50vh, 550px)',
             width: '100%',
             borderRadius: '32px',
-            background: `url(${post.image}) center/cover no-repeat`,
+            position: 'relative',
+            overflow: 'hidden',
             boxShadow: '0 40px 100px rgba(0,0,0,0.1)'
-          }} />
+          }}>
+            <Image 
+              src={post.image} 
+              alt={post.title}
+              fill
+              priority
+              sizes="(max-width: 1000px) 100vw, 1000px"
+              style={{ objectFit: 'cover' }}
+              quality={90}
+            />
+          </div>
         </div>
 
         {/* Content Section */}
@@ -169,7 +181,7 @@ export default function BlogPostPage({ params }: Props) {
 
         {/* Related Posts */}
         <section style={{ background: '#f8fafc', padding: '100px 24px' }}>
-          <div className="container">
+          <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h3 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-secondary)', marginBottom: '48px' }}>
               More from the <span className="text-gradient">Journal</span>
             </h3>

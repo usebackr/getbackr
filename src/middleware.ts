@@ -26,7 +26,7 @@ export async function middleware(req: NextRequest) {
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
 
   let isValidToken = false;
-  if (token) {
+  if (token && (isProtectedPath || isAuthPath)) {
     isValidToken = await verifyToken(token);
   }
 

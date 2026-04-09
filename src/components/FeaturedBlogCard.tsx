@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import Image from 'next/image';
 import { BlogPost } from '@/data/blog-posts';
 
 export default function FeaturedBlogCard({ post }: { post: BlogPost }) {
@@ -19,7 +19,17 @@ export default function FeaturedBlogCard({ post }: { post: BlogPost }) {
         transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
-      <div style={{ height: '400px', background: `url(${post.image}) center/cover no-repeat` }} />
+      <div style={{ height: '400px', position: 'relative', overflow: 'hidden' }}>
+        <Image 
+          src={post.image} 
+          alt={post.title}
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 50vw"
+          style={{ objectFit: 'cover' }}
+          quality={85}
+        />
+      </div>
       <div style={{ padding: 'clamp(32px, 6vw, 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <span style={{ 
           width: 'fit-content',

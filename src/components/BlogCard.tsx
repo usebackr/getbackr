@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import Image from 'next/image';
 import { BlogPost } from '@/data/blog-posts';
 
 export default function BlogCard({ post }: { post: BlogPost }) {
@@ -24,10 +24,18 @@ export default function BlogCard({ post }: { post: BlogPost }) {
         style={{
           height: '240px',
           width: '100%',
-          background: `url(${post.image}) center/cover no-repeat`,
           position: 'relative',
+          overflow: 'hidden'
         }}
       >
+        <Image 
+          src={post.image} 
+          alt={post.title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          style={{ objectFit: 'cover' }}
+          quality={85}
+        />
         <span
           style={{
             position: 'absolute',
@@ -42,6 +50,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
             color: 'var(--accent-primary)',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
+            zIndex: 10
           }}
         >
           {post.category}
