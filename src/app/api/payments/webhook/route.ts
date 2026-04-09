@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
     const data = event.data;
     const metadata = data.metadata || {};
     const campaignId = (metadata.campaignId || '').trim();
-    const backerId = (metadata.backerId || '').trim();
     const amountInKobo = data.amount;
     const amountInMajor = amountInKobo / 100;
     const reference = data.reference;
