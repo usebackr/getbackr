@@ -19,12 +19,21 @@ export async function GET(req: NextRequest) {
     ];
 
     const results = [];
-    for (const patch of patches) {
+    const patchNames = [
+      'Add platform_fee',
+      'Add net_amount',
+      'Add referral_source',
+      'Add backer_name',
+      'Add message',
+      'Add payment_method',
+    ];
+
+    for (let i = 0; i < patches.length; i++) {
       try {
-        await db.execute(patch);
-        results.push({ patch: patch.toSQL().sql, status: 'success' });
+        await db.execute(patches[i]);
+        results.push({ patch: patchNames[i], status: 'success' });
       } catch (err: any) {
-        results.push({ patch: patch.toSQL().sql, status: 'error', error: err.message });
+        results.push({ patch: patchNames[i], status: 'error', error: err.message });
       }
     }
 
