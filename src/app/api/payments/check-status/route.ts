@@ -31,9 +31,9 @@ export async function GET(req: NextRequest) {
           // Fulfill it proactively right now.
           await processSuccessfulPayment({
             reference: paystackData.reference,
-            amountInMajor: paystackData.amount / 100, // Paystack amounts in verify are in kobo
+            amountInMajor: paystackData.amount / 100,
             currency: paystackData.currency || 'NGN',
-            customerEmail: paystackData.customer?.email,
+            customerEmail: paystackData.customer?.email || '',
             channel: paystackData.channel || 'paystack',
             metadata: paystackData.metadata || {},
           });

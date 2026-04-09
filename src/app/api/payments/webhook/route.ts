@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         reference,
         amountInMajor,
         currency: data.currency || 'NGN',
-        customerEmail: data.customer.email,
+        customerEmail: data.customer?.email || '',
         channel: data.channel || 'paystack',
         metadata,
       });
