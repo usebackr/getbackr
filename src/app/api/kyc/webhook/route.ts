@@ -58,7 +58,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         userId,
         'Identity Verified!',
         'Your identity has been successfully verified. Withdrawal access is now unlocked.',
-        'kyc_status_updated'
+        'kyc_status_updated',
       );
 
       // Email
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     } else if (status === 'rejected') {
       const reason = rejectionReason ?? 'Please re-upload clearer documents.';
-      
+
       // In-App & Web Push
       await sendAppNotification(
         userId,
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         `Your identity verification failed. Reason: ${reason}`,
         'kyc_status_updated',
         '/dashboard/notifications',
-        JSON.stringify({ reason })
+        JSON.stringify({ reason }),
       );
 
       // Email

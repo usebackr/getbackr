@@ -7,7 +7,9 @@ import { sendEmail } from '../src/workers/emailWorkers';
 async function main() {
   const email = process.argv[2];
   if (!email) {
-    console.error('Please provide an email address: npx tsx scripts/send-test-email.ts your@email.com');
+    console.error(
+      'Please provide an email address: npx tsx scripts/send-test-email.ts your@email.com',
+    );
     process.exit(1);
   }
 

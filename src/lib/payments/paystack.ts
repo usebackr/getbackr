@@ -162,7 +162,7 @@ export async function initiateTransfer(
   return {
     status: data.data.status, // "otp", "success", "pending"
     transfer_code: data.data.transfer_code,
-    message: data.message
+    message: data.message,
   };
 }
 
@@ -193,7 +193,7 @@ export async function finalizeTransfer(
 
   return {
     status: data.status,
-    message: data.message
+    message: data.message,
   };
 }
 

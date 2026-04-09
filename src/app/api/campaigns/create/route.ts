@@ -22,7 +22,10 @@ const createCampaignSchema = z.object({
   description: z.string().optional(),
   category: z.string().optional(),
   goalAmount: z.number().min(0, 'Minimum goal is 0').optional().default(0),
-  endDate: z.string().optional().refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
+  endDate: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
   coverImageUrl: z.string().url().optional().or(z.literal('')),
   status: z.enum(['draft', 'active']).optional().default('active'),
 });
@@ -47,12 +50,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { title, description, category, goalAmount, endDate, coverImageUrl, status } = parsed.data;
+    const { title, description, category, goalAmount, endDate, coverImageUrl, status } =
+      parsed.data;
 
     // Default values for drafts
     const finalGoal = goalAmount?.toString() || '0';
-    const finalEndDate = endDate 
-      ? new Date(endDate).toISOString() 
+    const finalEndDate = endDate
+      ? new Date(endDate).toISOString()
       : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
     const finalStatus = status || 'draft';
 
@@ -114,13 +118,10 @@ export async function POST(req: NextRequest) {
     );
   } catch (err: any) {
     console.error('[Create Campaign] Error:', err);
-    
+
     // Specifically handle JWT errors
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return NextResponse.json(
-        { error: 'Session expired. Please log in again.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Session expired. Please log in again.' }, { status: 401 });
     }
 
     return NextResponse.json(

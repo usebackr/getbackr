@@ -54,8 +54,8 @@ function PendingContent() {
           fontSize: '1.05rem',
         }}
       >
-        We've sent a verification link to <strong>{email}</strong>. 
-        Please click the link in the email to activate your account.
+        We&apos;ve sent a verification link to <strong>{email}</strong>. Please click the link in
+        the email to activate your account.
       </p>
 
       <div
@@ -66,10 +66,12 @@ function PendingContent() {
           marginBottom: '32px',
           textAlign: 'left',
           fontSize: '0.9rem',
-          color: '#64748b'
+          color: '#64748b',
         }}
       >
-        <p style={{ fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>Didn't receive the email?</p>
+        <p style={{ fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+          Didn&apos;t receive the email?
+        </p>
         <ul style={{ paddingLeft: '20px', margin: 0 }}>
           <li>Check your spam or junk folder.</li>
           <li>Wait a minute and refresh your inbox.</li>

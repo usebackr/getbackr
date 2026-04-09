@@ -22,10 +22,16 @@ jest.mock('@/lib/auth/jwt', () => {
   const actual = jest.requireActual('jsonwebtoken');
   const ACCESS_SECRET = 'access-secret-change-me';
   const REFRESH_SECRET = 'refresh-secret-change-me';
-  
+
   return {
-    signAccessToken: jest.fn((userId) => actual.sign({ sub: userId, type: 'access' }, ACCESS_SECRET, { expiresIn: '15m' })),
-    signRefreshToken: jest.fn((userId) => actual.sign({ sub: userId, type: 'refresh', nonce: Math.random() }, REFRESH_SECRET, { expiresIn: '7d' })),
+    signAccessToken: jest.fn((userId) =>
+      actual.sign({ sub: userId, type: 'access' }, ACCESS_SECRET, { expiresIn: '15m' }),
+    ),
+    signRefreshToken: jest.fn((userId) =>
+      actual.sign({ sub: userId, type: 'refresh', nonce: Math.random() }, REFRESH_SECRET, {
+        expiresIn: '7d',
+      }),
+    ),
     verifyAccessToken: jest.fn((token) => actual.verify(token, ACCESS_SECRET)),
     verifyRefreshToken: jest.fn((token) => actual.verify(token, REFRESH_SECRET)),
     getRefreshTokenUserId: jest.fn().mockResolvedValue('user-1'),
@@ -64,6 +70,7 @@ import { db } from '@/lib/db';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { consumeVerificationToken } from '@/lib/auth/tokens';
+import * as speakeasy from 'speakeasy';
 
 // Helper to create a NextRequest
 function makeRequest(body: unknown, headers: Record<string, string> = {}): NextRequest {
@@ -327,7 +334,7 @@ describe('POST /api/auth/refresh', () => {
   it('rotates tokens with valid refresh token', async () => {
     const userId = 'user-1';
     const refreshToken = makeRefreshToken(userId);
-    
+
     // Mock getRefreshTokenUserId to find user
     mockDbSelect([{ userId }]);
     mockDbUpdate(); // revoke old
@@ -397,8 +404,7 @@ describe('POST /api/auth/2fa/verify', () => {
   });
 
   it('verifies valid TOTP code', async () => {
-    const speakeasy = require('speakeasy');
-    speakeasy.totp.verify.mockReturnValue(true);
+    (speakeasy.totp.verify as jest.Mock).mockReturnValue(true);
 
     const userId = 'user-1';
     const token = makeAccessToken(userId);
@@ -412,8 +418,7 @@ describe('POST /api/auth/2fa/verify', () => {
   });
 
   it('returns 401 for invalid TOTP code', async () => {
-    const speakeasy = require('speakeasy');
-    speakeasy.totp.verify.mockReturnValue(false);
+    (speakeasy.totp.verify as jest.Mock).mockReturnValue(false);
 
     const userId = 'user-1';
     const token = makeAccessToken(userId);

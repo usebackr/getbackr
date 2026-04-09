@@ -1,12 +1,10 @@
 import React from 'react';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
-import { projectWallets } from '@/db/schema/projectWallets';
 import { users } from '@/db/schema/users';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { contributions } from '@/db/schema/contributions';
 import ExploreClient from './ExploreClient';
-import { getPublicUrl } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 

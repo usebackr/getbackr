@@ -16,16 +16,15 @@ async function main() {
     return;
   }
 
-  console.log(`Found ${unverifiedUsers.length} unverified existing accounts. Applying verification...`);
+  console.log(
+    `Found ${unverifiedUsers.length} unverified existing accounts. Applying verification...`,
+  );
 
   let verifiedCount = 0;
 
   for (const u of unverifiedUsers) {
     try {
-      await db
-        .update(users)
-        .set({ emailVerified: true })
-        .where(eq(users.id, u.id));
+      await db.update(users).set({ emailVerified: true }).where(eq(users.id, u.id));
       verifiedCount++;
     } catch (e) {
       console.error(`Failed to verify ${u.email}`, e);

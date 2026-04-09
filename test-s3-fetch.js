@@ -8,4 +8,6 @@ const s3 = new S3Client({
   endpoint: 'https://enlmurwayokqsrusxytu.supabase.co/storage/v1/s3',
   requestHandler: new FetchHttpHandler(),
 });
-s3.send(new PutObjectCommand({ Bucket: 'backr-uploads', Key: 'test.jpg', Body: 'hello' })).catch(console.error);
+s3.send(new PutObjectCommand({ Bucket: 'backr-uploads', Key: 'test.jpg', Body: 'hello' })).catch(
+  console.error,
+);

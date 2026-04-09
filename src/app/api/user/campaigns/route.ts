@@ -38,9 +38,9 @@ export async function GET(req: NextRequest) {
       .orderBy(desc(campaigns.createdAt));
 
     // Cleanup URLs
-    const sanitized = userCampaigns.map(c => ({
+    const sanitized = userCampaigns.map((c) => ({
       ...c,
-      coverImageUrl: getPublicUrl(c.coverImageUrl)
+      coverImageUrl: getPublicUrl(c.coverImageUrl),
     }));
 
     return NextResponse.json({ campaigns: sanitized });

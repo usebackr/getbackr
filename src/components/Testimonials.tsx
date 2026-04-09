@@ -7,21 +7,21 @@ export default function Testimonials() {
       role: 'Independent Filmmaker',
       text: 'Backr changed how I interact with my community. Real-time spending logs built a level of trust that allowed me to raise 2x more than my initial goal.',
       iconBg: '#ecfdf5',
-      iconColor: '#10b981'
+      iconColor: '#10b981',
     },
     {
       name: 'Aisha Bello',
       role: 'Visual Artist & Curator',
       text: 'The transparency tool is brilliant. My backers feel like partners in the build process, and it keeps our team accountable for every naira spent.',
       iconBg: '#eff6ff',
-      iconColor: '#3b82f6'
+      iconColor: '#3b82f6',
     },
     {
       name: 'Chinedu Okafor',
       role: 'Independent Musician',
       text: 'I used to hesitate to back projects on other platforms. With Backr, I feel 100% confident knowing exactly how my contribution is being spent.',
       iconBg: '#f5f3ff',
-      iconColor: '#8b5cf6'
+      iconColor: '#8b5cf6',
     },
   ];
 
@@ -60,10 +60,10 @@ export default function Testimonials() {
                 background: '#ffffff',
               }}
             >
-              <div 
-                style={{ 
-                  position: 'absolute', 
-                  top: '-24px', 
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-24px',
                   left: '32px',
                   width: '56px',
                   height: '56px',
@@ -76,7 +76,16 @@ export default function Testimonials() {
                   boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
                 }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={review.iconColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={review.iconColor}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -91,7 +100,7 @@ export default function Testimonials() {
                   marginBottom: '24px',
                 }}
               >
-                "{review.text}"
+                &quot;{review.text}&quot;
               </p>
               <div>
                 <h4

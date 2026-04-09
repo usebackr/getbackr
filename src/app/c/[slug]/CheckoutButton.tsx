@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 export default function CheckoutButton({ campaignId }: { campaignId: string }) {
   const [amount, setAmount] = useState(1000);
-  const [checkoutUrl, setCheckoutUrl] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

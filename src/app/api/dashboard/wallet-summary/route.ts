@@ -29,21 +29,16 @@ export async function GET(req: NextRequest) {
       .from(contributions);
 
     if (selectedCampaignId) {
-       contribQuery.where(
-         and(
-           eq(contributions.campaignId, selectedCampaignId),
-           eq(contributions.status, 'confirmed')
-         )
-       );
+      contribQuery.where(
+        and(
+          eq(contributions.campaignId, selectedCampaignId),
+          eq(contributions.status, 'confirmed'),
+        ),
+      );
     } else {
-       contribQuery
-         .innerJoin(campaigns, eq(campaigns.id, contributions.campaignId))
-         .where(
-           and(
-             eq(campaigns.creatorId, userId),
-             eq(contributions.status, 'confirmed')
-           )
-         );
+      contribQuery
+        .innerJoin(campaigns, eq(campaigns.id, contributions.campaignId))
+        .where(and(eq(campaigns.creatorId, userId), eq(contributions.status, 'confirmed')));
     }
 
     const [contribStats] = await contribQuery;
@@ -60,26 +55,30 @@ export async function GET(req: NextRequest) {
       .from(withdrawals);
 
     if (selectedCampaignId) {
-        // Need to find the walletId for the selected campaign
-        const [wallet] = await db.select({ id: projectWallets.id }).from(projectWallets).where(eq(projectWallets.campaignId, selectedCampaignId)).limit(1);
-        if (wallet) {
-            withdrawalQuery.where(
-                and(
-                    eq(withdrawals.walletId, wallet.id),
-                    inArray(withdrawals.status, ['processing', 'completed', 'pending_otp'])
-                )
-            );
-        } else {
-            // No wallet, no withdrawals possible
-            withdrawalQuery.where(sql`1=0`); 
-        }
-    } else {
+      // Need to find the walletId for the selected campaign
+      const [wallet] = await db
+        .select({ id: projectWallets.id })
+        .from(projectWallets)
+        .where(eq(projectWallets.campaignId, selectedCampaignId))
+        .limit(1);
+      if (wallet) {
         withdrawalQuery.where(
-            and(
-              eq(withdrawals.creatorId, userId),
-              inArray(withdrawals.status, ['processing', 'completed', 'pending_otp']),
-            ),
+          and(
+            eq(withdrawals.walletId, wallet.id),
+            inArray(withdrawals.status, ['processing', 'completed', 'pending_otp']),
+          ),
         );
+      } else {
+        // No wallet, no withdrawals possible
+        withdrawalQuery.where(sql`1=0`);
+      }
+    } else {
+      withdrawalQuery.where(
+        and(
+          eq(withdrawals.creatorId, userId),
+          inArray(withdrawals.status, ['processing', 'completed', 'pending_otp']),
+        ),
+      );
     }
 
     const [withdrawalStats] = await withdrawalQuery;
@@ -110,8 +109,12 @@ export async function GET(req: NextRequest) {
 
     let campaignStatus = 'active';
     if (selectedCampaignId) {
-        const [campaign] = await db.select({ status: campaigns.status }).from(campaigns).where(eq(campaigns.id, selectedCampaignId)).limit(1);
-        if (campaign) campaignStatus = campaign.status;
+      const [campaign] = await db
+        .select({ status: campaigns.status })
+        .from(campaigns)
+        .where(eq(campaigns.id, selectedCampaignId))
+        .limit(1);
+      if (campaign) campaignStatus = campaign.status;
     }
 
     return NextResponse.json({

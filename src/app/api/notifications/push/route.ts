@@ -23,10 +23,12 @@ export async function POST(req: NextRequest) {
     const [existing] = await db
       .select()
       .from(pushSubscriptions)
-      .where(and(
-        eq(pushSubscriptions.userId, userId),
-        eq(pushSubscriptions.endpoint, subscription.endpoint)
-      ))
+      .where(
+        and(
+          eq(pushSubscriptions.userId, userId),
+          eq(pushSubscriptions.endpoint, subscription.endpoint),
+        ),
+      )
       .limit(1);
 
     if (existing) {
@@ -63,10 +65,7 @@ export async function DELETE(req: NextRequest) {
 
     await db
       .delete(pushSubscriptions)
-      .where(and(
-        eq(pushSubscriptions.userId, userId),
-        eq(pushSubscriptions.endpoint, endpoint)
-      ));
+      .where(and(eq(pushSubscriptions.userId, userId), eq(pushSubscriptions.endpoint, endpoint)));
 
     return NextResponse.json({ message: 'Push subscription deleted' });
   } catch (error: any) {

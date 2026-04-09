@@ -4,14 +4,11 @@ import { campaigns } from '@/db/schema/campaigns';
 import { eq, and } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = req.cookies.get('accessToken')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
+
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
     const campaignId = params.id;
@@ -28,7 +25,10 @@ export async function POST(
     }
 
     if (campaign.creatorId !== userId) {
-      return NextResponse.json({ error: 'Unauthorized: You do not own this campaign' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Unauthorized: You do not own this campaign' },
+        { status: 403 },
+      );
     }
 
     if (campaign.status === 'closed') {
@@ -38,15 +38,15 @@ export async function POST(
     // 2. Perform the permanent closure
     await db
       .update(campaigns)
-      .set({ 
+      .set({
         status: 'closed',
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(and(eq(campaigns.id, campaignId), eq(campaigns.creatorId, userId)));
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'Campaign has been successfully ended and is now closed for withdrawals.',
-      status: 'closed'
+      status: 'closed',
     });
   } catch (error: any) {
     console.error('[Campaign Close API Error]', error);

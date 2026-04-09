@@ -7,14 +7,18 @@ let pool: Pool | undefined;
 function getPool(): Pool {
   if (!pool) {
     const databaseUrl = process.env.DATABASE_URL;
-    
+
     // During build time on some CI environments, DATABASE_URL might be missing.
     // We return a dummy pool if it is missing during build, but throw if it's missing during runtime.
     if (!databaseUrl) {
-      if (process.env.NODE_ENV === 'production' && typeof window === 'undefined' && !process.env.VERCEL_URL) {
-         // This is likely build time or a misconfigured production environment.
-         // We log but don't immediately throw to allow 'next build' to pass analysis.
-         console.warn('DATABASE_URL is missing. DB operations will fail at runtime.');
+      if (
+        process.env.NODE_ENV === 'production' &&
+        typeof window === 'undefined' &&
+        !process.env.VERCEL_URL
+      ) {
+        // This is likely build time or a misconfigured production environment.
+        // We log but don't immediately throw to allow 'next build' to pass analysis.
+        console.warn('DATABASE_URL is missing. DB operations will fail at runtime.');
       }
       return new Pool(); // Return empty pool to satisfy type checking during build analysis
     }

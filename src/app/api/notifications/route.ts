@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
+
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
 
@@ -31,14 +31,12 @@ export async function PUT(req: NextRequest) {
   try {
     const token = req.cookies.get('accessToken')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
+
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
 
     // Mark all as read logic
-    await db.update(notifications)
-      .set({ isRead: true })
-      .where(eq(notifications.userId, userId));
+    await db.update(notifications).set({ isRead: true }).where(eq(notifications.userId, userId));
 
     return NextResponse.json({ message: 'Notifications marked as read' });
   } catch (err: any) {

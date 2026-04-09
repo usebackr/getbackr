@@ -16,13 +16,14 @@ export async function POST(req: NextRequest) {
     await db.transaction(async (tx) => {
       // 1. Delete kycProfile
       await tx.delete(kycProfiles).where(eq(kycProfiles.userId, userId));
-      
+
       // 2. Reset user kycStatus
-      await tx.update(users)
-        .set({ 
+      await tx
+        .update(users)
+        .set({
           kycStatus: 'unsubmitted',
           kycRejectionReason: null,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, userId));
     });

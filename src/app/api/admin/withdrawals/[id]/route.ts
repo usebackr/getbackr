@@ -15,7 +15,7 @@ import { initiateTransfer } from '@/lib/payments/paystack';
 import { sql, and, inArray } from 'drizzle-orm';
 import { contributions } from '@/db/schema/contributions';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } } ) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = cookies().get('accessToken')?.value;
     const isAdmin = await verifyAdminApi(token);
@@ -62,7 +62,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
       })
       .from(contributions)
-      .where(and(eq(contributions.campaignId, request.campaignId), eq(contributions.status, 'confirmed')));
+      .where(
+        and(
+          eq(contributions.campaignId, request.campaignId),
+          eq(contributions.status, 'confirmed'),
+        ),
+      );
 
     const [withdrawalStats] = await db
       .select({
@@ -90,9 +95,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         totalWithdrawn,
         currentBalance,
         remainingAfter,
-      }
+      },
     });
-
   } catch (err) {
     console.error('[Admin Withdrawal GET Error]', err);
     return NextResponse.json({ error: 'Failed to fetch withdrawal details' }, { status: 500 });
@@ -111,7 +115,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    const { status, reason: feedbackReason, isManual, otp, transferCode: providedTransferCode } = await req.json();
+    const {
+      status,
+      reason: feedbackReason,
+      isManual,
+      otp,
+      transferCode: providedTransferCode,
+    } = await req.json();
     const withdrawalId = params.id;
 
     if (!withdrawalId)
@@ -122,7 +132,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     // -------------------------------------------------------------------------
     if (status === 'finalize_otp') {
       if (!otp || !providedTransferCode) {
-        return NextResponse.json({ error: 'OTP and Transfer Code are required to finalize.' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'OTP and Transfer Code are required to finalize.' },
+          { status: 400 },
+        );
       }
 
       try {
@@ -149,18 +162,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         // Atomic update for database and wallet consistency
         await db.transaction(async (tx) => {
           // Update DB to completed
-          await tx.update(withdrawals).set({ 
-            status: 'completed',
-            payoutReference: providedTransferCode
-          }).where(eq(withdrawals.id, withdrawalId));
+          await tx
+            .update(withdrawals)
+            .set({
+              status: 'completed',
+              payoutReference: providedTransferCode,
+            })
+            .where(eq(withdrawals.id, withdrawalId));
 
           // Sync Wallet: Balance decreases, Total Withdrawn increases. Total Received stays the same (Progress preserved).
           if (request.walletId) {
-            await tx.update(projectWallets)
+            await tx
+              .update(projectWallets)
               .set({
                 balance: sql`${projectWallets.balance} - ${request.amount}::numeric`,
                 totalWithdrawn: sql`${projectWallets.totalWithdrawn} + ${request.amount}::numeric`,
-                updatedAt: new Date()
+                updatedAt: new Date(),
               })
               .where(eq(projectWallets.id, request.walletId));
           }
@@ -174,7 +191,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             `Your request for ₦${Number(request.amount).toLocaleString()} has been fully processed and sent.`,
             'payout_processed',
             '/dashboard/wallet',
-            JSON.stringify({ withdrawalId: request.id, amount: request.amount })
+            JSON.stringify({ withdrawalId: request.id, amount: request.amount }),
           );
 
           await sendEmail({
@@ -185,7 +202,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           });
         }
 
-        return NextResponse.json({ message: 'Transfer finalized successfully.', payoutReference: providedTransferCode });
+        return NextResponse.json({
+          message: 'Transfer finalized successfully.',
+          payoutReference: providedTransferCode,
+        });
       } catch (err: any) {
         console.error('[Admin Payout] Finalize OTP Failed:', err);
         return NextResponse.json({ error: `Finalization failed: ${err.message}` }, { status: 500 });
@@ -220,7 +240,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         return NextResponse.json({ error: 'Payout is not in processing state' }, { status: 400 });
 
       if (status === 'rejected' && (!feedbackReason || feedbackReason.trim() === '')) {
-         return NextResponse.json({ error: 'A rejection reason is strictly required' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'A rejection reason is strictly required' },
+          { status: 400 },
+        );
       }
 
       let payoutReference = null;
@@ -236,36 +259,42 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             const recipientCode = await createTransferRecipient(
               existingRequest.accountName || 'Creator',
               existingRequest.accountNumber || '',
-              existingRequest.bankCode || ''
+              existingRequest.bankCode || '',
             );
 
             // 2. Initiate the Transfer
             const result = await initiateTransfer(
               Number(existingRequest.amount),
               recipientCode,
-              `Backr Cloud Payout: ${existingRequest.campaignTitle}`
+              `Backr Cloud Payout: ${existingRequest.campaignTitle}`,
             );
 
             // 3. Check for OTP requirement
             if (result.status === 'otp') {
               // Mark as processing in DB (no change needed to status) but store the reference
-              await db.update(withdrawals).set({ 
-                payoutReference: result.transfer_code 
-              }).where(eq(withdrawals.id, withdrawalId));
+              await db
+                .update(withdrawals)
+                .set({
+                  payoutReference: result.transfer_code,
+                })
+                .where(eq(withdrawals.id, withdrawalId));
 
-              return NextResponse.json({ 
-                otpRequired: true, 
+              return NextResponse.json({
+                otpRequired: true,
                 transferCode: result.transfer_code,
-                message: 'OTP required to finalize this transfer. Please check your phone/email.' 
+                message: 'OTP required to finalize this transfer. Please check your phone/email.',
               });
             }
 
             payoutReference = result.transfer_code;
           } catch (paystackErr: any) {
             console.error('[Admin Payout] Paystack Transfer Failed:', paystackErr);
-            return NextResponse.json({ 
-              error: `Paystack Payout Failed: ${paystackErr.message}. Funds not moved.` 
-            }, { status: 500 });
+            return NextResponse.json(
+              {
+                error: `Paystack Payout Failed: ${paystackErr.message}. Funds not moved.`,
+              },
+              { status: 500 },
+            );
           }
         }
       }
@@ -273,19 +302,23 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Atomic update for database and wallet consistency
       await db.transaction(async (tx) => {
         // Update the payout status in DB
-        await tx.update(withdrawals).set({ 
-          status, 
-          rejectionReason: status === 'rejected' ? feedbackReason : null,
-          payoutReference: payoutReference
-        }).where(eq(withdrawals.id, withdrawalId));
+        await tx
+          .update(withdrawals)
+          .set({
+            status,
+            rejectionReason: status === 'rejected' ? feedbackReason : null,
+            payoutReference: payoutReference,
+          })
+          .where(eq(withdrawals.id, withdrawalId));
 
         // Sync Wallet if approved: Balance decreases, Total Withdrawn increases.
         if (status === 'completed' && existingRequest.walletId) {
-          await tx.update(projectWallets)
+          await tx
+            .update(projectWallets)
             .set({
               balance: sql`${projectWallets.balance} - ${existingRequest.amount}::numeric`,
               totalWithdrawn: sql`${projectWallets.totalWithdrawn} + ${existingRequest.amount}::numeric`,
-              updatedAt: new Date()
+              updatedAt: new Date(),
             })
             .where(eq(projectWallets.id, existingRequest.walletId));
         }
@@ -301,7 +334,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             `Your request for ₦${Number(existingRequest.amount).toLocaleString()} has been processed and transfer has been initiated.`,
             'payout_processed',
             '/dashboard/wallet',
-            JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount })
+            JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount }),
           );
 
           // Email
@@ -319,7 +352,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             `Your withdrawal for ₦${Number(existingRequest.amount).toLocaleString()} was bounced back. Reason: ${feedbackReason}`,
             'payout_processed',
             '/dashboard/wallet',
-            JSON.stringify({ withdrawalId: existingRequest.id, amount: existingRequest.amount, reason: feedbackReason })
+            JSON.stringify({
+              withdrawalId: existingRequest.id,
+              amount: existingRequest.amount,
+              reason: feedbackReason,
+            }),
           );
 
           // Email

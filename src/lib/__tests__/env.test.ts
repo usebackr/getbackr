@@ -1,7 +1,4 @@
-/**
- * Tests for the environment variable schema validation.
- * These run without a real DB/Redis connection.
- */
+import { z } from 'zod';
 
 describe('env schema validation', () => {
   const validEnv = {
@@ -31,8 +28,6 @@ describe('env schema validation', () => {
   };
 
   it('accepts a fully valid environment', () => {
-    const { z } = require('zod');
-
     const envSchema = z.object({
       DATABASE_URL: z.string().url(),
       REDIS_URL: z.string().url(),
@@ -45,8 +40,6 @@ describe('env schema validation', () => {
   });
 
   it('rejects a short JWT_SECRET', () => {
-    const { z } = require('zod');
-
     const envSchema = z.object({
       JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     });
@@ -59,8 +52,6 @@ describe('env schema validation', () => {
   });
 
   it('rejects an invalid DATABASE_URL', () => {
-    const { z } = require('zod');
-
     const envSchema = z.object({
       DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
     });
@@ -70,8 +61,6 @@ describe('env schema validation', () => {
   });
 
   it('rejects an invalid email for EMAIL_FROM', () => {
-    const { z } = require('zod');
-
     const envSchema = z.object({
       EMAIL_FROM: z.string().email(),
     });

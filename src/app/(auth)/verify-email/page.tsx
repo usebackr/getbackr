@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Mail, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -9,7 +10,7 @@ function VerifyEmailContent() {
   const email = searchParams.get('email') || 'your email';
   const token = searchParams.get('token');
   const userId = searchParams.get('userId');
-  
+
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,9 +81,20 @@ function VerifyEmailContent() {
 
   if (loading) {
     return (
-      <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}>
+      <div
+        className="card"
+        style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}
+      >
         <div className="animate-pulse">
-          <div style={{ width: '64px', height: '64px', background: '#f1f5f9', borderRadius: '50%', margin: '0 auto 24px' }}></div>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              background: '#f1f5f9',
+              borderRadius: '50%',
+              margin: '0 auto 24px',
+            }}
+          ></div>
           <h3 style={{ color: 'var(--text-secondary)' }}>Verifying your account...</h3>
         </div>
       </div>
@@ -91,11 +103,22 @@ function VerifyEmailContent() {
 
   if (error) {
     return (
-      <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}>
-        <div style={{ fontSize: '4rem', marginBottom: '24px' }}>⚠️</div>
-        <h2 style={{ color: 'var(--accent-secondary)', marginBottom: '16px' }}>Verification Error</h2>
+      <div
+        className="card"
+        style={{ maxWidth: '500px', width: '100%', padding: '64px', textAlign: 'center' }}
+      >
+        <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+          <AlertTriangle size={64} className="text-amber-500" />
+        </div>
+        <h2 style={{ color: 'var(--accent-secondary)', marginBottom: '16px' }}>
+          Verification Error
+        </h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>{error}</p>
-        <button className="btn-secondary" style={{ width: '100%' }} onClick={() => router.push('/signup')}>
+        <button
+          className="btn-secondary"
+          style={{ width: '100%' }}
+          onClick={() => router.push('/signup')}
+        >
           Back to Signup
         </button>
       </div>
@@ -104,12 +127,12 @@ function VerifyEmailContent() {
 
   if (verified) {
     return (
-      <div 
-        className="card" 
-        style={{ 
-          maxWidth: '540px', 
-          width: '100%', 
-          textAlign: 'center', 
+      <div
+        className="card"
+        style={{
+          maxWidth: '540px',
+          width: '100%',
+          textAlign: 'center',
           padding: '80px 48px',
           background: '#ffffff',
           boxShadow: '0 40px 100px rgba(15, 23, 42, 0.05)',
@@ -124,23 +147,37 @@ function VerifyEmailContent() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '3.5rem',
             margin: '0 auto 40px',
             animation: 'scaleIn 0.5s ease-out',
           }}
         >
-          ✅
+          <CheckCircle2 size={56} color="#10b981" strokeWidth={1.5} />
         </div>
 
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '16px', color: 'var(--accent-secondary)' }}>
+        <h2
+          style={{
+            fontSize: '2.5rem',
+            fontWeight: 900,
+            marginBottom: '16px',
+            color: 'var(--accent-secondary)',
+          }}
+        >
           Email <span className="text-gradient">Verified</span>!
         </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '48px', lineHeight: 1.6 }}>
-          Thank you! Your account is now fully active. You're ready to start your journey with Backr.
+        <p
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '1.1rem',
+            marginBottom: '48px',
+            lineHeight: 1.6,
+          }}
+        >
+          Thank you! Your account is now fully active. You&apos;re ready to start your journey with
+          Backr.
         </p>
 
-        <button 
-          className="btn-primary" 
+        <button
+          className="btn-primary"
           style={{ width: '100%', padding: '18px', fontSize: '1rem', fontWeight: 700 }}
           onClick={() => router.push('/login')}
         >
@@ -164,18 +201,18 @@ function VerifyEmailContent() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '2.5rem',
           margin: '0 auto 32px',
         }}
       >
-        📧
+        <Mail size={40} color="#f97316" strokeWidth={1.5} />
       </div>
 
       <h2 style={{ fontSize: '2rem', marginBottom: '16px', color: 'var(--accent-secondary)' }}>
         Check your email
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
-        We've sent a verification link to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>.<br />
+        We&apos;ve sent a verification link to{' '}
+        <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>.<br />
         Please click the link to confirm your account.
       </p>
 

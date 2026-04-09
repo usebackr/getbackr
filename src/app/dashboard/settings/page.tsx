@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 function PushToggle() {
-  const { isSupported, isSubscribed, loading, permission, subscribe, unsubscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, loading, permission, subscribe, unsubscribe } =
+    usePushNotifications();
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -16,7 +17,11 @@ function PushToggle() {
         className={isSubscribed ? 'btn-secondary' : 'btn-primary'}
         style={{ padding: '12px 24px' }}
       >
-        {loading ? 'Updating...' : isSubscribed ? 'Disable Push Notifications' : 'Enable Push Notifications'}
+        {loading
+          ? 'Updating...'
+          : isSubscribed
+            ? 'Disable Push Notifications'
+            : 'Enable Push Notifications'}
       </button>
       {permission === 'denied' && (
         <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>
@@ -107,7 +112,7 @@ export default function SettingsPage() {
 
   const initiateSave = async () => {
     if (!accountName) return;
-    
+
     if (hasExistingBank) {
       setSendingOtp(true);
       try {
@@ -176,8 +181,15 @@ export default function SettingsPage() {
           <button
             onClick={() => router.push('/dashboard')}
             style={{
-              background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
-              marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: 600,
             }}
           >
             ← Back to Dashboard
@@ -185,7 +197,9 @@ export default function SettingsPage() {
 
           <header style={{ marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '8px' }}>Settings</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Manage your account, security, and payout methods.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+              Manage your account, security, and payout methods.
+            </p>
           </header>
 
           <div
@@ -194,7 +208,7 @@ export default function SettingsPage() {
               gap: '24px',
               borderBottom: '1px solid #e2e8f0',
               marginBottom: '32px',
-              overflowX: 'auto'
+              overflowX: 'auto',
             }}
             className="hide-scrollbar"
           >
@@ -212,7 +226,7 @@ export default function SettingsPage() {
                   fontWeight: activeTab === tab ? 700 : 500,
                   cursor: 'pointer',
                   fontSize: '0.95rem',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {tab}
@@ -222,14 +236,24 @@ export default function SettingsPage() {
 
           {activeTab === 'Payment and Payouts' && (
             <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>Bank Account Details</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>
+                Bank Account Details
+              </h2>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: 1.6 }}>
                 Add your local bank account to receive campaign payouts directly and securely.
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      color: '#475569',
+                    }}
+                  >
                     Bank Name
                   </label>
                   <select
@@ -252,7 +276,15 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      color: '#475569',
+                    }}
+                  >
                     Account Number
                   </label>
                   <input
@@ -276,7 +308,9 @@ export default function SettingsPage() {
                       Resolving account name... ⏳
                     </span>
                   )}
-                  {resolveError && <span style={{ color: '#ef4444', fontWeight: 600 }}>{resolveError} ❌</span>}
+                  {resolveError && (
+                    <span style={{ color: '#ef4444', fontWeight: 600 }}>{resolveError} ❌</span>
+                  )}
                   {accountName && !resolving && (
                     <div
                       style={{
@@ -290,7 +324,9 @@ export default function SettingsPage() {
                         Account Name:
                       </span>
                       <br />
-                      <strong style={{ color: 'var(--accent-primary)', fontSize: '1.1rem' }}>{accountName} ✅</strong>
+                      <strong style={{ color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
+                        {accountName} ✅
+                      </strong>
                     </div>
                   )}
                 </div>
@@ -300,14 +336,31 @@ export default function SettingsPage() {
                     onClick={initiateSave}
                     disabled={!accountName || saving || sendingOtp}
                     className="btn-primary"
-                    style={{ width: '100%', padding: '16px', opacity: !accountName || saving || sendingOtp ? 0.5 : 1 }}
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      opacity: !accountName || saving || sendingOtp ? 0.5 : 1,
+                    }}
                   >
-                    {saving ? 'Saving Details...' : sendingOtp ? 'Sending OTP...' : 'Save Bank Account'}
+                    {saving
+                      ? 'Saving Details...'
+                      : sendingOtp
+                        ? 'Sending OTP...'
+                        : 'Save Bank Account'}
                   </button>
                 </div>
 
                 {saveSuccess && (
-                  <p style={{ color: '#059669', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center' }}>Bank details saved successfully!</p>
+                  <p
+                    style={{
+                      color: '#059669',
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      textAlign: 'center',
+                    }}
+                  >
+                    Bank details saved successfully!
+                  </p>
                 )}
               </div>
             </div>
@@ -315,39 +368,96 @@ export default function SettingsPage() {
 
           {activeTab === 'Notifications' && (
             <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>Push Notifications</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>
+                Push Notifications
+              </h2>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: 1.6 }}>
-                Receive instant alerts on this device when you get a new donation, withdrawal update, or KYC approval.
+                Receive instant alerts on this device when you get a new donation, withdrawal
+                update, or KYC approval.
               </p>
               <PushToggle />
             </div>
           )}
 
           {activeTab !== 'Payment and Payouts' && activeTab !== 'Notifications' && (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <p style={{ fontWeight: 600 }}>The {activeTab} section is currently being optimized.</p>
+            <div
+              style={{
+                padding: '40px',
+                textAlign: 'center',
+                color: 'var(--text-secondary)',
+                background: '#fff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <p style={{ fontWeight: 600 }}>
+                The {activeTab} section is currently being optimized.
+              </p>
             </div>
           )}
         </div>
 
         {/* OTP Prompt Modal */}
         {showOtpModal && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-          }}>
-            <div style={{
-              background: '#fff', padding: '32px', borderRadius: '16px',
-              maxWidth: '400px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-            }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '16px', color: '#0f172a' }}>Security Check</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
-                To protect your platform earnings, we've sent a 6-digit confirmation code to your email. Please enter it to authorize updating your bank details.
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.4)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                padding: '32px',
+                borderRadius: '16px',
+                maxWidth: '400px',
+                width: '90%',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 800,
+                  marginBottom: '16px',
+                  color: '#0f172a',
+                }}
+              >
+                Security Check
+              </h3>
+              <p
+                style={{
+                  color: '#64748b',
+                  fontSize: '0.9rem',
+                  marginBottom: '24px',
+                  lineHeight: 1.5,
+                }}
+              >
+                To protect your platform earnings, we&apos;ve sent a 6-digit confirmation code to
+                your email. Please enter it to authorize updating your bank details.
               </p>
 
               {otpError && (
-                <div style={{ background: '#fef2f2', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.85rem', fontWeight: 600 }}>
+                <div
+                  style={{
+                    background: '#fef2f2',
+                    color: '#ef4444',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                  }}
+                >
                   {otpError}
                 </div>
               )}
@@ -359,8 +469,15 @@ export default function SettingsPage() {
                 value={otpInput}
                 onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
                 style={{
-                  width: '100%', padding: '16px', borderRadius: '12px', border: '2px solid #e2e8f0',
-                  fontSize: '1.25rem', textAlign: 'center', letterSpacing: '4px', fontWeight: 700, marginBottom: '24px'
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '2px solid #e2e8f0',
+                  fontSize: '1.25rem',
+                  textAlign: 'center',
+                  letterSpacing: '4px',
+                  fontWeight: 700,
+                  marginBottom: '24px',
                 }}
               />
 
@@ -376,7 +493,11 @@ export default function SettingsPage() {
                   onClick={() => executeSave(otpInput)}
                   disabled={otpInput.length !== 6 || saving}
                   className="btn-primary"
-                  style={{ flex: 1, padding: '14px', opacity: otpInput.length !== 6 || saving ? 0.5 : 1 }}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    opacity: otpInput.length !== 6 || saving ? 0.5 : 1,
+                  }}
                 >
                   {saving ? 'Verifying...' : 'Verify'}
                 </button>
@@ -384,10 +505,11 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
-
       </main>
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
     </div>
   );

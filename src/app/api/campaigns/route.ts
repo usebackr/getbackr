@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { eq, desc, and, sql, ilike, or } from 'drizzle-orm';
+import { eq, desc, and, sql } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
 import { projectWallets } from '@/db/schema/projectWallets';
 import { boostPurchases } from '@/db/schema/boostPurchases';
-import { getPublicUrl } from '@/lib/storage';
 
 const SUPPORTED_CURRENCIES = ['NGN', 'KES', 'GHS', 'ZAR', 'USD'] as const;
 

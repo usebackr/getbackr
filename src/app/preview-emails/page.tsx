@@ -19,7 +19,7 @@ export default function PublicEmailPreviewPage() {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column' as const,
-    alignItems: 'center'
+    alignItems: 'center',
   };
 
   const emailCardStyle = {
@@ -33,8 +33,6 @@ export default function PublicEmailPreviewPage() {
     border: '1px solid #e2e8f0',
   };
 
-  const hrStyle = { border: 'none', borderTop: '1px solid #f1f5f9', margin: '24px 0' };
-
   const btnStyle = {
     display: 'inline-block',
     padding: '14px 28px',
@@ -46,46 +44,86 @@ export default function PublicEmailPreviewPage() {
     fontSize: '1rem',
     border: 'none',
     boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
-    cursor: 'pointer'
+    cursor: 'pointer',
   };
 
   return (
     <div style={emailWrapperStyle}>
-      <header style={{ 
-        maxWidth: '540px', width: '100%', marginBottom: '40px', 
-        display: 'flex', flexDirection: 'column', gap: '24px' 
-      }}>
+      <header
+        style={{
+          maxWidth: '540px',
+          width: '100%',
+          marginBottom: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Email Visualizer</h1>
-          <Link href="/" style={{ color: BRAND_COLOR, fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>← Back to site</Link>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>
+            Email Visualizer
+          </h1>
+          <Link
+            href="/"
+            style={{
+              color: BRAND_COLOR,
+              fontWeight: 700,
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+            }}
+          >
+            ← Back to site
+          </Link>
         </div>
-        
-        <div style={{ 
-          display: 'flex', gap: '4px', background: '#f1f5f9', padding: '4px', 
-          borderRadius: '14px', border: '1px solid #e2e8f0' 
-        }}>
-          <button 
+
+        <div
+          style={{
+            display: 'flex',
+            gap: '4px',
+            background: '#f1f5f9',
+            padding: '4px',
+            borderRadius: '14px',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <button
             type="button"
-            onClick={(e) => { e.preventDefault(); setActiveTemplate('donor'); }}
-            style={{ 
-              flex: 1, padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTemplate('donor');
+            }}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
               background: activeTemplate === 'donor' ? 'white' : 'transparent',
-              fontWeight: 700, color: activeTemplate === 'donor' ? BRAND_COLOR : '#64748b',
+              fontWeight: 700,
+              color: activeTemplate === 'donor' ? BRAND_COLOR : '#64748b',
               boxShadow: activeTemplate === 'donor' ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
             }}
           >
             Donor Receipt
           </button>
-          <button 
+          <button
             type="button"
-            onClick={(e) => { e.preventDefault(); setActiveTemplate('creator'); }}
-            style={{ 
-              flex: 1, padding: '12px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTemplate('creator');
+            }}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
               background: activeTemplate === 'creator' ? 'white' : 'transparent',
-              fontWeight: 700, color: activeTemplate === 'creator' ? BRAND_COLOR : '#64748b',
+              fontWeight: 700,
+              color: activeTemplate === 'creator' ? BRAND_COLOR : '#64748b',
               boxShadow: activeTemplate === 'creator' ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
             }}
           >
             Creator Alert
@@ -95,12 +133,33 @@ export default function PublicEmailPreviewPage() {
 
       {activeTemplate === 'donor' ? (
         <div style={emailCardStyle}>
-          <p style={{ fontSize: '1.1rem', marginBottom: '24px' }}>Hi <strong>Sarah Johnson</strong>,</p>
-          <p>Thank you for supporting <strong>"Solar for Schools Initiative"</strong>.</p>
+          <p style={{ fontSize: '1.1rem', marginBottom: '24px' }}>
+            Hi <strong>Sarah Johnson</strong>,
+          </p>
+          <p>
+            Thank you for supporting <strong>&quot;Solar for Schools Initiative&quot;</strong>.
+          </p>
           <p>Your contribution has been successfully received.</p>
-          
-          <div style={{ margin: '32px 0', padding: '24px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <p style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>TRANSACTION DETAILS</p>
+
+          <div
+            style={{
+              margin: '32px 0',
+              padding: '24px',
+              background: '#f8fafc',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <p
+              style={{
+                margin: '0 0 12px 0',
+                color: '#64748b',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+              }}
+            >
+              TRANSACTION DETAILS
+            </p>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span>Amount</span>
               <span style={{ fontWeight: 800, color: BRAND_COLOR }}>₦25,000.00</span>
@@ -115,23 +174,41 @@ export default function PublicEmailPreviewPage() {
             </div>
           </div>
 
-          <p>You’re now part of this project. You can follow its progress, updates, and how funds are used.</p>
-          
+          <p>
+            You’re now part of this project. You can follow its progress, updates, and how funds are
+            used.
+          </p>
+
           <div style={{ textAlign: 'center', margin: '40px 0' }}>
             <button style={btnStyle}>View campaign progress ↗</button>
           </div>
 
-          <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Creators on Backr share regular updates so you can stay informed as the project develops.</p>
+          <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+            Creators on Backr share regular updates so you can stay informed as the project
+            develops.
+          </p>
           <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Thanks again for your support.</p>
           <p style={{ fontWeight: 800, color: '#0f172a', marginTop: '32px' }}>— Backr Team</p>
         </div>
       ) : (
         <div style={emailCardStyle}>
-          <p style={{ fontSize: '1.1rem', marginBottom: '24px' }}>Hi <strong>Tunde</strong>,</p>
+          <p style={{ fontSize: '1.1rem', marginBottom: '24px' }}>
+            Hi <strong>Tunde</strong>,
+          </p>
           <p>You just received a new contribution for your campaign:</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: '16px 0', color: BRAND_COLOR }}>"Solar for Schools Initiative"</p>
-          
-          <div style={{ margin: '32px 0', padding: '24px', background: '#fdf2f2', borderLeft: `6px solid ${BRAND_COLOR}`, borderRadius: '0 16px 16px 0' }}>
+          <p style={{ fontSize: '1.25rem', fontWeight: 800, margin: '16px 0', color: BRAND_COLOR }}>
+            &quot;Solar for Schools Initiative&quot;
+          </p>
+
+          <div
+            style={{
+              margin: '32px 0',
+              padding: '24px',
+              background: '#fdf2f2',
+              borderLeft: `6px solid ${BRAND_COLOR}`,
+              borderRadius: '0 16px 16px 0',
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
               <span style={{ color: '#64748b' }}>Amount</span>
               <span style={{ fontWeight: 800 }}>₦25,000.00</span>
@@ -143,14 +220,35 @@ export default function PublicEmailPreviewPage() {
           </div>
 
           <div style={{ marginBottom: '32px' }}>
-            <p style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>CAMPAIGN REACH</p>
-            <div style={{ background: '#e2e8f0', height: '12px', borderRadius: '6px', marginBottom: '8px', overflow: 'hidden' }}>
+            <p
+              style={{
+                color: '#64748b',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                marginBottom: '8px',
+              }}
+            >
+              CAMPAIGN REACH
+            </p>
+            <div
+              style={{
+                background: '#e2e8f0',
+                height: '12px',
+                borderRadius: '6px',
+                marginBottom: '8px',
+                overflow: 'hidden',
+              }}
+            >
               <div style={{ background: BRAND_COLOR, width: '37%', height: '100%' }}></div>
             </div>
-            <p><strong>₦185,000 raised</strong> of ₦500,000 goal</p>
+            <p>
+              <strong>₦185,000 raised</strong> of ₦500,000 goal
+            </p>
           </div>
 
-          <p><strong>What to do next:</strong></p>
+          <p>
+            <strong>What to do next:</strong>
+          </p>
           <ul style={{ paddingLeft: '20px', color: '#475569', marginBottom: '32px' }}>
             <li style={{ marginBottom: '8px' }}>Share an update with your supporters</li>
             <li style={{ marginBottom: '8px' }}>Log how funds are being used</li>
@@ -159,12 +257,14 @@ export default function PublicEmailPreviewPage() {
           <div style={{ textAlign: 'center' }}>
             <button style={btnStyle}>Open creator dashboard</button>
           </div>
-          
+
           <p style={{ fontWeight: 800, color: '#0f172a', marginTop: '40px' }}>— Backr Team</p>
         </div>
       )}
-      
-      <footer style={{ marginTop: '40px', color: '#94a3b8', fontSize: '0.8rem', textAlign: 'center' }}>
+
+      <footer
+        style={{ marginTop: '40px', color: '#94a3b8', fontSize: '0.8rem', textAlign: 'center' }}
+      >
         Rendering pixel-perfect emails for <strong>Backr.app</strong> 🚀
       </footer>
     </div>

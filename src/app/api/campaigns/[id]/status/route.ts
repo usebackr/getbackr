@@ -12,7 +12,7 @@ export async function PATCH(
   try {
     const token = req.cookies.get('accessToken')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
+
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
     const { id: campaignId } = params;
@@ -39,14 +39,13 @@ export async function PATCH(
     // Update status
     await db
       .update(campaigns)
-      .set({ 
-        status: status as any, 
-        updatedAt: new Date() 
+      .set({
+        status: status as any,
+        updatedAt: new Date(),
       })
       .where(eq(campaigns.id, campaignId));
 
     return NextResponse.json({ message: `Campaign status updated to ${status}` });
-
   } catch (error: any) {
     console.error('[Campaign Status Check API Error]:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

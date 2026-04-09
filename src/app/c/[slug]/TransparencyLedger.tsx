@@ -24,9 +24,7 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
           textAlign: 'center',
         }}
       >
-        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-          No withdrawals have been made yet.
-        </p>
+        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>No withdrawals have been made yet.</p>
       </div>
     );
   }
@@ -45,34 +43,44 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '12px'
+            gap: '12px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, whiteSpace: 'nowrap' }}>
-              {new Date(log.entryDate).toLocaleDateString(undefined, { 
-                month: 'short', 
-                day: 'numeric'
+            <span
+              style={{
+                fontSize: '0.7rem',
+                color: '#94a3b8',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {new Date(log.entryDate).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
               })}
               <span style={{ marginLeft: '4px', opacity: 0.7 }}>
-                {new Date(log.entryDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                {new Date(log.entryDate).toLocaleTimeString(undefined, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </span>
             </span>
-            <p 
-              style={{ 
-                color: '#475569', 
-                fontSize: '0.8rem', 
+            <p
+              style={{
+                color: '#475569',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 margin: 0,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}
             >
               {log.description}
             </p>
           </div>
-          <span 
+          <span
             style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444', whiteSpace: 'nowrap' }}
           >
             -₦{Number(log.amount).toLocaleString()}
@@ -93,7 +101,7 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
             fontSize: '0.8rem',
             fontWeight: 700,
             cursor: 'pointer',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
           }}
           className="btn-hover-light"
         >

@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { emailContacts } from '@/db/schema/emailContacts';
 import { requirePremium } from '@/lib/middleware/premiumGuard';
-import { eq, and } from 'drizzle-orm';
 
 /**
  * Minimal CSV parser — handles quoted fields and optional header row.

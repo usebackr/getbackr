@@ -54,7 +54,9 @@ export async function expireSubscriptions() {
   const expiredGrace = await db
     .update(subscriptions)
     .set({ status: 'expired' })
-    .where(sql`${subscriptions.status} = 'grace' AND ${subscriptions.currentPeriodEnd} < ${graceCutoff}`)
+    .where(
+      sql`${subscriptions.status} = 'grace' AND ${subscriptions.currentPeriodEnd} < ${graceCutoff}`,
+    )
     .returning({ id: subscriptions.id, creatorId: subscriptions.creatorId });
 
   const allExpired = [...expiredActive, ...expiredGrace];
@@ -75,7 +77,7 @@ export async function expireSubscriptions() {
  */
 export async function runMaintenance() {
   console.log('[Maintenance] Starting platform cleanup...');
-  
+
   const campaignsResult = await closeExpiredCampaigns();
   const boostsResult = await expireBoosts();
   const subsResult = await expireSubscriptions();
@@ -83,12 +85,12 @@ export async function runMaintenance() {
   console.log('[Maintenance] Finished:', {
     campaignsClosed: campaignsResult.closedCount,
     boostsExpired: boostsResult.expiredCount,
-    subsExpired: subsResult.expiredCount
+    subsExpired: subsResult.expiredCount,
   });
 
   return {
     campaigns: campaignsResult,
     boosts: boostsResult,
-    subscriptions: subsResult
+    subscriptions: subsResult,
   };
 }

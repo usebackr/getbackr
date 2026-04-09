@@ -9,7 +9,7 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webPush.setVapidDetails(
     process.env.VAPID_SUBJECT || 'mailto:support@findbackr.com.ng',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
+    process.env.VAPID_PRIVATE_KEY,
   );
 } else {
   console.warn('[Web Push] VAPID keys are missing. Push notifications will not be sent.');
@@ -17,20 +17,26 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 
 /**
  * Creates a notification in the database and pushes it to all registered user's devices.
- * 
+ *
  * @param userId - The user receiving the notification
  * @param title - The title of the alert
  * @param message - The body description
- * @param type - Determines the icon/action 
+ * @param type - Determines the icon/action
  * @param link - Optional URL to redirect to when clicked
  */
 export async function sendAppNotification(
   userId: string,
   title: string,
   message: string,
-  type: 'donation_received' | 'campaign_approved' | 'campaign_rejected' | 'payout_processed' | 'kyc_status_updated' | 'system_alert' = 'system_alert',
+  type:
+    | 'donation_received'
+    | 'campaign_approved'
+    | 'campaign_rejected'
+    | 'payout_processed'
+    | 'kyc_status_updated'
+    | 'system_alert' = 'system_alert',
   link: string = '/dashboard/notifications',
-  metadata?: string
+  metadata?: string,
 ) {
   try {
     // 1. Insert into the database (in-app view)

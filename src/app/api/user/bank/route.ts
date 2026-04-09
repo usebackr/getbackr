@@ -49,25 +49,31 @@ export async function POST(req: NextRequest) {
 
     if (existing.length > 0) {
       if (!otp) {
-        return NextResponse.json({ error: 'OTP is required to change an existing bank account', requireOtp: true }, { status: 403 });
+        return NextResponse.json(
+          { error: 'OTP is required to change an existing bank account', requireOtp: true },
+          { status: 403 },
+        );
       }
 
       // Verify OTP
       const { authOtps } = await import('@/db/schema/authOtps');
       const { and, gt } = await import('drizzle-orm');
       const bcrypt = await import('bcrypt');
-      
+
       const otpRecord = await db.query.authOtps.findFirst({
         where: and(
           eq(authOtps.userId, userId),
           eq(authOtps.purpose, 'bank_change'),
           eq(authOtps.used, false),
-          gt(authOtps.expiresAt, new Date())
-        )
+          gt(authOtps.expiresAt, new Date()),
+        ),
       });
 
       if (!otpRecord) {
-        return NextResponse.json({ error: 'Invalid or expired OTP. Please request a new one.' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid or expired OTP. Please request a new one.' },
+          { status: 400 },
+        );
       }
 
       const isValid = await bcrypt.compare(otp, otpRecord.otpHash);

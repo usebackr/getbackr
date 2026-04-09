@@ -61,10 +61,21 @@ export default async function CampaignPage({ params }: PageProps) {
   } catch (error) {
     console.error('Error loading campaign:', error);
     return (
-      <main style={{ maxWidth: 800, margin: '4rem auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
+      <main
+        style={{
+          maxWidth: 800,
+          margin: '4rem auto',
+          textAlign: 'center',
+          fontFamily: 'sans-serif',
+        }}
+      >
         <h1 style={{ color: '#1a2744' }}>Campaign Unavailable</h1>
-        <p style={{ color: '#666' }}>We're having trouble loading this campaign right now. Please try again later.</p>
-        <a href="/" style={{ color: '#f5a623', fontWeight: 600 }}>Back to Home</a>
+        <p style={{ color: '#666' }}>
+          We&apos;re having trouble loading this campaign right now. Please try again later.
+        </p>
+        <a href="/" style={{ color: '#f5a623', fontWeight: 600 }}>
+          Back to Home
+        </a>
       </main>
     );
   }

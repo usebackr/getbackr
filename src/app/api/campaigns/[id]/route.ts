@@ -102,10 +102,14 @@ export async function PUT(
 
   // goalAmount and endDate are only editable if it's a draft
   // If not a draft, we only allow them if the values haven't actually changed
-  const hasGoalChanged = goalAmount !== undefined && Number(goalAmount) !== Number(campaign.goalAmount);
-  
-  const currentEndDateStr = campaign.endDate ? new Date(campaign.endDate).toISOString().split('T')[0] : '';
-  const incomingEndDateStr = endDate !== undefined ? new Date(endDate).toISOString().split('T')[0] : currentEndDateStr;
+  const hasGoalChanged =
+    goalAmount !== undefined && Number(goalAmount) !== Number(campaign.goalAmount);
+
+  const currentEndDateStr = campaign.endDate
+    ? new Date(campaign.endDate).toISOString().split('T')[0]
+    : '';
+  const incomingEndDateStr =
+    endDate !== undefined ? new Date(endDate).toISOString().split('T')[0] : currentEndDateStr;
   const hasEndDateChanged = endDate !== undefined && incomingEndDateStr !== currentEndDateStr;
 
   if (!isDraft && (hasGoalChanged || hasEndDateChanged)) {
@@ -180,7 +184,7 @@ export async function DELETE(
       // project_wallets refers to campaigns.id
       const { projectWallets } = await import('@/db/schema/projectWallets');
       await tx.delete(projectWallets).where(eq(projectWallets.campaignId, id));
-      
+
       // Then delete the campaign itself
       await tx.delete(campaigns).where(eq(campaigns.id, id));
     });

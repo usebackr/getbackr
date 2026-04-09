@@ -65,26 +65,26 @@ export async function POST(req: NextRequest) {
 
     // Send welcome and verification emails (awaited for Vercel reliability)
     try {
-      const { generateVerificationToken, storeVerificationToken } = await import('@/lib/auth/tokens');
+      const { generateVerificationToken, storeVerificationToken } =
+        await import('@/lib/auth/tokens');
       const { sendEmail } = await import('@/workers/emailWorkers');
-      
+
       const verificationToken = generateVerificationToken();
       await storeVerificationToken(verificationToken, user.id);
 
       // We send both or a combined one. For now, let's send verification as primary.
-      await sendEmail({ 
-        type: 'verification_email', 
-        email: user.email, 
-        token: verificationToken 
+      await sendEmail({
+        type: 'verification_email',
+        email: user.email,
+        token: verificationToken,
       });
 
       // Also send welcome email
-      await sendEmail({ 
-        type: 'welcome_email', 
-        email: user.email, 
-        displayName 
+      await sendEmail({
+        type: 'welcome_email',
+        email: user.email,
+        displayName,
       });
-      
     } catch (emailErr) {
       console.error('[Register] Email flow failed:', emailErr);
     }

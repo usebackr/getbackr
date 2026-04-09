@@ -63,10 +63,10 @@ export async function POST(req: NextRequest) {
     return await db.transaction(async (tx) => {
       // 1. Fetch wallet associated with this specific campaign
       const [campaignWallet] = await tx
-        .select({ 
+        .select({
           walletId: projectWallets.id,
           recordedBalance: projectWallets.balance,
-          status: campaigns.status
+          status: campaigns.status,
         })
         .from(projectWallets)
         .innerJoin(campaigns, eq(campaigns.id, projectWallets.campaignId))
@@ -82,7 +82,10 @@ export async function POST(req: NextRequest) {
 
       if (campaignWallet.status !== 'closed') {
         return NextResponse.json(
-          { error: 'Withdrawals are only allowed from projects that have been "Ended". Please end the project before withdrawing.' },
+          {
+            error:
+              'Withdrawals are only allowed from projects that have been "Ended". Please end the project before withdrawing.',
+          },
           { status: 403 },
         );
       }
@@ -94,7 +97,9 @@ export async function POST(req: NextRequest) {
           totalPlatformFee: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
         })
         .from(contributions)
-        .where(and(eq(contributions.campaignId, campaignId), eq(contributions.status, 'confirmed')));
+        .where(
+          and(eq(contributions.campaignId, campaignId), eq(contributions.status, 'confirmed')),
+        );
 
       const projectRaised = Number(contribStats?.totalAmount || 0);
       const projectFees = Number(contribStats?.totalPlatformFee || 0);
@@ -112,36 +117,45 @@ export async function POST(req: NextRequest) {
         );
 
       const projectWithdrawn = Number(withdrawalStats?.totalWithdrawn || 0);
-      
+
       // We calculate from ledger but also respect the recorded 'balance' column
       const ledgerBalance = Math.max(0, projectRaised - projectFees - projectWithdrawn);
       const walletBalance = Number(campaignWallet.recordedBalance || 0);
-      
+
       // Use the more conservative of the two for safety
       const availableBalance = Math.min(ledgerBalance, walletBalance);
 
       // 3. Precise Validations
       if (projectRaised === 0 || availableBalance <= 0) {
-        return NextResponse.json({ error: 'This project wallet is currently empty.' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'This project wallet is currently empty.' },
+          { status: 400 },
+        );
       }
 
       if (withdrawAmount > availableBalance) {
-        return NextResponse.json({ 
-          error: `Insufficient funds in this project's wallet. (Available: ₦${availableBalance.toLocaleString()})` 
-        }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: `Insufficient funds in this project's wallet. (Available: ₦${availableBalance.toLocaleString()})`,
+          },
+          { status: 400 },
+        );
       }
 
       // 4. Securely record the withdrawal request with snapshots of banking info
-      const [withdrawal] = await tx.insert(withdrawals).values({
-        walletId: campaignWallet.walletId,
-        creatorId: userId,
-        amount: withdrawAmount.toString(),
-        status: 'processing',
-        reason,
-        accountNumber: bankAccount.accountNumber,
-        bankCode: bankAccount.bankCode,
-        accountName: bankAccount.accountName,
-      }).returning({ id: withdrawals.id });
+      const [withdrawal] = await tx
+        .insert(withdrawals)
+        .values({
+          walletId: campaignWallet.walletId,
+          creatorId: userId,
+          amount: withdrawAmount.toString(),
+          status: 'processing',
+          reason,
+          accountNumber: bankAccount.accountNumber,
+          bankCode: bankAccount.bankCode,
+          accountName: bankAccount.accountName,
+        })
+        .returning({ id: withdrawals.id });
 
       // 5. Inject into Transparency Ledger (spendingLogs)
       await tx.insert(spendingLogs).values({
@@ -167,10 +181,14 @@ export async function POST(req: NextRequest) {
     });
 
     // Provide a slightly more helpful error if it's a known database issue
-    if (error.code === '42703') { // Undefined column
-       return NextResponse.json({ 
-         error: 'Database schema mismatch. Please contact admin to run migrations.' 
-       }, { status: 500 });
+    if (error.code === '42703') {
+      // Undefined column
+      return NextResponse.json(
+        {
+          error: 'Database schema mismatch. Please contact admin to run migrations.',
+        },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ error: 'Server error processing withdrawal' }, { status: 500 });

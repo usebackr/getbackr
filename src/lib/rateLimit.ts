@@ -11,14 +11,18 @@ interface RateLimitInfo {
 
 const store = new Map<string, RateLimitInfo>();
 
-export function rateLimit(identifier: string, limit: number, windowMs: number): { success: boolean; limit: number; remaining: number; resetAt: number } {
+export function rateLimit(
+  identifier: string,
+  limit: number,
+  windowMs: number,
+): { success: boolean; limit: number; remaining: number; resetAt: number } {
   const now = Date.now();
   const record = store.get(identifier);
 
   // If entry exists and is not expired
   if (record && record.resetAt > now) {
     record.count += 1;
-    
+
     // Cleanup old keys occasionally to prevent memory leaks in long-running processes
     if (store.size > 10000) {
       for (const [key, val] of store.entries()) {
@@ -30,7 +34,7 @@ export function rateLimit(identifier: string, limit: number, windowMs: number): 
       success: record.count <= limit,
       limit,
       remaining: Math.max(0, limit - record.count),
-      resetAt: record.resetAt
+      resetAt: record.resetAt,
     };
   }
 
@@ -42,6 +46,6 @@ export function rateLimit(identifier: string, limit: number, windowMs: number): 
     success: true,
     limit,
     remaining: limit - 1,
-    resetAt
+    resetAt,
   };
 }

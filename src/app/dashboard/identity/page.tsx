@@ -50,7 +50,12 @@ export default function IdentityPage() {
   }, []);
 
   const handleReset = async () => {
-    if (!confirm('Are you sure you want to reset your verification? This will allow you to re-upload documents.')) return;
+    if (
+      !confirm(
+        'Are you sure you want to reset your verification? This will allow you to re-upload documents.',
+      )
+    )
+      return;
     setLoading(true);
     try {
       await fetch('/api/user/kyc/reset', { method: 'POST' });
@@ -70,7 +75,9 @@ export default function IdentityPage() {
     if (!file) return;
 
     if (file.size > MAX_SIZE_BYTES) {
-      setError(`${name === 'idDoc' ? 'ID document' : 'Selfie'} must be under ${MAX_SIZE_MB}MB. Please use a smaller or compressed image.`);
+      setError(
+        `${name === 'idDoc' ? 'ID document' : 'Selfie'} must be under ${MAX_SIZE_MB}MB. Please use a smaller or compressed image.`,
+      );
       e.target.value = '';
       return;
     }
@@ -88,7 +95,7 @@ export default function IdentityPage() {
 
     setSubmitting(true);
     setError('');
-    
+
     try {
       const fd = new FormData();
       fd.append('legalName', formData.legalName);
@@ -118,29 +125,58 @@ export default function IdentityPage() {
     }
   };
 
-  if (loading) return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ fontWeight: 600, color: '#64748b' }}>Loading Profile...</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        style={{
+          display: 'flex',
+          minHeight: '100vh',
+          background: '#f8fafc',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <p style={{ fontWeight: 600, color: '#64748b' }}>Loading Profile...</p>
+      </div>
+    );
 
-  const shouldShowForm = status === 'unsubmitted' || status === 'rejected' || (status === 'pending' && !hasSubmission) || showIdForm;
+  const shouldShowForm =
+    status === 'unsubmitted' ||
+    status === 'rejected' ||
+    (status === 'pending' && !hasSubmission) ||
+    showIdForm;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
-        <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <header
+          style={{
+            marginBottom: '40px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}>Identity Verification</h1>
+            <h1
+              style={{
+                fontSize: '2.5rem',
+                marginBottom: '8px',
+                fontWeight: 900,
+                fontFamily: 'Outfit, sans-serif',
+              }}
+            >
+              Identity Verification
+            </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
               Verify your identity to unlock withdrawals and premium campaign features.
             </p>
           </div>
           {(status === 'pending' || status === 'rejected') && !shouldShowForm && (
-            <button 
+            <button
               onClick={() => setShowIdForm(true)}
-              className="btn-outline" 
+              className="btn-outline"
               style={{ padding: '10px 20px', fontSize: '0.9rem' }}
             >
               Re-upload Documents
@@ -151,41 +187,157 @@ export default function IdentityPage() {
         <div style={{ maxWidth: '800px' }}>
           {!shouldShowForm && status === 'pending' ? (
             <div className="dash-card" style={{ textAlign: 'center', padding: '60px' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '40px',
+                  background: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                }}
+              >
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#64748b"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
               </div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>Verification Pending</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6, fontWeight: 500 }}>
-                We are currently reviewing your documents. This usually takes 24-48 hours. 
-                You'll receive an email as soon as your status is updated!
+              <h2
+                style={{
+                  fontSize: '1.8rem',
+                  marginBottom: '16px',
+                  fontWeight: 800,
+                  fontFamily: 'Outfit, sans-serif',
+                }}
+              >
+                Verification Pending
+              </h2>
+              <p
+                style={{
+                  color: 'var(--text-secondary)',
+                  maxWidth: '400px',
+                  margin: '0 auto',
+                  lineHeight: 1.6,
+                  fontWeight: 500,
+                }}
+              >
+                We are currently reviewing your documents. This usually takes 24-48 hours.
+                You&apos;ll receive an email as soon as your status is updated!
               </p>
-              <div style={{ marginTop: '24px', display: 'inline-block', padding: '8px 16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', color: '#92400e', fontSize: '0.85rem', fontWeight: 600 }}>
+              <div
+                style={{
+                  marginTop: '24px',
+                  display: 'inline-block',
+                  padding: '8px 16px',
+                  background: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  borderRadius: '12px',
+                  color: '#92400e',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                }}
+              >
                 Status: Under Review
               </div>
-              
-              <div style={{ marginTop: '32px', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
-                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>Stuck? If you believe there was an error in your submission, you can reset it.</p>
-                <button 
+
+              <div
+                style={{ marginTop: '32px', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}
+              >
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>
+                  Stuck? If you believe there was an error in your submission, you can reset it.
+                </p>
+                <button
                   onClick={handleReset}
-                  style={{ background: 'none', border: 'none', color: '#6366f1', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#6366f1',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    textDecoration: 'underline',
+                  }}
                 >
                   Reset & Re-upload
                 </button>
               </div>
             </div>
           ) : !shouldShowForm && status === 'verified' ? (
-            <div className="dash-card" style={{ textAlign: 'center', padding: '60px', border: '2px solid #10b981' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <div
+              className="dash-card"
+              style={{ textAlign: 'center', padding: '60px', border: '2px solid #10b981' }}
+            >
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '40px',
+                  background: '#ecfdf5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                }}
+              >
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               </div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#10b981', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>Account Verified</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto', lineHeight: 1.6, fontWeight: 500 }}>
-                Your identity has been confirmed. You now have full access to all withdrawal features 
-                and your campaigns will now display a <b>Verified</b> badge.
+              <h2
+                style={{
+                  fontSize: '1.8rem',
+                  marginBottom: '16px',
+                  color: '#10b981',
+                  fontWeight: 800,
+                  fontFamily: 'Outfit, sans-serif',
+                }}
+              >
+                Account Verified
+              </h2>
+              <p
+                style={{
+                  color: 'var(--text-secondary)',
+                  maxWidth: '440px',
+                  margin: '0 auto',
+                  lineHeight: 1.6,
+                  fontWeight: 500,
+                }}
+              >
+                Your identity has been confirmed. You now have full access to all withdrawal
+                features and your campaigns will now display a <b>Verified</b> badge.
               </p>
-              <button 
+              <button
                 onClick={() => router.push('/dashboard/wallet')}
-                style={{ marginTop: '32px', padding: '12px 32px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+                style={{
+                  marginTop: '32px',
+                  padding: '12px 32px',
+                  background: '#10b981',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
               >
                 Go to Wallet
               </button>
@@ -193,150 +345,498 @@ export default function IdentityPage() {
           ) : (
             <div className="dash-card" style={{ padding: '0', overflow: 'hidden' }}>
               <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9' }}>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '4px', fontWeight: 800 }}>Upload Documents</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>All information is handled securely and encrypted.</p>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '4px', fontWeight: 800 }}>
+                  Upload Documents
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                  All information is handled securely and encrypted.
+                </p>
               </div>
 
-              <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div
+                style={{
+                  padding: '32px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '24px',
+                }}
+              >
                 <div style={{ gridColumn: '1 / -1' }}>
-                   {error && <div style={{ padding: '12px', background: '#fef2f2', color: '#ef4444', borderRadius: '8px', marginBottom: '16px', fontWeight: 600 }}>{error}</div>}
-                   {success && <div style={{ padding: '12px', background: '#ecfdf5', color: '#10b981', borderRadius: '8px', marginBottom: '16px', fontWeight: 600 }}>{success}</div>}
-                   
-                   {status === 'rejected' && rejectionReason && (
-                     <div style={{ padding: '16px', background: '#fff1f2', border: '1px solid #fda4af', borderRadius: '12px', marginBottom: '24px' }}>
-                       <h4 style={{ margin: '0 0 4px', fontSize: '0.85rem', fontWeight: 800, color: '#be123c', textTransform: 'uppercase' }}>Verification Update: Rejected</h4>
-                       <p style={{ margin: 0, fontSize: '0.95rem', color: '#9f1239', fontWeight: 500 }}>Reason: {rejectionReason}</p>
-                       <p style={{ margin: '8px 0 0', fontSize: '0.85rem', color: '#e11d48', opacity: 0.8 }}>Please re-upload clearer documents to continue.</p>
-                     </div>
-                   )}
+                  {error && (
+                    <div
+                      style={{
+                        padding: '12px',
+                        background: '#fef2f2',
+                        color: '#ef4444',
+                        borderRadius: '8px',
+                        marginBottom: '16px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {error}
+                    </div>
+                  )}
+                  {success && (
+                    <div
+                      style={{
+                        padding: '12px',
+                        background: '#ecfdf5',
+                        color: '#10b981',
+                        borderRadius: '8px',
+                        marginBottom: '16px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {success}
+                    </div>
+                  )}
+
+                  {status === 'rejected' && rejectionReason && (
+                    <div
+                      style={{
+                        padding: '16px',
+                        background: '#fff1f2',
+                        border: '1px solid #fda4af',
+                        borderRadius: '12px',
+                        marginBottom: '24px',
+                      }}
+                    >
+                      <h4
+                        style={{
+                          margin: '0 0 4px',
+                          fontSize: '0.85rem',
+                          fontWeight: 800,
+                          color: '#be123c',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Verification Update: Rejected
+                      </h4>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '0.95rem',
+                          color: '#9f1239',
+                          fontWeight: 500,
+                        }}
+                      >
+                        Reason: {rejectionReason}
+                      </p>
+                      <p
+                        style={{
+                          margin: '8px 0 0',
+                          fontSize: '0.85rem',
+                          color: '#e11d48',
+                          opacity: 0.8,
+                        }}
+                      >
+                        Please re-upload clearer documents to continue.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Full Legal Name</label>
-                  <input 
-                    type="text" 
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Full Legal Name
+                  </label>
+                  <input
+                    type="text"
                     value={formData.legalName}
                     onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
-                    placeholder="As shown on your government ID" 
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }} 
+                    placeholder="As shown on your government ID"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                    }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>ID Type</label>
-                  <select 
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    ID Type
+                  </label>
+                  <select
                     value={formData.idType}
                     onChange={(e) => setFormData({ ...formData, idType: e.target.value })}
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                    }}
                   >
                     <option value="Passport">International Passport</option>
                     <option value="NIN">NIN (Slip or Card)</option>
-                    <option value="Voters Card">Voter's Card</option>
-                    <option value="Drivers License">Driver's License</option>
+                    <option value="Voters Card">Voter&apos;s Card</option>
+                    <option value="Drivers License">Driver&apos;s License</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>ID Number</label>
-                  <input 
-                    type="text" 
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    ID Number
+                  </label>
+                  <input
+                    type="text"
                     value={formData.idNumber}
                     onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
-                    placeholder="Enter official ID Number" 
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0' }} 
+                    placeholder="Enter official ID Number"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                    }}
                   />
                 </div>
 
                 {/* Upload Areas */}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', minHeight: '40px' }}>
-                    ID Document — Front Page <br/>
-                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>(Passport, NIN, or License • max 2MB)</span>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                      minHeight: '40px',
+                    }}
+                  >
+                    ID Document — Front Page <br />
+                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>
+                      (Passport, NIN, or License • max 2MB)
+                    </span>
                   </label>
-                  <div 
+                  <div
                     onClick={() => document.getElementById('id-upload')?.click()}
-                    style={{ 
-                      flex: 1, height: '180px', border: previews.idDoc ? '2px solid #10b981' : '2px dashed #e2e8f0', borderRadius: '20px', 
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      background: previews.idDoc ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.idDoc}) center/cover no-repeat` : '#f8fafc',
-                      cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center', position: 'relative', overflow: 'hidden'
+                    style={{
+                      flex: 1,
+                      height: '180px',
+                      border: previews.idDoc ? '2px solid #10b981' : '2px dashed #e2e8f0',
+                      borderRadius: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: previews.idDoc
+                        ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.idDoc}) center/cover no-repeat`
+                        : '#f8fafc',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
                     {!previews.idDoc ? (
                       <div style={{ padding: '0 16px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to upload ID</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Clear photo of front page</div>
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#94a3b8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ marginBottom: '8px' }}
+                        >
+                          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                          <circle cx="9" cy="9" r="2" />
+                          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                        </svg>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
+                          Tap to upload ID
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>
+                          Clear photo of front page
+                        </div>
                       </div>
                     ) : (
-                      <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' }}>
-                         <div style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            Attached
-                         </div>
-                         <div style={{ background: 'rgba(255,255,255,0.9)', color: '#1e293b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                            Change
-                         </div>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '12px',
+                          right: '12px',
+                          display: 'flex',
+                          gap: '8px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            background: '#10b981',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                          }}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          Attached
+                        </div>
+                        <div
+                          style={{
+                            background: 'rgba(255,255,255,0.9)',
+                            color: '#1e293b',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
+                        >
+                          Change
+                        </div>
                       </div>
                     )}
                     {previews.idDoc && (
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '48px', height: '48px', borderRadius: '24px', background: 'rgba(16,185,129,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(16,185,129,0.4)' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '24px',
+                          background: 'rgba(16,185,129,0.9)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 8px 24px rgba(16,185,129,0.4)',
+                        }}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
                       </div>
                     )}
                   </div>
-                  <input type="file" id="id-upload" style={{ display: 'none' }} accept="image/*" onChange={(e) => handleFileChange(e, 'idDoc')} />
+                  <input
+                    type="file"
+                    id="id-upload"
+                    style={{ display: 'none' }}
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'idDoc')}
+                  />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', minHeight: '40px' }}>
-                    Selfie — Face Verification <br/>
-                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>(Face clearly visible • max 2MB)</span>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                      minHeight: '40px',
+                    }}
+                  >
+                    Selfie — Face Verification <br />
+                    <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: '0.75rem' }}>
+                      (Face clearly visible • max 2MB)
+                    </span>
                   </label>
-                  <div 
+                  <div
                     onClick={() => document.getElementById('selfie-upload')?.click()}
-                    style={{ 
-                      flex: 1, height: '180px', border: previews.selfie ? '2px solid #10b981' : '2px dashed #e2e8f0', borderRadius: '20px', 
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      background: previews.selfie ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.selfie}) center/cover no-repeat` : '#f8fafc',
-                      cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center', position: 'relative', overflow: 'hidden'
+                    style={{
+                      flex: 1,
+                      height: '180px',
+                      border: previews.selfie ? '2px solid #10b981' : '2px dashed #e2e8f0',
+                      borderRadius: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: previews.selfie
+                        ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${previews.selfie}) center/cover no-repeat`
+                        : '#f8fafc',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
                     {!previews.selfie ? (
                       <div style={{ padding: '0 16px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '8px' }}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Tap to take selfie</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Ensure your face is clearly visible</div>
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#94a3b8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ marginBottom: '8px' }}
+                        >
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
+                          Tap to take selfie
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>
+                          Ensure your face is clearly visible
+                        </div>
                       </div>
                     ) : (
-                      <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '8px' }}>
-                         <div style={{ background: '#10b981', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            Attached
-                         </div>
-                         <div style={{ background: 'rgba(255,255,255,0.9)', color: '#1e293b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                            Change
-                         </div>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '12px',
+                          right: '12px',
+                          display: 'flex',
+                          gap: '8px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            background: '#10b981',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                          }}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          Attached
+                        </div>
+                        <div
+                          style={{
+                            background: 'rgba(255,255,255,0.9)',
+                            color: '#1e293b',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
+                        >
+                          Change
+                        </div>
                       </div>
                     )}
                     {previews.selfie && (
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '48px', height: '48px', borderRadius: '24px', background: 'rgba(16,185,129,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(16,185,129,0.4)' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '24px',
+                          background: 'rgba(16,185,129,0.9)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 8px 24px rgba(16,185,129,0.4)',
+                        }}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
                       </div>
                     )}
                   </div>
-                  <input type="file" id="selfie-upload" style={{ display: 'none' }} accept="image/*" capture="user" onChange={(e) => handleFileChange(e, 'selfie')} />
+                  <input
+                    type="file"
+                    id="selfie-upload"
+                    style={{ display: 'none' }}
+                    accept="image/*"
+                    capture="user"
+                    onChange={(e) => handleFileChange(e, 'selfie')}
+                  />
                 </div>
 
                 <div style={{ gridColumn: '1 / -1', marginTop: '16px' }}>
-                   <button 
-                    disabled={submitting} 
-                    onClick={handleSubmit} 
-                    className="btn-primary" 
+                  <button
+                    disabled={submitting}
+                    onClick={handleSubmit}
+                    className="btn-primary"
                     style={{ width: '100%', padding: '16px', fontSize: '1.1rem', fontWeight: 800 }}
-                   >
-                     {submitting ? 'Submitting Documents...' : 'Submit Verification'}
-                   </button>
+                  >
+                    {submitting ? 'Submitting Documents...' : 'Submit Verification'}
+                  </button>
                 </div>
               </div>
             </div>

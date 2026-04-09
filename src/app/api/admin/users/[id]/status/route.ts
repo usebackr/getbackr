@@ -7,10 +7,7 @@ import { verifyAdminApi } from '@/lib/auth/admin';
 import { cookies } from 'next/headers';
 import { trackEvent } from '@/lib/analytics';
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = cookies().get('accessToken')?.value;
     const isAdmin = await verifyAdminApi(token);
@@ -33,9 +30,9 @@ export async function PATCH(
     await db.update(users).set(updateData).where(eq(users.id, userId));
 
     // Log the administrative action
-    await trackEvent('admin_action', userId, { 
-      action: 'user_status_update', 
-      updates: updateData 
+    await trackEvent('admin_action', userId, {
+      action: 'user_status_update',
+      updates: updateData,
     });
 
     return NextResponse.json({ message: 'User updated successfully' });

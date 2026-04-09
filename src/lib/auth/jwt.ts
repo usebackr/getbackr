@@ -60,8 +60,8 @@ export async function getRefreshTokenUserId(token: string): Promise<string | nul
       and(
         eq(refreshTokens.tokenHash, tokenHash),
         eq(refreshTokens.revoked, false),
-        gt(refreshTokens.expiresAt, now)
-      )
+        gt(refreshTokens.expiresAt, now),
+      ),
     )
     .limit(1);
 

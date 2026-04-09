@@ -34,9 +34,48 @@ export function GrowthChart() {
     fetchData();
   }, []);
 
-  if (loading) return <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>Loading analytics...</div>;
-  if (error) return <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>Error: {error}</div>;
-  if (!data || data.labels.length === 0) return <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>No data available for the last 30 days.</div>;
+  if (loading)
+    return (
+      <div
+        style={{
+          height: '300px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#64748b',
+        }}
+      >
+        Loading analytics...
+      </div>
+    );
+  if (error)
+    return (
+      <div
+        style={{
+          height: '300px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#ef4444',
+        }}
+      >
+        Error: {error}
+      </div>
+    );
+  if (!data || data.labels.length === 0)
+    return (
+      <div
+        style={{
+          height: '300px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#94a3b8',
+        }}
+      >
+        No data available for the last 30 days.
+      </div>
+    );
 
   const width = 800;
   const height = 300;
@@ -44,45 +83,69 @@ export function GrowthChart() {
   const chartWidth = width - padding * 2;
   const chartHeight = height - padding * 2;
 
-  const maxValue = Math.max(...data.datasets.flatMap(d => d.data), 10);
-  
+  const maxValue = Math.max(...data.datasets.flatMap((d) => d.data), 10);
+
   const getX = (index: number) => padding + (index / (data.labels.length - 1)) * chartWidth;
   const getY = (value: number) => height - padding - (value / maxValue) * chartHeight;
 
   return (
-    <div style={{ background: '#ffffff', padding: '32px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+    <div
+      style={{
+        background: '#ffffff',
+        padding: '32px',
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '32px',
+        }}
+      >
         <div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>Platform Growth</h3>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+            Platform Growth
+          </h3>
           <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Last 30 days of platform activity</p>
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           {data.datasets.map((ds) => (
             <div key={ds.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: ds.color }} />
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>{ds.label}</span>
+              <div
+                style={{ width: '12px', height: '12px', borderRadius: '3px', background: ds.color }}
+              />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>
+                {ds.label}
+              </span>
             </div>
           ))}
         </div>
       </div>
 
       <div style={{ position: 'relative' }}>
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ width: '100%', height: 'auto', overflow: 'visible' }}
+        >
           {/* Y-axis grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((p) => (
             <g key={p}>
-              <line 
-                x1={padding} 
-                y1={height - padding - p * chartHeight} 
-                x2={width - padding} 
-                y2={height - padding - p * chartHeight} 
-                stroke="#f1f5f9" 
-                strokeWidth="1" 
+              <line
+                x1={padding}
+                y1={height - padding - p * chartHeight}
+                x2={width - padding}
+                y2={height - padding - p * chartHeight}
+                stroke="#f1f5f9"
+                strokeWidth="1"
               />
-              <text 
-                x={padding - 10} 
-                y={height - padding - p * chartHeight + 4} 
-                textAnchor="end" 
+              <text
+                x={padding - 10}
+                y={height - padding - p * chartHeight + 4}
+                textAnchor="end"
                 style={{ fontSize: '10px', fill: '#94a3b8', fontWeight: 600 }}
               >
                 {Math.round(p * maxValue)}

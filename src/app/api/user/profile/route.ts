@@ -12,11 +12,7 @@ export async function GET(req: NextRequest) {
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
     if (user) {
       // Check if they actually have documents submitted
@@ -26,13 +22,13 @@ export async function GET(req: NextRequest) {
         .from(kycProfiles)
         .where(eq(kycProfiles.userId, userId))
         .limit(1);
-      
-      return NextResponse.json({ 
-        user: { 
-          ...user, 
+
+      return NextResponse.json({
+        user: {
+          ...user,
           // It's ONLY a valid submission if both document and selfie exist
-          hasKycSubmission: !!(profile && profile.doc && profile.selfie) 
-        } 
+          hasKycSubmission: !!(profile && profile.doc && profile.selfie),
+        },
       });
     }
 
@@ -54,14 +50,14 @@ export async function PATCH(req: NextRequest) {
 
     await db
       .update(users)
-      .set({ 
-        displayName, 
-        bio, 
-        category, 
-        username, 
-        avatarUrl, 
+      .set({
+        displayName,
+        bio,
+        category,
+        username,
+        avatarUrl,
         socialLinks,
-        updatedAt: new Date() 
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
 

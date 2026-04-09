@@ -35,20 +35,30 @@ const Icons = {
     </svg>
   ),
   Trash: () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
     </svg>
   ),
 };
 
-const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: () => void }) => {
+const BackersModal = ({ campaignId, onClose }: { campaignId: string; onClose: () => void }) => {
   const [backers, setBackers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     fetch(`/api/campaigns/${campaignId}/backers`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setBackers(data.backers || []);
         setLoading(false);
       })
@@ -58,22 +68,22 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
   const handleDownloadCSV = () => {
     if (backers.length === 0) return;
     const headers = ['Name', 'Email', 'Amount', 'Currency', 'Date', 'Anonymous', 'Source'];
-    const rows = backers.map(b => [
+    const rows = backers.map((b) => [
       b.backerName || 'Guest Contributor',
       b.backerEmail,
       b.amount,
       b.currency,
       new Date(b.createdAt).toLocaleDateString(),
       b.anonymous ? 'Yes' : 'No',
-      b.referralSource || 'Direct'
+      b.referralSource || 'Direct',
     ]);
 
-    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const csvContent = [headers, ...rows].map((e) => e.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `backers_${campaignId}.csv`);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `backers_${campaignId}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -81,37 +91,84 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)',
-      zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
-    }}>
-      <div style={{
-        background: '#fff', width: '100%', maxWidth: '800px', borderRadius: '32px',
-        maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-      }}>
-        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(15, 23, 42, 0.8)',
+        backdropFilter: 'blur(8px)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          background: '#fff',
+          width: '100%',
+          maxWidth: '800px',
+          borderRadius: '32px',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <div
+          style={{
+            padding: '32px',
+            borderBottom: '1px solid #f1f5f9',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Backer List</h2>
-            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>{backers.length} people supported this project</p>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+              {backers.length} people supported this project
+            </p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             {backers.length > 0 && (
-              <button 
+              <button
                 onClick={handleDownloadCSV}
                 style={{
-                  padding: '10px 20px', borderRadius: '14px', border: '1px solid #e2e8f0',
-                  background: '#fff', color: '#0f172a', fontWeight: 700, fontSize: '0.85rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
+                  padding: '10px 20px',
+                  borderRadius: '14px',
+                  border: '1px solid #e2e8f0',
+                  background: '#fff',
+                  color: '#0f172a',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                 }}
               >
                 📥 Export CSV
               </button>
             )}
-            <button onClick={onClose} style={{
-              width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '20px',
+                border: 'none',
+                background: '#f1f5f9',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               ✕
             </button>
           </div>
@@ -121,11 +178,21 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
           {loading ? (
             <div style={{ textAlign: 'center', padding: '60px' }}>Loading backers...</div>
           ) : backers.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>No backers yet.</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+              No backers yet.
+            </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
               <thead>
-                <tr style={{ textAlign: 'left', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <tr
+                  style={{
+                    textAlign: 'left',
+                    fontSize: '0.75rem',
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
                   <th style={{ padding: '12px' }}>Name</th>
                   <th style={{ padding: '12px' }}>Email</th>
                   <th style={{ padding: '12px' }}>Amount</th>
@@ -135,17 +202,44 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
               </thead>
               <tbody>
                 {backers.map((b: any) => (
-                  <tr key={b.id} style={{ background: '#f8fafc', borderRadius: '12px', transition: 'transform 0.2s' }}>
-                    <td style={{ padding: '16px 12px', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px' }}>
+                  <tr
+                    key={b.id}
+                    style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      transition: 'transform 0.2s',
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: '16px 12px',
+                        borderTopLeftRadius: '12px',
+                        borderBottomLeftRadius: '12px',
+                      }}
+                    >
                       <p style={{ fontWeight: 800, color: '#0f172a', margin: 0 }}>
                         {b.backerName || 'Guest'}
                         {b.anonymous && (
-                          <span style={{ marginLeft: '8px', fontSize: '0.65rem', background: '#fff', padding: '2px 6px', borderRadius: '8px', color: '#64748b', border: '1px solid #e2e8f0' }}>Anon</span>
+                          <span
+                            style={{
+                              marginLeft: '8px',
+                              fontSize: '0.65rem',
+                              background: '#fff',
+                              padding: '2px 6px',
+                              borderRadius: '8px',
+                              color: '#64748b',
+                              border: '1px solid #e2e8f0',
+                            }}
+                          >
+                            Anon
+                          </span>
                         )}
                       </p>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
-                      <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>{b.backerEmail}</p>
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
+                        {b.backerEmail}
+                      </p>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
                       <p style={{ fontWeight: 800, color: 'var(--accent-primary)', margin: 0 }}>
@@ -153,12 +247,22 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
                       </p>
                     </td>
                     <td style={{ padding: '16px 12px' }}>
-                      <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0, fontWeight: 700 }}>
+                      <p
+                        style={{ fontSize: '0.8rem', color: '#475569', margin: 0, fontWeight: 700 }}
+                      >
                         {b.referralSource || 'Direct'}
                       </p>
                     </td>
-                    <td style={{ padding: '16px 12px', borderTopRightRadius: '12px', borderBottomRightRadius: '12px' }}>
-                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>{new Date(b.createdAt).toLocaleDateString()}</p>
+                    <td
+                      style={{
+                        padding: '16px 12px',
+                        borderTopRightRadius: '12px',
+                        borderBottomRightRadius: '12px',
+                      }}
+                    >
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>
+                        {new Date(b.createdAt).toLocaleDateString()}
+                      </p>
                     </td>
                   </tr>
                 ))}
@@ -171,7 +275,7 @@ const BackersModal = ({ campaignId, onClose }: { campaignId: string, onClose: ()
   );
 };
 
-const UpdateModal = ({ campaignId, onClose }: { campaignId: string, onClose: () => void }) => {
+const UpdateModal = ({ campaignId, onClose }: { campaignId: string; onClose: () => void }) => {
   const [title, setTitle] = React.useState('');
   const [body, setBody] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -205,29 +309,70 @@ const UpdateModal = ({ campaignId, onClose }: { campaignId: string, onClose: () 
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)',
-      zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
-    }}>
-      <div style={{
-        background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '32px',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-      }}>
-        <div style={{ padding: '32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(15, 23, 42, 0.8)',
+        backdropFilter: 'blur(8px)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          background: '#fff',
+          width: '100%',
+          maxWidth: '600px',
+          borderRadius: '32px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <div
+          style={{
+            padding: '32px',
+            borderBottom: '1px solid #f1f5f9',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>Post Project Update</h2>
-            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Notify your backers about milestones or news</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>
+              Post Project Update
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+              Notify your backers about milestones or news
+            </p>
           </div>
-          <button onClick={onClose} style={{
-            width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#f1f5f9',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '20px',
+              border: 'none',
+              background: '#f1f5f9',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}
+        >
           {success ? (
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚀</div>
@@ -237,46 +382,91 @@ const UpdateModal = ({ campaignId, onClose }: { campaignId: string, onClose: () 
           ) : (
             <>
               {error && (
-                <div style={{ padding: '12px 16px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', color: '#dc2626', fontSize: '0.85rem' }}>
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    background: '#fef2f2',
+                    border: '1px solid #fee2e2',
+                    borderRadius: '12px',
+                    color: '#dc2626',
+                    fontSize: '0.85rem',
+                  }}
+                >
                   {error}
                 </div>
               )}
-              
+
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>Update Title</label>
-                <input 
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}
+                >
+                  Update Title
+                </label>
+                <input
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. We hit our first milestone!"
                   style={{
-                    width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0',
-                    fontSize: '1rem', outline: 'none'
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '1rem',
+                    outline: 'none',
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>Content</label>
-                <textarea 
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}
+                >
+                  Content
+                </label>
+                <textarea
                   required
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder="Share the details with your supporters..."
                   style={{
-                    width: '100%', height: '200px', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0',
-                    fontSize: '1rem', outline: 'none', resize: 'none', fontFamily: 'inherit'
+                    width: '100%',
+                    height: '200px',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    resize: 'none',
+                    fontFamily: 'inherit',
                   }}
                 />
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={loading}
                 className="btn-primary"
-                style={{ 
-                  padding: '16px', borderRadius: '16px', fontWeight: 800, fontSize: '1rem',
-                  opacity: loading ? 0.7 : 1
+                style={{
+                  padding: '16px',
+                  borderRadius: '16px',
+                  fontWeight: 800,
+                  fontSize: '1rem',
+                  opacity: loading ? 0.7 : 1,
                 }}
               >
                 {loading ? 'Posting...' : 'Post Update & Notify Backers'}
@@ -288,7 +478,6 @@ const UpdateModal = ({ campaignId, onClose }: { campaignId: string, onClose: () 
     </div>
   );
 };
-
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -306,8 +495,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
   const [hasBank, setHasBank] = React.useState(false);
   const [showBankError, setShowBankError] = React.useState(false);
-  const [selectedCampaignForBackers, setSelectedCampaignForBackers] = React.useState<string | null>(null);
-  const [selectedCampaignForUpdate, setSelectedCampaignForUpdate] = React.useState<string | null>(null);
+  const [selectedCampaignForBackers, setSelectedCampaignForBackers] = React.useState<string | null>(
+    null,
+  );
+  const [selectedCampaignForUpdate, setSelectedCampaignForUpdate] = React.useState<string | null>(
+    null,
+  );
   const [user, setUser] = React.useState<any>(null);
 
   const fetchStatsAndBank = async (currentFilter: string) => {
@@ -321,7 +514,12 @@ export default function DashboardPage() {
       ]);
 
       // Check for session expiry (401 Unauthorized)
-      if (statsRes.status === 401 || bankRes.status === 401 || campaignsRes.status === 401 || userRes.status === 401) {
+      if (
+        statsRes.status === 401 ||
+        bankRes.status === 401 ||
+        campaignsRes.status === 401 ||
+        userRes.status === 401
+      ) {
         console.warn('[Dashboard] Session expired');
         router.push('/login?error=session_expired');
         return;
@@ -331,12 +529,12 @@ export default function DashboardPage() {
         const statsData = await statsRes.json();
         setStats(statsData);
       }
-      
+
       if (bankRes.ok) {
         const bankData = await bankRes.json();
         setHasBank(!!bankData.account);
       }
-      
+
       if (campaignsRes.ok) {
         const campaignsData = await campaignsRes.json();
         if (campaignsData.campaigns) setCampaigns(campaignsData.campaigns);
@@ -354,7 +552,9 @@ export default function DashboardPage() {
   };
 
   const handleDeleteDraft = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+    if (
+      !window.confirm('Are you sure you want to delete this draft? This action cannot be undone.')
+    ) {
       return;
     }
 
@@ -374,7 +574,11 @@ export default function DashboardPage() {
   };
 
   const handleEndCampaign = async (id: string) => {
-    if (!window.confirm('Are you sure you want to end this project? It will be moved to "Completed" and will no longer accept donations.')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to end this project? It will be moved to "Completed" and will no longer accept donations.',
+      )
+    ) {
       return;
     }
 
@@ -436,16 +640,16 @@ export default function DashboardPage() {
       <Sidebar />
 
       {selectedCampaignForBackers && (
-        <BackersModal 
-          campaignId={selectedCampaignForBackers} 
-          onClose={() => setSelectedCampaignForBackers(null)} 
+        <BackersModal
+          campaignId={selectedCampaignForBackers}
+          onClose={() => setSelectedCampaignForBackers(null)}
         />
       )}
 
       {selectedCampaignForUpdate && (
-        <UpdateModal 
-          campaignId={selectedCampaignForUpdate} 
-          onClose={() => setSelectedCampaignForUpdate(null)} 
+        <UpdateModal
+          campaignId={selectedCampaignForUpdate}
+          onClose={() => setSelectedCampaignForUpdate(null)}
         />
       )}
 
@@ -507,14 +711,38 @@ export default function DashboardPage() {
           }}
         >
           <div style={{ flex: '1 1 300px' }}>
-            <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', marginBottom: '4px', fontWeight: 800 }}>My Campaigns</h1>
+            <h1
+              style={{
+                fontSize: 'clamp(1.8rem, 5vw, 2.5rem)',
+                marginBottom: '4px',
+                fontWeight: 800,
+              }}
+            >
+              My Campaigns
+            </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               Manage your creative ventures and transparency logs
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }} className="dash-header-actions">
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: '1 1 140px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              flexWrap: 'wrap',
+              width: '100%',
+              maxWidth: 'max-content',
+            }}
+            className="dash-header-actions"
+          >
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                flex: '1 1 140px',
+              }}
+            >
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
@@ -546,7 +774,7 @@ export default function DashboardPage() {
                 <Icons.Filter />
               </div>
             </div>
-            
+
             <button
               onClick={() => router.push('/dashboard/campaigns/create')}
               className="btn-primary"
@@ -587,13 +815,9 @@ export default function DashboardPage() {
         </section>
 
         {user && <VerificationBanner user={user} />}
-        
+
         {user && (
-          <OnboardingChecklist 
-            user={user} 
-            hasCampaigns={campaigns.length > 0} 
-            hasBank={hasBank} 
-          />
+          <OnboardingChecklist user={user} hasCampaigns={campaigns.length > 0} hasBank={hasBank} />
         )}
 
         {campaigns.length === 0 && !loading ? (
@@ -636,8 +860,8 @@ export default function DashboardPage() {
                 lineHeight: 1.6,
               }}
             >
-              You haven't initiated any campaigns yet. Start your journey by creating a campaign to
-              build trust and raise funds for your creative project.
+              You haven&apos;t initiated any campaigns yet. Start your journey by creating a
+              campaign to build trust and raise funds for your creative project.
             </p>
             <button
               onClick={() => router.push('/dashboard/campaigns/create')}
@@ -649,328 +873,427 @@ export default function DashboardPage() {
           </section>
         ) : (
           <section>
-              <h3
-                style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
-                  marginBottom: '20px',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {campaigns.length} Campaign{campaigns.length !== 1 ? 's' : ''}
-              </h3>
+            <h3
+              style={{
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                marginBottom: '20px',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {campaigns.length} Campaign{campaigns.length !== 1 ? 's' : ''}
+            </h3>
 
-              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginBottom: '10px' }} className="hide-scrollbar">
-                {['all', 'draft', 'active', 'completed'].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setStatusFilter(s)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '20px',
-                      border: 'none',
-                      background: statusFilter === s ? 'var(--accent-primary)' : '#f1f5f9',
-                      color: statusFilter === s ? '#fff' : '#64748b',
-                      fontWeight: 700,
-                      fontSize: '0.8rem',
-                      textTransform: 'uppercase',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'auto',
+                paddingBottom: '20px',
+                marginBottom: '10px',
+              }}
+              className="hide-scrollbar"
+            >
+              {['all', 'draft', 'active', 'completed'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    background: statusFilter === s ? 'var(--accent-primary)' : '#f1f5f9',
+                    color: statusFilter === s ? '#fff' : '#64748b',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
-                  gap: '32px',
-                }}
-              >
-                {(() => {
-                  const filtered = campaigns.filter((c) => {
-                    const status = (c.status || 'draft').toLowerCase();
-                    const filter = statusFilter.toLowerCase();
-                    if (filter === 'all') return true;
-                    if (filter === 'completed') return status === 'closed';
-                    return status === filter;
-                  });
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+                gap: '32px',
+              }}
+            >
+              {(() => {
+                const filtered = campaigns.filter((c) => {
+                  const status = (c.status || 'draft').toLowerCase();
+                  const filter = statusFilter.toLowerCase();
+                  if (filter === 'all') return true;
+                  if (filter === 'completed') return status === 'closed';
+                  return status === filter;
+                });
 
-                  if (filtered.length === 0) {
-                    return (
-                      <div style={{ 
-                        gridColumn: '1 / -1', 
-                        padding: '60px 0', 
-                        textAlign: 'center', 
-                        background: '#f8fafc', 
+                if (filtered.length === 0) {
+                  return (
+                    <div
+                      style={{
+                        gridColumn: '1 / -1',
+                        padding: '60px 0',
+                        textAlign: 'center',
+                        background: '#f8fafc',
                         borderRadius: '24px',
                         border: '2px dashed #e2e8f0',
                         color: 'var(--text-secondary)',
-                        fontWeight: 600
-                      }}>
-                        <p style={{ fontSize: '1.1rem' }}>No {statusFilter} campaigns yet.</p>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 500, opacity: 0.7 }}>Start a new journey today.</p>
-                      </div>
-                    );
-                  }
+                        fontWeight: 600,
+                      }}
+                    >
+                      <p style={{ fontSize: '1.1rem' }}>No {statusFilter} campaigns yet.</p>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 500, opacity: 0.7 }}>
+                        Start a new journey today.
+                      </p>
+                    </div>
+                  );
+                }
 
-                  return filtered.map((camp: any) => {
-                    const goal = parseFloat(camp.goalAmount || '0');
-                    const raised = parseFloat(camp.raised || '0');
-                    const pct = goal > 0 ? Math.floor(Math.min((raised / goal) * 100, 100)) : 0;
-                    const daysLeft = Math.ceil(
-                      (new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000,
-                    );
-                    const isDraft = camp.status?.toLowerCase() === 'draft';
+                return filtered.map((camp: any) => {
+                  const goal = parseFloat(camp.goalAmount || '0');
+                  const raised = parseFloat(camp.raised || '0');
+                  const pct = goal > 0 ? Math.floor(Math.min((raised / goal) * 100, 100)) : 0;
+                  const daysLeft = Math.ceil(
+                    (new Date(camp.endDate).getTime() - new Date().getTime()) / 86400000,
+                  );
+                  const isDraft = camp.status?.toLowerCase() === 'draft';
 
-                    return (
-                      <div key={camp.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <a href={`/c/${camp.slug}`} style={{ textDecoration: 'none', flex: 1 }}>
+                  return (
+                    <div
+                      key={camp.id}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+                    >
+                      <a href={`/c/${camp.slug}`} style={{ textDecoration: 'none', flex: 1 }}>
+                        <div
+                          className="dash-card"
+                          style={{
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            padding: '0',
+                            overflow: 'hidden',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}
+                        >
                           <div
-                            className="dash-card"
                             style={{
-                              cursor: 'pointer',
-                              transition: 'transform 0.2s, box-shadow 0.2s',
-                              padding: '0',
+                              height: '160px',
+                              background: '#f1f5f9',
+                              position: 'relative',
                               overflow: 'hidden',
-                              height: '100%',
-                              display: 'flex',
-                              flexDirection: 'column'
                             }}
                           >
-                            <div
-                              style={{
-                                height: '160px',
-                                background: '#f1f5f9',
-                                position: 'relative',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {camp.coverImageUrl ? (
-                                <img
-                                  src={camp.coverImageUrl}
-                                  alt={camp.title}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '3rem',
-                                  }}
-                                >
-                                  🎬
-                                </div>
-                              )}
-                              {camp.category && (
-                                <span
-                                  style={{
-                                    position: 'absolute',
-                                    top: '12px',
-                                    left: '12px',
-                                    background: 'rgba(255,255,255,0.95)',
-                                    padding: '4px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 700,
-                                    color: '#0f172a',
-                                  }}
-                                >
-                                  {camp.category}
-                                </span>
-                              )}
+                            {camp.coverImageUrl ? (
+                              <img
+                                src={camp.coverImageUrl}
+                                alt={camp.title}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '3rem',
+                                }}
+                              >
+                                🎬
+                              </div>
+                            )}
+                            {camp.category && (
                               <span
                                 style={{
                                   position: 'absolute',
                                   top: '12px',
-                                  right: '12px',
-                                  background:
-                                    camp.status?.toLowerCase() === 'active'
-                                      ? '#10b981' // Green
-                                      : camp.status?.toLowerCase() === 'closed'
-                                      ? '#f59e0b' // Yellow (per user request for Completed)
-                                      : '#10b981', // Draft (per user request for Green)
-                                  color: '#fff',
+                                  left: '12px',
+                                  background: 'rgba(255,255,255,0.95)',
                                   padding: '4px 12px',
                                   borderRadius: '20px',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 800,
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.05em',
-                                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  color: '#0f172a',
                                 }}
                               >
-                                {camp.status}
+                                {camp.category}
+                              </span>
+                            )}
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                background:
+                                  camp.status?.toLowerCase() === 'active'
+                                    ? '#10b981' // Green
+                                    : camp.status?.toLowerCase() === 'closed'
+                                      ? '#f59e0b' // Yellow (per user request for Completed)
+                                      : '#10b981', // Draft (per user request for Green)
+                                color: '#fff',
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              }}
+                            >
+                              {camp.status}
+                            </span>
+                          </div>
+
+                          <div style={{ padding: '20px' }}>
+                            <h4
+                              style={{
+                                fontSize: '1.1rem',
+                                fontWeight: 800,
+                                marginBottom: '8px',
+                                color: '#0f172a',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {camp.title}
+                            </h4>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginBottom: '16px',
+                                fontSize: '0.85rem',
+                                color: '#64748b',
+                              }}
+                            >
+                              <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
+                              <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
+                                {pct}%
                               </span>
                             </div>
 
-                            <div style={{ padding: '20px' }}>
-                              <h4
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '6px',
+                                background: '#f1f5f9',
+                                borderRadius: '3px',
+                                marginBottom: '20px',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              <div
                                 style={{
-                                  fontSize: '1.1rem',
-                                  fontWeight: 800,
-                                  marginBottom: '8px',
-                                  color: '#0f172a',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 1,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
+                                  width: `${pct}%`,
+                                  height: '100%',
+                                  background: 'var(--accent-primary)',
+                                  borderRadius: '3px',
                                 }}
-                              >
-                                {camp.title}
-                              </h4>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', color: '#64748b' }}>
-                                <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}</span>
-                                <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{pct}%</span>
-                              </div>
-                              
-                              <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
-                                <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: '3px' }} />
-                              </div>
+                              />
+                            </div>
 
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
-                                <div>
-                                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Raised</p>
-                                  <p style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>₦{raised.toLocaleString()}</p>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>👥 <b>{camp.backers || 0}</b> backers</span>
-                                  </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-end',
+                                marginTop: 'auto',
+                              }}
+                            >
+                              <div>
+                                <p
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    color: '#94a3b8',
+                                    textTransform: 'uppercase',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.05em',
+                                    marginBottom: '2px',
+                                  }}
+                                >
+                                  Raised
+                                </p>
+                                <p
+                                  style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}
+                                >
+                                  ₦{raised.toLocaleString()}
+                                </p>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginTop: '4px',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: '0.8rem',
+                                      color: '#64748b',
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    👥 <b>{camp.backers || 0}</b> backers
+                                  </span>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>Goal</p>
-                                  <p style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>₦{goal.toLocaleString()}</p>
-                                </div>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <p
+                                  style={{
+                                    fontSize: '0.75rem',
+                                    color: '#94a3b8',
+                                    textTransform: 'uppercase',
+                                    fontWeight: 700,
+                                    letterSpacing: '0.05em',
+                                    marginBottom: '2px',
+                                  }}
+                                >
+                                  Goal
+                                </p>
+                                <p style={{ fontSize: '1rem', fontWeight: 700, color: '#475569' }}>
+                                  ₦{goal.toLocaleString()}
+                                </p>
                               </div>
                             </div>
                           </div>
-                        </a>
-                        
-                        {isDraft && (
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                        </div>
+                      </a>
+
+                      {isDraft && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
+                            className="btn-primary"
+                            style={{
+                              flex: 1,
+                              padding: '12px',
+                              fontSize: '0.9rem',
+                              background: 'var(--accent-secondary)',
+                              color: '#fff',
+                            }}
+                          >
+                            Edit & Publish
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDraft(camp.id)}
+                            style={{
+                              padding: '12px',
+                              borderRadius: '14px',
+                              border: '1px solid #fee2e2',
+                              background: '#fff5f5',
+                              color: '#ef4444',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              width: '48px',
+                            }}
+                            title="Delete Draft"
+                          >
+                            <Icons.Trash />
+                          </button>
+                        </div>
+                      )}
+
+                      {!isDraft && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginTop: '12px',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <button
+                            onClick={() => setSelectedCampaignForUpdate(camp.id)}
+                            className="btn-primary"
+                            style={{
+                              flex: '1 1 100%',
+                              padding: '14px',
+                              fontSize: '0.95rem',
+                              background: '#0f172a',
+                              color: '#fff',
+                              border: 'none',
+                              fontWeight: 800,
+                              borderRadius: '14px',
+                              cursor: 'pointer',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            📢 Post Project Update
+                          </button>
+                          <button
+                            onClick={() => setSelectedCampaignForBackers(camp.id)}
+                            style={{
+                              flex: 1,
+                              padding: '12px',
+                              fontSize: '0.85rem',
+                              background: '#f1f5f9',
+                              color: '#0f172a',
+                              border: 'none',
+                              fontWeight: 700,
+                              borderRadius: '12px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            View Backers
+                          </button>
+                          <button
+                            onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
+                            style={{
+                              flex: 2,
+                              padding: '12px',
+                              borderRadius: '14px',
+                              border: '1px solid #e2e8f0',
+                              background: '#fff',
+                              color: '#0f172a',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Edit Project
+                          </button>
+                          {camp.status?.toLowerCase() === 'active' && (
                             <button
-                              onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
-                              className="btn-primary"
-                              style={{ 
-                                flex: 1,
-                                padding: '12px', 
-                                fontSize: '0.9rem',
-                                background: 'var(--accent-secondary)',
-                                color: '#fff'
-                              }}
-                            >
-                              Edit & Publish
-                            </button>
-                            <button
-                              onClick={() => handleDeleteDraft(camp.id)}
-                              style={{ 
-                                padding: '12px', 
+                              onClick={() => handleEndCampaign(camp.id)}
+                              style={{
+                                flex: 1.5,
+                                padding: '12px',
                                 borderRadius: '14px',
                                 border: '1px solid #fee2e2',
                                 background: '#fff5f5',
                                 color: '#ef4444',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                width: '48px'
-                              }}
-                              title="Delete Draft"
-                            >
-                              <Icons.Trash />
-                            </button>
-                          </div>
-                        )}
-
-                        {!isDraft && (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => setSelectedCampaignForUpdate(camp.id)}
-                              className="btn-primary"
-                              style={{ 
-                                flex: '1 1 100%',
-                                padding: '14px', 
-                                fontSize: '0.95rem',
-                                background: '#0f172a',
-                                color: '#fff',
-                                border: 'none',
-                                fontWeight: 800,
-                                borderRadius: '14px',
-                                cursor: 'pointer',
-                                marginBottom: '4px'
-                              }}
-                            >
-                              📢 Post Project Update
-                            </button>
-                            <button
-                              onClick={() => setSelectedCampaignForBackers(camp.id)}
-                              style={{ 
-                                flex: 1,
-                                padding: '12px', 
+                                fontWeight: 700,
                                 fontSize: '0.85rem',
-                                background: '#f1f5f9',
-                                color: '#0f172a',
-                                border: 'none',
-                                fontWeight: 700,
-                                borderRadius: '12px',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
                               }}
+                              title="End Campaign"
                             >
-                              View Backers
+                              End Project
                             </button>
-                            <button
-                              onClick={() => router.push(`/dashboard/campaigns/create?id=${camp.id}`)}
-                              style={{ 
-                                flex: 2,
-                                padding: '12px', 
-                                borderRadius: '14px',
-                                border: '1px solid #e2e8f0',
-                                background: '#fff',
-                                color: '#0f172a',
-                                fontWeight: 700,
-                                fontSize: '0.9rem',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              Edit Project
-                            </button>
-                            {camp.status?.toLowerCase() === 'active' && (
-                              <button
-                                onClick={() => handleEndCampaign(camp.id)}
-                                style={{ 
-                                  flex: 1.5,
-                                  padding: '12px', 
-                                  borderRadius: '14px',
-                                  border: '1px solid #fee2e2',
-                                  background: '#fff5f5',
-                                  color: '#ef4444',
-                                  fontWeight: 700,
-                                  fontSize: '0.85rem',
-                                  cursor: 'pointer',
-                                  whiteSpace: 'nowrap'
-                                }}
-                                title="End Campaign"
-                              >
-                                End Project
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </section>
-          )}
-        </main>
-      </div>
-    );
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  );
 }

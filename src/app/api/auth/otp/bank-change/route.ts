@@ -34,14 +34,12 @@ export async function POST(req: NextRequest) {
 
     // 1. Generate 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-    
+
     // 2. Hash it
     const otpHash = await bcrypt.hash(otp, 10);
-    
+
     // 3. Expire any existing un-used bank_change otps for this user to prevent confusion
-    await db.update(authOtps)
-      .set({ used: true })
-      .where(eq(authOtps.userId, userId));
+    await db.update(authOtps).set({ used: true }).where(eq(authOtps.userId, userId));
 
     // 4. Store it (10 minutes valid)
     const expiresAt = new Date();

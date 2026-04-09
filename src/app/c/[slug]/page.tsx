@@ -14,9 +14,22 @@ import ShareButton from './ShareButton';
 import TransparencyLedger from './TransparencyLedger';
 import BackersList from './BackersList';
 import { getPublicUrl } from '@/lib/storage';
+import { Megaphone, ShieldCheck, ChevronLeft } from 'lucide-react';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
-  let campaign, creator, wallet, logs, campaignContributions, latestBackers, goalAmount, raisedAmount, comments, totalDonors, coverUrl, avatarUrl, updates;
+  let campaign: any = null;
+  let creator: any = null;
+  let wallet: any = null;
+  let logs: any[] = [];
+  let campaignContributions: any[] = [];
+  let latestBackers: any[] = [];
+  let goalAmount = 0;
+  let raisedAmount = 0;
+  let comments: any[] = [];
+  let totalDonors = 0;
+  let coverUrl: string | null = null;
+  let avatarUrl: string | null = null;
+  let updates: any[] = [];
 
   const campaignsResult = await db
     .select()
@@ -31,15 +44,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
   try {
     // 1. Fetch Creator & Basic Media
     const creatorsResult = await db
-      .select({ 
-        displayName: users.displayName, 
+      .select({
+        displayName: users.displayName,
         avatarUrl: users.avatarUrl,
-        username: users.username
+        username: users.username,
       })
       .from(users)
       .where(eq(users.id, campaign.creatorId))
       .limit(1);
-    
+
     creator = creatorsResult[0];
     coverUrl = getPublicUrl(campaign.coverImageUrl);
     avatarUrl = getPublicUrl(creator?.avatarUrl);
@@ -50,7 +63,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
       .from(projectWallets)
       .where(eq(projectWallets.campaignId, campaign.id))
       .limit(1);
-    
+
     wallet = walletsResult[0];
     goalAmount = parseFloat(campaign.goalAmount);
     raisedAmount = parseFloat(wallet?.totalReceived || '0');
@@ -59,17 +72,20 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
     db.update(campaigns)
       .set({ views: sql`${campaigns.views} + 1` })
       .where(eq(campaigns.id, campaign.id))
-      .catch(err => console.error('[Views] Increment failed:', err));
+      .catch((err) => console.error('[Views] Increment failed:', err));
 
     // 4. Fetch Secondary Data (Updates, Logs, Backers)
     // Wrap these in a sub-try-catch to ensure the page renders even if these fail
     try {
       [updates, logs, campaignContributions] = await Promise.all([
-        db.select().from(campaignUpdates)
+        db
+          .select()
+          .from(campaignUpdates)
           .where(and(eq(campaignUpdates.campaignId, campaign.id), sql`deleted_at IS NULL`))
           .orderBy(desc(campaignUpdates.createdAt)),
-        
-        db.select({
+
+        db
+          .select({
             id: spendingLogs.id,
             amount: spendingLogs.amount,
             description: spendingLogs.description,
@@ -83,16 +99,19 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               eq(spendingLogs.campaignId, campaign.id),
               or(
                 sql`${spendingLogs.withdrawalId} IS NULL`,
-                inArray(withdrawals.status, ['processing', 'completed'])
-              )
-            )
+                inArray(withdrawals.status, ['processing', 'completed']),
+              ),
+            ),
           )
           .orderBy(desc(spendingLogs.entryDate)),
 
-        db.select()
+        db
+          .select()
           .from(contributions)
-          .where(and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')))
-          .orderBy(desc(contributions.createdAt))
+          .where(
+            and(eq(contributions.campaignId, campaign.id), eq(contributions.status, 'confirmed')),
+          )
+          .orderBy(desc(contributions.createdAt)),
       ]);
     } catch (dataErr) {
       console.error('[CampaignPublicPage] Data fetch error:', dataErr);
@@ -103,33 +122,56 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
 
     // Process list data
     comments = (campaignContributions || [])
-      .filter(c => c.message && c.message.trim() !== '')
-      .map(c => ({
+      .filter((c) => c.message && c.message.trim() !== '')
+      .map((c) => ({
         id: c.id,
         backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
         message: c.message,
-        createdAt: c.createdAt
+        createdAt: c.createdAt,
       }));
 
     totalDonors = (campaignContributions || []).length;
-    latestBackers = (campaignContributions || []).slice(0, 10).map(c => ({
+    latestBackers = (campaignContributions || []).slice(0, 10).map((c) => ({
       id: c.id,
       backerName: c.backerName || (c.anonymous ? 'Anonymous Supporter' : 'A Supporter'),
       amount: c.amount,
       isAnonymous: c.anonymous,
-      createdAt: c.createdAt
+      createdAt: c.createdAt,
     }));
-
   } catch (error) {
     console.error('[CampaignPublicPage] Critical Error:', error);
     return (
-      <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center', padding: '40px', background: '#fff', borderRadius: '24px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', maxWidth: '500px' }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', marginBottom: '16px' }}>Campaign Unavailable</h1>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: '#fafafa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '40px',
+            background: '#fff',
+            borderRadius: '24px',
+            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)',
+            maxWidth: '500px',
+          }}
+        >
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', marginBottom: '16px' }}>
+            Campaign Unavailable
+          </h1>
           <p style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '32px' }}>
-            We're having trouble loading some details for this campaign. Please try refreshing or check back later.
+            We&apos;re having trouble loading some details for this campaign. Please try refreshing
+            or check back later.
           </p>
-          <a href="/explore" className="btn-primary" style={{ padding: '12px 32px', borderRadius: '12px', textDecoration: 'none' }}>
+          <a
+            href="/explore"
+            className="btn-primary"
+            style={{ padding: '12px 32px', borderRadius: '12px', textDecoration: 'none' }}
+          >
             Back to Explore
           </a>
         </div>
@@ -169,19 +211,25 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               textDecoration: 'none',
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
             }}
             title="Back to Explore"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
-            </svg>
+            <ChevronLeft size={20} strokeWidth={2.5} />
           </a>
         </div>
 
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           <a href="/" style={{ textDecoration: 'none', color: 'var(--accent-primary)' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.02em', margin: 0 }}>
+            <h2
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: 900,
+                fontFamily: 'Outfit, sans-serif',
+                letterSpacing: '-0.02em',
+                margin: 0,
+              }}
+            >
               backr
             </h2>
           </a>
@@ -191,22 +239,27 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
           <a
             href="/dashboard"
             className="btn-primary"
-            style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 700 }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '10px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+            }}
           >
             Dashboard
           </a>
         </div>
       </header>
 
-      <main 
+      <main
         className="container"
-        style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
           padding: '40px 24px',
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '40px'
+          gap: '40px',
         }}
       >
         {/* Left Column: Media & Story */}
@@ -221,17 +274,26 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             }}
           >
             {/* Creator Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <Link 
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}
+            >
+              <Link
                 href={creator?.username ? `/u/${creator.username}` : `/u/${campaign.creatorId}`}
-                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}
+                style={{
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
               >
                 <div
                   style={{
                     width: '48px',
                     height: '48px',
                     borderRadius: '24px',
-                    background: avatarUrl ? `url(${avatarUrl}) center/cover` : 'var(--accent-primary)',
+                    background: avatarUrl
+                      ? `url(${avatarUrl}) center/cover`
+                      : 'var(--accent-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -246,8 +308,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                   <p style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0 }}>
                     {creator?.displayName || 'Unknown Creator'}
                   </p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 700, margin: 0 }}>
-                     View Profile →
+                  <p
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'var(--accent-primary)',
+                      fontWeight: 700,
+                      margin: 0,
+                    }}
+                  >
+                    View Profile →
                   </p>
                 </div>
               </Link>
@@ -272,7 +341,16 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94a3b8',
+                  }}
+                >
                   No Cover Image
                 </div>
               )}
@@ -288,7 +366,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                     fontSize: '0.8rem',
                     fontWeight: 700,
                     color: '#475569',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                   }}
                 >
                   {campaign.category}
@@ -298,7 +376,14 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
 
             {/* Campaign Body */}
             <div>
-              <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a', marginBottom: '16px' }}>
+              <h1
+                style={{
+                  fontSize: '1.8rem',
+                  fontWeight: 900,
+                  color: '#0f172a',
+                  marginBottom: '16px',
+                }}
+              >
                 {campaign.title}
               </h1>
               <p
@@ -313,7 +398,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                 {campaign.description || 'No description provided.'}
               </p>
 
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div
+                style={{
+                  borderTop: '1px solid #f1f5f9',
+                  paddingTop: '32px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                }}
+              >
                 <ShareButton
                   title={`Back ${campaign.title} on Backr`}
                   text={campaign.description || 'Support this awesome campaign!'}
@@ -325,41 +418,97 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
 
           {/* Project Updates Section */}
           {updates && updates.length > 0 && (
-            <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '32px', marginBottom: '40px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                  Project Updates 📢
+            <div
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '32px',
+                marginBottom: '40px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '24px',
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: '1.3rem',
+                    fontWeight: 800,
+                    color: '#0f172a',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  Project Updates <Megaphone size={20} className="text-emerald-500" />
                 </h3>
-                <span style={{ 
-                  background: 'var(--accent-primary)', 
-                  color: '#fff', 
-                  padding: '4px 12px', 
-                  borderRadius: '20px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 800 
-                }}>
+                <span
+                  style={{
+                    background: 'var(--accent-primary)',
+                    color: '#fff',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                  }}
+                >
                   {updates.length} {updates.length === 1 ? 'Update' : 'Updates'}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                 {updates.map((update: any) => (
-                  <div key={update.id} style={{ borderLeft: '3px solid var(--accent-primary)', paddingLeft: '24px', position: 'relative' }}>
-                    <div style={{ 
-                      width: '12px', height: '12px', background: 'var(--accent-primary)', 
-                      borderRadius: '6px', position: 'absolute', left: '-7.5px', top: '0' 
-                    }} />
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                  <div
+                    key={update.id}
+                    style={{
+                      borderLeft: '3px solid var(--accent-primary)',
+                      paddingLeft: '24px',
+                      position: 'relative',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        background: 'var(--accent-primary)',
+                        borderRadius: '6px',
+                        position: 'absolute',
+                        left: '-7.5px',
+                        top: '0',
+                      }}
+                    />
+                    <h4
+                      style={{
+                        fontSize: '1.1rem',
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        marginBottom: '8px',
+                      }}
+                    >
                       {update.title}
                     </h4>
-                    <p style={{ 
-                      fontSize: '0.95rem', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap', 
-                      marginBottom: '12px' 
-                    }}>
+                    <p
+                      style={{
+                        fontSize: '0.95rem',
+                        color: '#475569',
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-wrap',
+                        marginBottom: '12px',
+                      }}
+                    >
                       {update.body}
                     </p>
                     <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
-                      Posted on {new Date(update.createdAt).toLocaleDateString(undefined, { 
-                        month: 'long', day: 'numeric', year: 'numeric' 
+                      Posted on{' '}
+                      {new Date(update.createdAt).toLocaleDateString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
                       })}
                     </p>
                   </div>
@@ -371,38 +520,88 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
           {/* Transparency Ledger & Comments section */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {/* Transparency Ledger */}
-            <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '32px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
-                Transparency Ledger 🇳🇬
+            <div
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '32px',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                Transparency Ledger <ShieldCheck size={20} className="text-emerald-500" />
               </h3>
               <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '24px' }}>
                 See exactly how the creator is using the raised funds.
               </p>
-              <TransparencyLedger logs={logs.map(l => ({ ...l, type: 'withdrawal' }))} />
+              <TransparencyLedger logs={logs.map((l) => ({ ...l, type: 'withdrawal' }))} />
             </div>
 
             {/* Comments Section */}
-            <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '32px' }}>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', marginBottom: '24px' }}>
+            <div
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '32px',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '1.3rem',
+                  fontWeight: 800,
+                  color: '#0f172a',
+                  marginBottom: '24px',
+                }}
+              >
                 Words of Support ({comments.length})
               </h3>
               {comments.length === 0 ? (
-                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>No comments yet. Be the first to cheer them on!</p>
+                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                  No comments yet. Be the first to cheer them on!
+                </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   {comments.map((comment) => (
-                    <div key={comment.id} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '20px' }}>
-                      <p style={{ fontWeight: 700, color: '#0f172a', marginBottom: '8px', fontSize: '0.95rem' }}>
+                    <div
+                      key={comment.id}
+                      style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '20px' }}
+                    >
+                      <p
+                        style={{
+                          fontWeight: 700,
+                          color: '#0f172a',
+                          marginBottom: '8px',
+                          fontSize: '0.95rem',
+                        }}
+                      >
                         {comment.backerName}
                       </p>
-                      <p style={{ color: '#475569', lineHeight: 1.6, fontSize: '1rem', fontStyle: 'italic' }}>
-                        "{comment.message}"
+                      <p
+                        style={{
+                          color: '#475569',
+                          lineHeight: 1.6,
+                          fontSize: '1rem',
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        &quot;{comment.message}&quot;
                       </p>
                       <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '8px' }}>
-                        {new Date(comment.createdAt).toLocaleDateString(undefined, { 
-                          month: 'short', 
+                        {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
                           day: 'numeric',
-                          year: 'numeric'
+                          year: 'numeric',
                         })}
                       </p>
                     </div>
@@ -414,7 +613,15 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         </div>
 
         {/* Right Column: Checkout Form & Latest Backers */}
-        <div style={{ flex: '1 1 350px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div
+          style={{
+            flex: '1 1 350px',
+            maxWidth: '400px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+          }}
+        >
           <CheckoutForm
             campaignId={campaign.id}
             goalAmount={goalAmount}
@@ -422,10 +629,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             isClosed={campaign.status === 'closed'}
           />
 
-          <BackersList 
-            backers={latestBackers as any} 
-            totalDonors={totalDonors} 
-          />
+          <BackersList backers={latestBackers as any} totalDonors={totalDonors} />
         </div>
       </main>
     </div>

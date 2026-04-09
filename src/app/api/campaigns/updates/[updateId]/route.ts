@@ -5,10 +5,7 @@ import { campaignUpdates } from '@/db/schema/campaignUpdates';
 import { eq } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { updateId: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { updateId: string } }) {
   const auth = requireAuth(req);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -36,7 +33,8 @@ export async function DELETE(
     }
 
     // 3. Soft delete
-    await db.update(campaignUpdates)
+    await db
+      .update(campaignUpdates)
       .set({ deletedAt: new Date() })
       .where(eq(campaignUpdates.id, updateId));
 

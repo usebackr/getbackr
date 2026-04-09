@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { contributions } from '@/db/schema/contributions';
-import { sql, eq, and, gte, lte } from 'drizzle-orm';
+import { sql, eq, and, gte } from 'drizzle-orm';
 import { verifyAdminApi } from '@/lib/auth/admin';
 import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const token = cookies().get('accessToken')?.value;
     const isAdmin = await verifyAdminApi(token);
@@ -41,10 +41,7 @@ export async function GET(req: NextRequest) {
       })
       .from(contributions)
       .where(
-        and(
-          eq(contributions.status, 'confirmed'),
-          gte(contributions.createdAt, thirtyDaysAgo)
-        )
+        and(eq(contributions.status, 'confirmed'), gte(contributions.createdAt, thirtyDaysAgo)),
       )
       .groupBy(sql`DATE_TRUNC('day', ${contributions.createdAt})`)
       .orderBy(sql`DATE_TRUNC('day', ${contributions.createdAt})`);
@@ -57,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     // Initialize map with all dates in the last 30 days
     const statsMap = new Map<string, { signups: number; betaSignups: number; revenue: number }>();
-    
+
     for (let i = 29; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -83,13 +80,15 @@ export async function GET(req: NextRequest) {
     });
 
     // Populate arrays
-    Array.from(statsMap.keys()).sort().forEach(date => {
-      const stats = statsMap.get(date)!;
-      labels.push(date);
-      signupData.push(stats.signups);
-      betaSignupData.push(stats.betaSignups);
-      revenueData.push(stats.revenue);
-    });
+    Array.from(statsMap.keys())
+      .sort()
+      .forEach((date) => {
+        const stats = statsMap.get(date)!;
+        labels.push(date);
+        signupData.push(stats.signups);
+        betaSignupData.push(stats.betaSignups);
+        revenueData.push(stats.revenue);
+      });
 
     return NextResponse.json({
       labels,
@@ -97,7 +96,7 @@ export async function GET(req: NextRequest) {
         { label: 'New Users', data: signupData, color: '#3b82f6' },
         { label: 'Beta Signups', data: betaSignupData, color: '#f59e0b' },
         { label: 'Revenue (₦)', data: revenueData, color: '#10b981' },
-      ]
+      ],
     });
   } catch (error) {
     console.error('[Admin Analytics] Error:', error);

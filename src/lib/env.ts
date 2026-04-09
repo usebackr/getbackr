@@ -5,12 +5,20 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
 
   // Redis
-  REDIS_URL: z.string().url('REDIS_URL must be a valid URL').optional().default('redis://localhost:6379'),
+  REDIS_URL: z
+    .string()
+    .url('REDIS_URL must be a valid URL')
+    .optional()
+    .default('redis://localhost:6379'),
 
   // Auth
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().default('15m'),
-  REFRESH_TOKEN_SECRET: z.string().min(32, 'REFRESH_TOKEN_SECRET must be at least 32 characters').optional().default('dummy-refresh-secret-not-for-prod-32-chars'),
+  REFRESH_TOKEN_SECRET: z
+    .string()
+    .min(32, 'REFRESH_TOKEN_SECRET must be at least 32 characters')
+    .optional()
+    .default('dummy-refresh-secret-not-for-prod-32-chars'),
   REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
 
   // App
@@ -47,11 +55,12 @@ function parseEnv(): Env {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' || !!process.env.VERCEL;
-    
+    const isBuildPhase =
+      process.env.NEXT_PHASE === 'phase-production-build' || !!process.env.VERCEL;
+
     if (isBuildPhase) {
       console.warn('⚠️ Some environment variables are missing during build. Using safe defaults.');
-      
+
       const defaults = {
         DATABASE_URL: process.env.DATABASE_URL || 'postgres://dummy:dummy@localhost:5432/dummy',
         JWT_SECRET: process.env.JWT_SECRET || 'dummy-jwt-secret-for-build-analysis-32-chars',
@@ -62,11 +71,11 @@ function parseEnv(): Env {
       // Fill the rest with schema defaults by merging with a valid parse of essential-only data
       return {
         ...envSchema.parse({
-           ...defaults,
-           REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
-           NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+          ...defaults,
+          REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
+          NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
         }),
-        ...defaults
+        ...defaults,
       } as Env;
     }
 

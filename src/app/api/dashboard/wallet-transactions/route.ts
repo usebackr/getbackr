@@ -3,7 +3,6 @@ import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { withdrawals } from '@/db/schema/withdrawals';
 import { campaigns } from '@/db/schema/campaigns';
-import { users } from '@/db/schema/users';
 import { eq, and, sql } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 
@@ -31,12 +30,7 @@ export async function GET(req: NextRequest) {
       })
       .from(contributions)
       .innerJoin(campaigns, eq(campaigns.id, contributions.campaignId))
-      .where(
-        and(
-          eq(campaigns.creatorId, userId),
-          eq(contributions.status, 'confirmed')
-        )
-      );
+      .where(and(eq(campaigns.creatorId, userId), eq(contributions.status, 'confirmed')));
 
     // Fetch user withdrawals
     const userWithdrawals = await db

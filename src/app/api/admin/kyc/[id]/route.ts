@@ -46,7 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             userId,
             'Identity Verified!',
             'Your identity has been successfully verified. Withdrawal access is now unlocked.',
-            'kyc_status_updated'
+            'kyc_status_updated',
           );
 
           // Email
@@ -62,10 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ message: 'User globally verified and creator notified.' });
     } else if (action === 'reject') {
       if (!reason)
-        return NextResponse.json(
-          { error: 'Rejection reason is required' },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
 
       const [user] = await db
         .select({ email: users.email })
@@ -81,8 +78,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Store reason in kycProfiles too so it appears in the admin DB view
       try {
         const { kycProfiles } = await import('@/db/schema/kycProfiles');
-        await db.update(kycProfiles).set({ rejectionReason: reason }).where(eq(kycProfiles.userId, userId));
-      } catch { /* kycProfiles may not have the column yet pre-migration */ }
+        await db
+          .update(kycProfiles)
+          .set({ rejectionReason: reason })
+          .where(eq(kycProfiles.userId, userId));
+      } catch {
+        /* kycProfiles may not have the column yet pre-migration */
+      }
 
       // Notify user via email with the reason
       try {
@@ -94,19 +96,23 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             `Your KYC submission was not approved. Reason: ${reason}`,
             'kyc_status_updated',
             '/dashboard/notifications',
-            JSON.stringify({ reason })
+            JSON.stringify({ reason }),
           );
 
           const { sendEmail } = await import('@/workers/emailWorkers');
-          await sendEmail({ type: 'kyc_rejected', email: user.email, rejectionReason: reason }).catch(
-            (e) => console.error('[Admin KYC] Rejection email failed:', e)
-          );
+          await sendEmail({
+            type: 'kyc_rejected',
+            email: user.email,
+            rejectionReason: reason,
+          }).catch((e) => console.error('[Admin KYC] Rejection email failed:', e));
         }
       } catch (notifyErr) {
         console.error('[Admin KYC] Rejection notification failed:', notifyErr);
       }
 
-      return NextResponse.json({ message: 'KYC rejected. User has been notified with the reason.' });
+      return NextResponse.json({
+        message: 'KYC rejected. User has been notified with the reason.',
+      });
     } else {
       return NextResponse.json({ error: 'Invalid operation payload' }, { status: 400 });
     }

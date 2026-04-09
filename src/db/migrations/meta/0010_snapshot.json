@@ -158,16 +158,12 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       }
     },
@@ -278,12 +274,8 @@
           "name": "campaigns_creator_id_users_id_fk",
           "tableFrom": "campaigns",
           "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -293,9 +285,7 @@
         "campaigns_slug_unique": {
           "name": "campaigns_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       }
     },
@@ -363,12 +353,8 @@
           "name": "project_wallets_campaign_id_campaigns_id_fk",
           "tableFrom": "project_wallets",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -378,9 +364,7 @@
         "project_wallets_campaign_id_unique": {
           "name": "project_wallets_campaign_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "campaign_id"
-          ]
+          "columns": ["campaign_id"]
         }
       }
     },
@@ -490,12 +474,8 @@
           "name": "contributions_campaign_id_campaigns_id_fk",
           "tableFrom": "contributions",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -503,12 +483,8 @@
           "name": "contributions_backer_id_users_id_fk",
           "tableFrom": "contributions",
           "tableTo": "users",
-          "columnsFrom": [
-            "backer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["backer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -518,9 +494,7 @@
         "contributions_payment_reference_unique": {
           "name": "contributions_payment_reference_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "payment_reference"
-          ]
+          "columns": ["payment_reference"]
         }
       }
     },
@@ -629,12 +603,8 @@
           "name": "withdrawals_wallet_id_project_wallets_id_fk",
           "tableFrom": "withdrawals",
           "tableTo": "project_wallets",
-          "columnsFrom": [
-            "wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["wallet_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -642,12 +612,8 @@
           "name": "withdrawals_creator_id_users_id_fk",
           "tableFrom": "withdrawals",
           "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -722,12 +688,8 @@
           "name": "spending_logs_campaign_id_campaigns_id_fk",
           "tableFrom": "spending_logs",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -735,12 +697,8 @@
           "name": "spending_logs_withdrawal_id_withdrawals_id_fk",
           "tableFrom": "spending_logs",
           "tableTo": "withdrawals",
-          "columnsFrom": [
-            "withdrawal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["withdrawal_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -803,12 +761,8 @@
           "name": "campaign_updates_campaign_id_campaigns_id_fk",
           "tableFrom": "campaign_updates",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -892,12 +846,8 @@
           "name": "boost_purchases_campaign_id_campaigns_id_fk",
           "tableFrom": "boost_purchases",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -996,12 +946,8 @@
           "name": "email_campaigns_creator_id_users_id_fk",
           "tableFrom": "email_campaigns",
           "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1009,12 +955,8 @@
           "name": "email_campaigns_campaign_id_campaigns_id_fk",
           "tableFrom": "email_campaigns",
           "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1079,12 +1021,8 @@
           "name": "email_contacts_creator_id_users_id_fk",
           "tableFrom": "email_contacts",
           "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1155,12 +1093,8 @@
           "name": "subscriptions_creator_id_users_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1284,12 +1218,8 @@
           "name": "bank_accounts_user_id_users_id_fk",
           "tableFrom": "bank_accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1299,9 +1229,7 @@
         "bank_accounts_user_id_unique": {
           "name": "bank_accounts_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       }
     },
@@ -1379,12 +1307,8 @@
           "name": "kyc_profiles_user_id_users_id_fk",
           "tableFrom": "kyc_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1394,9 +1318,7 @@
         "kyc_profiles_user_id_unique": {
           "name": "kyc_profiles_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       }
     },
@@ -1464,12 +1386,8 @@
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1527,12 +1445,8 @@
           "name": "password_resets_user_id_users_id_fk",
           "tableFrom": "password_resets",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1545,114 +1459,62 @@
     "public.kyc_status": {
       "name": "kyc_status",
       "schema": "public",
-      "values": [
-        "unsubmitted",
-        "pending",
-        "verified",
-        "rejected"
-      ]
+      "values": ["unsubmitted", "pending", "verified", "rejected"]
     },
     "public.premium_status": {
       "name": "premium_status",
       "schema": "public",
-      "values": [
-        "none",
-        "active",
-        "grace"
-      ]
+      "values": ["none", "active", "grace"]
     },
     "public.campaign_status": {
       "name": "campaign_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "active",
-        "closed",
-        "cancelled"
-      ]
+      "values": ["draft", "active", "closed", "cancelled"]
     },
     "public.contribution_status": {
       "name": "contribution_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "confirmed",
-        "failed"
-      ]
+      "values": ["pending", "confirmed", "failed"]
     },
     "public.withdrawal_status": {
       "name": "withdrawal_status",
       "schema": "public",
-      "values": [
-        "pending_otp",
-        "processing",
-        "completed",
-        "expired",
-        "rejected"
-      ]
+      "values": ["pending_otp", "processing", "completed", "expired", "rejected"]
     },
     "public.boost_status": {
       "name": "boost_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "active",
-        "expired"
-      ]
+      "values": ["pending", "active", "expired"]
     },
     "public.boost_tier": {
       "name": "boost_tier",
       "schema": "public",
-      "values": [
-        "basic",
-        "standard",
-        "premium"
-      ]
+      "values": ["basic", "standard", "premium"]
     },
     "public.email_campaign_status": {
       "name": "email_campaign_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "sending",
-        "sent",
-        "failed"
-      ]
+      "values": ["draft", "sending", "sent", "failed"]
     },
     "public.recipient_source": {
       "name": "recipient_source",
       "schema": "public",
-      "values": [
-        "backers",
-        "imported",
-        "both"
-      ]
+      "values": ["backers", "imported", "both"]
     },
     "public.contact_source": {
       "name": "contact_source",
       "schema": "public",
-      "values": [
-        "backer",
-        "imported"
-      ]
+      "values": ["backer", "imported"]
     },
     "public.subscription_plan": {
       "name": "subscription_plan",
       "schema": "public",
-      "values": [
-        "monthly",
-        "yearly"
-      ]
+      "values": ["monthly", "yearly"]
     },
     "public.subscription_status": {
       "name": "subscription_status",
       "schema": "public",
-      "values": [
-        "active",
-        "cancelled",
-        "expired",
-        "grace"
-      ]
+      "values": ["active", "cancelled", "expired", "grace"]
     },
     "public.notification_type": {
       "name": "notification_type",

@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
     const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
     const limitRes = rateLimit(`checkout_${ip}`, 20, 10 * 60 * 1000);
     if (!limitRes.success) {
-      return NextResponse.json({ error: 'Too many checkout attempts. Please try again later.' }, { status: 429 });
+      return NextResponse.json(
+        { error: 'Too many checkout attempts. Please try again later.' },
+        { status: 429 },
+      );
     }
 
     const token = req.cookies.get('accessToken')?.value;
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
       try {
         const payload = verifyAccessToken(token);
         userId = payload.sub as string;
-        
+
         // Fetch user email from DB if logged in
         const [user] = await db
           .select({ email: users.email, displayName: users.displayName })
@@ -63,13 +66,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { campaignId, amount, isAnonymous, shareDetails, message, referralSource } = parsed.data;
-    
+
     // If not logged in, we must have an email from the body
     if (!userId) {
       email = parsed.data.email || null;
       name = parsed.data.name || null;
       if (!email) {
-        return NextResponse.json({ error: 'Email is required for guest checkout' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Email is required for guest checkout' },
+          { status: 400 },
+        );
       }
     }
 
@@ -83,15 +89,20 @@ export async function POST(req: NextRequest) {
       .from(campaigns)
       .where(eq(campaigns.id, campaignId))
       .limit(1);
-    
+
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
-    if (campaign.status === 'closed') return NextResponse.json({ error: 'Campaign is permanently closed and no longer accepts contributions.' }, { status: 400 });
+    if (campaign.status === 'closed')
+      return NextResponse.json(
+        { error: 'Campaign is permanently closed and no longer accepts contributions.' },
+        { status: 400 },
+      );
 
     const origin = req.headers.get('origin') || req.headers.get('referer');
-    const appUrl = (origin && !origin.includes('localhost:3000')) 
-      ? new URL(origin).origin 
-      : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
-    
+    const appUrl =
+      origin && !origin.includes('localhost:3000')
+        ? new URL(origin).origin
+        : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
     const callbackUrl = `${appUrl}/c/${campaign.slug}/success`;
 
     console.log(`[Checkout API] Redirecting to: ${callbackUrl}`);
@@ -107,16 +118,10 @@ export async function POST(req: NextRequest) {
       referralSource: referralSource || null,
       type: 'contribution',
     };
-    
+
     console.log(`[Checkout API] Initializing for ${email} (${name || 'Guest'})`);
 
-    const transaction = await initializeTransaction(
-      email,
-      amount,
-      'NGN',
-      metadata,
-      callbackUrl,
-    );
+    const transaction = await initializeTransaction(email, amount, 'NGN', metadata, callbackUrl);
 
     return NextResponse.json({
       authorizationUrl: transaction.authorization_url,

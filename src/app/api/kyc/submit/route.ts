@@ -29,16 +29,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const idDocumentFile = formData.get('id_document');
   const selfieFile = formData.get('selfie');
 
-  if (!legalName || !idType || !idNumber || !(idDocumentFile instanceof File) || !(selfieFile instanceof File)) {
-    return NextResponse.json({ error: 'All fields and both documents are required' }, { status: 422 });
+  if (
+    !legalName ||
+    !idType ||
+    !idNumber ||
+    !(idDocumentFile instanceof File) ||
+    !(selfieFile instanceof File)
+  ) {
+    return NextResponse.json(
+      { error: 'All fields and both documents are required' },
+      { status: 422 },
+    );
   }
 
   // Enforce file size limits (2 MB each)
   if (idDocumentFile.size > MAX_FILE_SIZE_BYTES) {
-    return NextResponse.json({ error: 'ID document must be under 2 MB. Please compress before uploading.' }, { status: 413 });
+    return NextResponse.json(
+      { error: 'ID document must be under 2 MB. Please compress before uploading.' },
+      { status: 413 },
+    );
   }
   if (selfieFile.size > MAX_FILE_SIZE_BYTES) {
-    return NextResponse.json({ error: 'Selfie photo must be under 2 MB. Please compress before uploading.' }, { status: 413 });
+    return NextResponse.json(
+      { error: 'Selfie photo must be under 2 MB. Please compress before uploading.' },
+      { status: 413 },
+    );
   }
 
   const idDocumentBuffer = Buffer.from(await idDocumentFile.arrayBuffer());
@@ -53,24 +68,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     await uploadFile(selfieBuffer, selfieKey, selfieFile.type || 'image/jpeg');
   } catch (err) {
     console.error('[KYC Submit] Upload Error:', err);
-    return NextResponse.json({ error: 'Document upload failed. Please try again.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Document upload failed. Please try again.' },
+      { status: 500 },
+    );
   }
 
   // Upsert kycProfiles — store BOTH image URLs
   try {
     await db.transaction(async (tx) => {
-      const [existing] = await tx.select({ id: kycProfiles.id }).from(kycProfiles).where(eq(kycProfiles.userId, userId)).limit(1);
+      const [existing] = await tx
+        .select({ id: kycProfiles.id })
+        .from(kycProfiles)
+        .where(eq(kycProfiles.userId, userId))
+        .limit(1);
 
       if (existing) {
-        await tx.update(kycProfiles).set({
-          legalName,
-          idType,
-          idNumber,
-          documentUrl: idDocumentKey,
-          selfieUrl: selfieKey,
-          rejectionReason: null,     // Clear old rejection on re-submission
-          updatedAt: new Date(),
-        }).where(eq(kycProfiles.userId, userId));
+        await tx
+          .update(kycProfiles)
+          .set({
+            legalName,
+            idType,
+            idNumber,
+            documentUrl: idDocumentKey,
+            selfieUrl: selfieKey,
+            rejectionReason: null, // Clear old rejection on re-submission
+            updatedAt: new Date(),
+          })
+          .where(eq(kycProfiles.userId, userId));
       } else {
         await tx.insert(kycProfiles).values({
           userId,
@@ -82,12 +107,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         });
       }
 
-      await tx.update(users).set({ kycStatus: 'pending', kycRejectionReason: null }).where(eq(users.id, userId));
+      await tx
+        .update(users)
+        .set({ kycStatus: 'pending', kycRejectionReason: null })
+        .where(eq(users.id, userId));
     });
 
     // Send confirmation email (awaited for Vercel reliability)
     try {
-      const [user] = await db.select({ email: users.email, displayName: users.displayName }).from(users).where(eq(users.id, userId)).limit(1);
+      const [user] = await db
+        .select({ email: users.email, displayName: users.displayName })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
       if (user?.email) {
         const { sendEmail } = await import('@/workers/emailWorkers');
         await sendEmail({
@@ -100,7 +132,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       console.error('[KYC Submit] Confirmation email failed:', emailErr);
     }
 
-    return NextResponse.json({ message: 'KYC submission received. You will be notified within 24-48 hours.' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'KYC submission received. You will be notified within 24-48 hours.' },
+      { status: 200 },
+    );
   } catch (err: any) {
     console.error('[KYC Submit] DB Error:', err);
     return NextResponse.json({ error: 'Failed to save KYC details' }, { status: 500 });

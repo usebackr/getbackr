@@ -32,8 +32,8 @@ export async function consumeVerificationToken(token: string): Promise<string | 
       and(
         eq(verificationTokens.tokenHash, tokenHash),
         eq(verificationTokens.used, false),
-        gt(verificationTokens.expiresAt, now)
-      )
+        gt(verificationTokens.expiresAt, now),
+      ),
     )
     .limit(1);
 

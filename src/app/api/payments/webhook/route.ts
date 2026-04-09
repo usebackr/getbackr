@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const event = JSON.parse(rawBody);
 
-    // 2. Handle Charge Success
+  // 2. Handle Charge Success
   if (event.event === 'charge.success') {
     const data = event.data;
     const metadata = data.metadata || {};
@@ -43,8 +43,11 @@ export async function POST(req: NextRequest) {
 
     // Calculate 5% Platform Fee
     const platformFee = amountInMajor * 0.05;
-    const netAmount = amountInMajor - platformFee;    try {
-      console.log(`[Paystack Webhook] Processing charge.success. Campaign: ${campaignId}, Reference: ${reference}`);
+    const netAmount = amountInMajor - platformFee;
+    try {
+      console.log(
+        `[Paystack Webhook] Processing charge.success. Campaign: ${campaignId}, Reference: ${reference}`,
+      );
 
       const txResult = await db.transaction(async (tx) => {
         // A. Idempotency: skip if already processed
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest) {
 
         // B. Insert confirmed contribution
         console.log(`[Paystack Webhook] Recording contribution in database...`);
-        
+
         await tx.insert(contributions).values({
           campaignId,
           backerId: backerId || null,
@@ -109,7 +112,9 @@ export async function POST(req: NextRequest) {
           .returning({ id: projectWallets.id, balance: projectWallets.balance });
 
         if (walletUpdate.length === 0) {
-          console.warn(`[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one for tracking...`);
+          console.warn(
+            `[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one for tracking...`,
+          );
           await tx.insert(projectWallets).values({
             campaignId,
             balance: netAmount.toString(),
@@ -117,7 +122,9 @@ export async function POST(req: NextRequest) {
             currency: data.currency || 'NGN',
           });
         } else {
-          console.log(`[Paystack Webhook] Wallet updated successfully. New recorded balance: ${walletUpdate[0].balance}`);
+          console.log(
+            `[Paystack Webhook] Wallet updated successfully. New recorded balance: ${walletUpdate[0].balance}`,
+          );
         }
 
         // D. Fetch campaign creator details and current wallet state
@@ -143,43 +150,46 @@ export async function POST(req: NextRequest) {
           .limit(1);
 
         // Create internal notification for creator (Done outside transaction to avoid rollback on push failure)
-        const notificationData = campaignDetails && campaignDetails.creatorId ? {
-            userId: campaignDetails.creatorId,
-            type: 'donation_received' as const,
-            title: 'New Donation Received!',
-            message: `You received a donation of ${data.currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
-            metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
-        } : null;
-        
+        const notificationData =
+          campaignDetails && campaignDetails.creatorId
+            ? {
+                userId: campaignDetails.creatorId,
+                type: 'donation_received' as const,
+                title: 'New Donation Received!',
+                message: `You received a donation of ${data.currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
+                metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
+              }
+            : null;
+
         return {
           campaignDetails,
           wallet,
           backerName: finalBackerName,
-          notificationData
+          notificationData,
         };
       });
 
-        // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
-        // Direct sending ensures reliability in serverless environments like Vercel.
-        if (txResult && txResult.campaignDetails) {
-          try {
-            const { campaignDetails, wallet, backerName, notificationData } = txResult;
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-  
-            // In-App & Web Push Notification
-            if (notificationData) {
-              const { sendAppNotification } = await import('@/lib/notifications/push');
-              await sendAppNotification(
-                notificationData.userId,
-                notificationData.title,
-                notificationData.message,
-                notificationData.type,
-                '/dashboard/notifications',
-                notificationData.metadata
-              );
-            }
+      // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
+      // Direct sending ensures reliability in serverless environments like Vercel.
+      if (txResult && txResult.campaignDetails) {
+        try {
+          const { campaignDetails, wallet, backerName, notificationData } = txResult;
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
 
-            // Email to Donor (Receipt)
+          // In-App & Web Push Notification
+          if (notificationData) {
+            const { sendAppNotification } = await import('@/lib/notifications/push');
+            await sendAppNotification(
+              notificationData.userId,
+              notificationData.title,
+              notificationData.message,
+              notificationData.type,
+              '/dashboard/notifications',
+              notificationData.metadata,
+            );
+          }
+
+          // Email to Donor (Receipt)
           await sendEmail({
             type: 'donor_receipt',
             backerEmail: data.customer.email,

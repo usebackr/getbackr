@@ -16,13 +16,13 @@ const payload = {
     currency: 'NGN',
     channel: 'card',
     customer: {
-      email: 'tester@example.com'
+      email: 'tester@example.com',
     },
     metadata: {
       campaignId: CAMPAIGN_ID,
-      backerName: 'Diagnostic Tester'
-    }
-  }
+      backerName: 'Diagnostic Tester',
+    },
+  },
 };
 
 const body = JSON.stringify(payload);
@@ -35,15 +35,15 @@ fetch(WEBHOOK_URL, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-paystack-signature': signature
+    'x-paystack-signature': signature,
   },
-  body: body
+  body: body,
 })
-.then(async res => {
-  const text = await res.text();
-  console.log(`Response Status: ${res.status}`);
-  console.log(`Response Body: ${text}`);
-})
-.catch(err => {
-  console.error('Fetch error:', err);
-});
+  .then(async (res) => {
+    const text = await res.text();
+    console.log(`Response Status: ${res.status}`);
+    console.log(`Response Body: ${text}`);
+  })
+  .catch((err) => {
+    console.error('Fetch error:', err);
+  });

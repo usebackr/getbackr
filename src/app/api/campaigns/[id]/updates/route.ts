@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { campaignUpdates } from '@/db/schema/campaignUpdates';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 import { z } from 'zod';
 import { sendBackerUpdateEmails } from '@/workers/emailWorkers';
-import { sql } from 'drizzle-orm';
 
 const createUpdateSchema = z.object({
   title: z.string().min(1).max(200),
@@ -15,10 +14,7 @@ const createUpdateSchema = z.object({
 });
 
 // GET /api/campaigns/[id]/updates
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
 
@@ -35,10 +31,7 @@ export async function GET(
 }
 
 // POST /api/campaigns/[id]/updates
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = requireAuth(req);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -63,12 +56,15 @@ export async function POST(
     }
 
     // 2. Create the update
-    const [newUpdate] = await db.insert(campaignUpdates).values({
-      campaignId: id,
-      title: parsed.title,
-      body: parsed.body,
-      mediaUrl: parsed.mediaUrl,
-    }).returning();
+    const [newUpdate] = await db
+      .insert(campaignUpdates)
+      .values({
+        campaignId: id,
+        title: parsed.title,
+        body: parsed.body,
+        mediaUrl: parsed.mediaUrl,
+      })
+      .returning();
 
     // 3. Trigger email notifications to backers
     try {
@@ -85,7 +81,10 @@ export async function POST(
     return NextResponse.json({ update: newUpdate }, { status: 201 });
   } catch (err: any) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: err.errors }, { status: 422 });
+      return NextResponse.json(
+        { error: 'Validation failed', details: err.errors },
+        { status: 422 },
+      );
     }
     console.error('[CreateUpdate] Error:', err);
     return NextResponse.json({ error: 'Failed to create update' }, { status: 500 });

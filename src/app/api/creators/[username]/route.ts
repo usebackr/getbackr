@@ -46,9 +46,9 @@ export async function GET(
     );
 
   // Apply self-healing URLs
-  const sanitizedCampaigns = creatorCampaigns.map(c => ({
+  const sanitizedCampaigns = creatorCampaigns.map((c) => ({
     ...c,
-    coverImageUrl: getPublicUrl(c.coverImageUrl)
+    coverImageUrl: getPublicUrl(c.coverImageUrl),
   }));
 
   return NextResponse.json({

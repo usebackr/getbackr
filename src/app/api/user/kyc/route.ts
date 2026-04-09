@@ -59,7 +59,10 @@ export async function POST(req: NextRequest) {
         });
 
       // Update user KYC status to pending for administrative review
-      await tx.update(users).set({ kycStatus: 'pending', updatedAt: new Date() }).where(eq(users.id, userId));
+      await tx
+        .update(users)
+        .set({ kycStatus: 'pending', updatedAt: new Date() })
+        .where(eq(users.id, userId));
     });
 
     return NextResponse.json(

@@ -10,7 +10,12 @@ import {
   jsonb,
 } from 'drizzle-orm/pg-core';
 
-export const kycStatusEnum = pgEnum('kyc_status', ['unsubmitted', 'pending', 'verified', 'rejected']);
+export const kycStatusEnum = pgEnum('kyc_status', [
+  'unsubmitted',
+  'pending',
+  'verified',
+  'rejected',
+]);
 export const premiumStatusEnum = pgEnum('premium_status', ['none', 'active', 'grace']);
 
 export const users = pgTable('users', {

@@ -55,7 +55,20 @@ export interface ReceiptJobData {
   amount?: string | number;
   currency?: string;
   campaignTitle?: string;
-  type?: 'donor_receipt' | 'creator_alert' | 'withdrawal_otp' | 'bank_change_otp' | 'payment_approved' | 'kyc_approved' | 'withdrawal_rejected' | 'kyc_rejected' | 'welcome_email' | 'forgot_password' | 'verification_email' | 'kyc_received' | 'account_deleted';
+  type?:
+    | 'donor_receipt'
+    | 'creator_alert'
+    | 'withdrawal_otp'
+    | 'bank_change_otp'
+    | 'payment_approved'
+    | 'kyc_approved'
+    | 'withdrawal_rejected'
+    | 'kyc_rejected'
+    | 'welcome_email'
+    | 'forgot_password'
+    | 'verification_email'
+    | 'kyc_received'
+    | 'account_deleted';
   userId?: string;
   email?: string;
   displayName?: string;
@@ -74,13 +87,23 @@ export interface ReceiptJobData {
  * Direct Send Utility — Use this for instant delivery in Serverless (Vercel)
  */
 export async function sendEmail(data: ReceiptJobData) {
-  const { 
-    type, amount, currency, campaignTitle, backerEmail, email, otp,
-    creatorName, backerName, totalRaised, goalAmount, campaignUrl,
-    rejectionReason, displayName, token
+  const {
+    type,
+    amount,
+    campaignTitle,
+    backerEmail,
+    email,
+    otp,
+    backerName,
+    totalRaised,
+    rejectionReason,
+    displayName,
+    token,
   } = data;
 
-  console.log(`[Email Utility] Preparing to send ${type} to ${email || backerEmail || 'unknown recipient'}`);
+  console.log(
+    `[Email Utility] Preparing to send ${type} to ${email || backerEmail || 'unknown recipient'}`,
+  );
 
   if (!RESEND_API_KEY) {
     console.error('[Email Utility] RESEND_API_KEY is missing.');
@@ -288,7 +311,9 @@ export async function sendEmail(data: ReceiptJobData) {
       const to = email;
       if (!to) throw new Error('Missing email for Welcome Email');
       const firstName = displayName ? displayName.split(' ')[0] : 'there';
-      const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard` : 'https://findbackr.com.ng/dashboard';
+      const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+        : 'https://findbackr.com.ng/dashboard';
       const supportEmail = 'Usebackr@gmail.com';
       const founderName = 'Babatunde Lawal';
 
@@ -466,7 +491,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'creator_alert') {
       const to = email || backerEmail; // job variable stores the creator's email
       if (!to) throw new Error('Missing creator email');
-      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
       const { data: res, error } = await getResend().emails.send({
         to,
         from: FROM_EMAIL,
@@ -506,7 +531,6 @@ export async function sendEmail(data: ReceiptJobData) {
     // 6. Donor Receipt
     const to = backerEmail;
     if (!to) throw new Error('Missing backerEmail');
-    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const { data: res, error } = await getResend().emails.send({
       to,
@@ -551,7 +575,6 @@ export async function sendEmail(data: ReceiptJobData) {
     });
     if (error) throw error;
     return { sent: true, type, messageId: res?.id };
-
   } catch (err: any) {
     console.error(`[Email Utility] Failed to send ${type}:`, err);
     return { sent: false, error: err.message };
@@ -626,7 +649,9 @@ interface AccountLockoutJobData {
   lockedUntil: string; // ISO date string
 }
 
-export async function sendAccountLockoutEmail(data: AccountLockoutJobData): Promise<{ sent: boolean }> {
+export async function sendAccountLockoutEmail(
+  data: AccountLockoutJobData,
+): Promise<{ sent: boolean }> {
   const { email, lockedUntil } = data;
   const lockedUntilDate = new Date(lockedUntil).toLocaleString('en-US', {
     dateStyle: 'medium',
@@ -656,7 +681,9 @@ interface SubscriptionRenewalJobData {
   gracePeriodEndsAt: string; // ISO date string
 }
 
-export async function sendSubscriptionFailureEmail(data: SubscriptionRenewalJobData): Promise<{ sent: boolean }> {
+export async function sendSubscriptionFailureEmail(
+  data: SubscriptionRenewalJobData,
+): Promise<{ sent: boolean }> {
   const { email, plan, gracePeriodEndsAt } = data;
   const graceDate = new Date(gracePeriodEndsAt).toLocaleString('en-US', {
     dateStyle: 'long',
@@ -680,38 +707,40 @@ export async function sendSubscriptionFailureEmail(data: SubscriptionRenewalJobD
 // ---------------------------------------------------------------------------
 
 import { emailCampaigns } from '@/db/schema/emailCampaigns';
-import { users } from '@/db/schema/users';
 
 export async function processEmailCampaign(emailCampaignId: string): Promise<{ sent: number }> {
   const campaign = await db.query.emailCampaigns.findFirst({
-    where: eq(emailCampaigns.id, emailCampaignId)
+    where: eq(emailCampaigns.id, emailCampaignId),
   });
 
   if (!campaign || campaign.status !== 'sending') return { sent: 0 };
 
   // Fetch recipients based on source
-  let recipientEmails: string[] = [];
-  
+  const recipientEmails: string[] = [];
+
   if (campaign.recipientSource === 'backers' || campaign.recipientSource === 'both') {
     const backerRows = await db
       .selectDistinct({ email: contributions.backerEmail })
       .from(contributions)
       .where(eq(contributions.campaignId, campaign.campaignId || ''));
-    recipientEmails.push(...backerRows.map(r => r.email));
+    recipientEmails.push(...backerRows.map((r) => r.email));
   }
 
   // Deduplicate
   const uniqueRecipients = [...new Set(recipientEmails)];
   if (uniqueRecipients.length === 0) {
-    await db.update(emailCampaigns).set({ status: 'sent', sentCount: 0 }).where(eq(emailCampaigns.id, emailCampaignId));
+    await db
+      .update(emailCampaigns)
+      .set({ status: 'sent', sentCount: 0 })
+      .where(eq(emailCampaigns.id, emailCampaignId));
     return { sent: 0 };
   }
 
-  const emails = uniqueRecipients.map(to => ({
+  const emails = uniqueRecipients.map((to) => ({
     to,
     from: FROM_EMAIL,
     subject: campaign.subject,
-    html: campaign.bodyHtml
+    html: campaign.bodyHtml,
   }));
 
   const BATCH_SIZE = 100;
@@ -719,11 +748,14 @@ export async function processEmailCampaign(emailCampaignId: string): Promise<{ s
     await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
   }
 
-  await db.update(emailCampaigns).set({ 
-    status: 'sent', 
-    sentCount: uniqueRecipients.length,
-    sentAt: new Date()
-  }).where(eq(emailCampaigns.id, emailCampaignId));
+  await db
+    .update(emailCampaigns)
+    .set({
+      status: 'sent',
+      sentCount: uniqueRecipients.length,
+      sentAt: new Date(),
+    })
+    .where(eq(emailCampaigns.id, emailCampaignId));
 
   return { sent: uniqueRecipients.length };
 }

@@ -10,12 +10,12 @@ interface Backer {
   createdAt: Date;
 }
 
-export default function BackersList({ 
-  backers, 
-  totalDonors 
-}: { 
-  backers: Backer[]; 
-  totalDonors: number 
+export default function BackersList({
+  backers,
+  totalDonors,
+}: {
+  backers: Backer[];
+  totalDonors: number;
 }) {
   return (
     <div
@@ -34,9 +34,7 @@ export default function BackersList({
           marginBottom: '24px',
         }}
       >
-        <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
-          Latest Backers
-        </h4>
+        <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>Latest Backers</h4>
         <span
           style={{
             padding: '6px 12px',
@@ -47,7 +45,7 @@ export default function BackersList({
             fontWeight: 700,
             color: 'var(--accent-primary)',
             textTransform: 'uppercase',
-            letterSpacing: '0.05em'
+            letterSpacing: '0.05em',
           }}
         >
           {totalDonors} TOTAL
@@ -68,26 +66,28 @@ export default function BackersList({
           </p>
         ) : (
           backers.slice(0, 10).map((backer) => (
-            <div 
+            <div
               key={backer.id}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingBottom: '16px',
-                borderBottom: '1px solid #f1f5f9'
+                borderBottom: '1px solid #f1f5f9',
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <p style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
-                  {backer.isAnonymous ? 'Anonymous Supporter' : (backer.backerName || 'Anonymous Supporter')}
+                  {backer.isAnonymous
+                    ? 'Anonymous Supporter'
+                    : backer.backerName || 'Anonymous Supporter'}
                 </p>
                 <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                   {new Date(backer.createdAt).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
                   })}
                 </p>
               </div>

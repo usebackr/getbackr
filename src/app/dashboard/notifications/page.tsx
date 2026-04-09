@@ -37,28 +37,42 @@ export default function NotificationsPage() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
       <main className="dash-main" style={{ flex: 1 }}>
-        <header style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a 
-            href="/dashboard" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+        <header
+          style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '16px' }}
+        >
+          <a
+            href="/dashboard"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'center',
-              width: '40px', 
-              height: '40px', 
-              borderRadius: '12px', 
-              background: '#fff', 
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              background: '#fff',
               border: '1px solid #e2e8f0',
               color: '#475569',
-              textDecoration: 'none'
+              textDecoration: 'none',
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
             </svg>
           </a>
           <div>
-            <h1 style={{ fontSize: '2rem', marginBottom: '4px', fontWeight: 900 }}>Notifications</h1>
+            <h1 style={{ fontSize: '2rem', marginBottom: '4px', fontWeight: 900 }}>
+              Notifications
+            </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>
               Showing your last 10 updates
             </p>
@@ -67,21 +81,33 @@ export default function NotificationsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '720px' }}>
           {loading ? (
-            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading your alerts...</p>
+            <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+              Loading your alerts...
+            </p>
           ) : notifications.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#fff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <p style={{ color: '#64748b', fontWeight: 600 }}>All caught up! No new notifications.</p>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '60px',
+                background: '#fff',
+                borderRadius: '16px',
+                border: '1px dashed #cbd5e1',
+              }}
+            >
+              <p style={{ color: '#64748b', fontWeight: 600 }}>
+                All caught up! No new notifications.
+              </p>
             </div>
           ) : (
             notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
                 className="dash-card"
-                style={{ 
-                  display: 'flex', 
-                  gap: '16px', 
+                style={{
+                  display: 'flex',
+                  gap: '16px',
                   alignItems: 'flex-start',
-                  borderLeft: !n.isRead ? '4px solid var(--accent-primary)' : '1px solid #e2e8f0'
+                  borderLeft: !n.isRead ? '4px solid var(--accent-primary)' : '1px solid #e2e8f0',
                 }}
               >
                 <div style={{ fontSize: '2rem', flexShrink: 0 }}>

@@ -16,7 +16,12 @@ export async function GET(req: NextRequest) {
     const userId = payload.sub as string;
 
     const [user] = await db
-      .select({ id: users.id, name: users.displayName, email: users.email, avatar: users.avatarUrl })
+      .select({
+        id: users.id,
+        name: users.displayName,
+        email: users.email,
+        avatar: users.avatarUrl,
+      })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1);

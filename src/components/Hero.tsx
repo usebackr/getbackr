@@ -51,8 +51,8 @@ export default function Hero() {
             lineHeight: 1.6,
           }}
         >
-          The first crowdfunding platform designed for the Next Generation of African creators. Raise funds and build
-          radical trust with your community through public spending logs.
+          The first crowdfunding platform designed for the Next Generation of African creators.
+          Raise funds and build radical trust with your community through public spending logs.
         </p>
         <div
           style={{
@@ -64,7 +64,7 @@ export default function Hero() {
           }}
         >
           <a
-            href={!loading && isAuthenticated ? "/dashboard/campaigns/create" : "/login"}
+            href={!loading && isAuthenticated ? '/dashboard/campaigns/create' : '/login'}
             className="btn-primary"
             style={{
               padding: '16px 40px',
@@ -145,11 +145,14 @@ export default function Hero() {
                   fontWeight: 900,
                 }}
               >
-                "Echoes of the Sahara" — Kano
+                &quot;Echoes of the Sahara&quot; — Kano
               </h3>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <h2 className="text-gradient" style={{ fontSize: 'clamp(1.8rem, 5vw, 2.4rem)', fontWeight: 900 }}>
+              <h2
+                className="text-gradient"
+                style={{ fontSize: 'clamp(1.8rem, 5vw, 2.4rem)', fontWeight: 900 }}
+              >
                 ₦2,450,000
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>

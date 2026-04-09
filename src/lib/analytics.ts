@@ -1,11 +1,11 @@
 import { db } from './db';
 import { auditLogs, NewAuditLog } from '@/db/schema/auditLogs';
 
-export type EventType = 
-  | 'user_login' 
-  | 'user_logout' 
-  | 'beta_signup' 
-  | 'campaign_created' 
+export type EventType =
+  | 'user_login'
+  | 'user_logout'
+  | 'beta_signup'
+  | 'campaign_created'
   | 'donation_made'
   | 'kyc_submitted'
   | 'withdrawal_requested'
@@ -18,7 +18,7 @@ export async function trackEvent(
   eventType: EventType,
   actorId?: string,
   metadata?: Record<string, any>,
-  resource?: { type: string; id: string }
+  resource?: { type: string; id: string },
 ) {
   try {
     const log: NewAuditLog = {

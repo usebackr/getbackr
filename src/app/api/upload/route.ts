@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('[Upload API] Fatal Error:', err);
     return NextResponse.json(
-      { error: `Upload failed: ${err.message || 'Unknown error'}. Please check S3/Local configuration.` },
+      {
+        error: `Upload failed: ${err.message || 'Unknown error'}. Please check S3/Local configuration.`,
+      },
       { status: 500 },
     );
   }

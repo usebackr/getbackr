@@ -49,8 +49,9 @@ export default function TermsPage() {
             }}
           >
             <p>
-              These Terms of Service ("Terms") govern your access to and use of the Backr platform.
-              By using Backr, you agree to be bound by these Terms completely and unambiguously.
+              These Terms of Service (&quot;Terms&quot;) govern your access to and use of the Backr
+              platform. By using Backr, you agree to be bound by these Terms completely and
+              unambiguously.
             </p>
 
             <div>
@@ -238,10 +239,9 @@ export default function TermsPage() {
                 8. Spending Log Disclaimer
               </h2>
               <p>
-                The public spending logs displayed on campaign pages are entirely self-reported
                 strictly by the creators. Backr does not independently audit, verify, or guarantee
                 the factual accuracy of these entries. Backr bears absolute zero liability for
-                inaccuracies or fabrications present in a creator's spending log.
+                inaccuracies or fabrications present in a creator&apos;s spending log.
               </p>
             </div>
 
