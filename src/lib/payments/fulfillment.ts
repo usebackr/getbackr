@@ -83,7 +83,6 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
             message: contributionMessage || null,
             referralSource: referralSource || null,
             paymentMethod: channel || 'paystack',
-            updatedAt: new Date(),
           })
           .where(eq(contributions.id, existing[0].id));
       } else {
