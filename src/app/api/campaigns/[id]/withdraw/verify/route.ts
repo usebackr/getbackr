@@ -8,6 +8,7 @@ import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
 import { withdrawals } from '@/db/schema/withdrawals';
 import { projectWallets } from '@/db/schema/projectWallets';
+import { sendEmail } from '@/workers/emailWorkers';
 
 export async function POST(
   req: NextRequest,
@@ -91,6 +92,13 @@ export async function POST(
     .update(withdrawals)
     .set({ status: 'processing', paymentReference: reference, amount: String(amount) })
     .where(eq(withdrawals.id, withdrawalId));
+
+  // Notify Admin of new Withdrawal Request
+  await sendEmail({
+    type: 'admin_action_required',
+    adminActionType: 'withdrawal_request',
+    adminActionDetails: `Campaign ID: ${id}\nUser ID: ${userId}\nAmount Requested: ₦${amount.toLocaleString()}\nReference: ${reference}`,
+  }).catch(err => console.error('[Emailer] Failed to alert admin:', err));
 
   return NextResponse.json(
     {

@@ -9,6 +9,7 @@ import { users } from '@/db/schema/users';
 import { spendingLogs } from '@/db/schema/spendingLogs';
 import { eq, and, sql, inArray } from 'drizzle-orm';
 import { verifyAccessToken } from '@/lib/auth/jwt';
+import { sendEmail } from '@/workers/emailWorkers';
 
 import { bankAccounts } from '@/db/schema/bankAccounts';
 
@@ -165,6 +166,13 @@ export async function POST(req: NextRequest) {
         amount: withdrawAmount.toString(),
         entryDate: new Date().toISOString().split('T')[0],
       });
+
+      // 6. Alert Admin
+      await sendEmail({
+        type: 'admin_action_required',
+        adminActionType: 'withdrawal_request',
+        adminActionDetails: `User ID: ${userId}\nCampaign ID: ${campaignId}\nAmount Requested: ₦${withdrawAmount.toLocaleString()}\nReason: ${reason}\n\nBank: ${bankAccount.bankCode} / ${bankAccount.accountNumber} (${bankAccount.accountName})`,
+      }).catch(err => console.error('[Emailer] Failed to alert admin:', err));
 
       return NextResponse.json({
         message: 'Withdrawal initiated & transparency log created successfully',

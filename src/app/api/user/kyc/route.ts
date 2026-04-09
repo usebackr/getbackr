@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { kycProfiles } from '@/db/schema/kycProfiles';
 import { verifyAccessToken } from '@/lib/auth/jwt';
+import { sendEmail } from '@/workers/emailWorkers';
 
 const kycSchema = z.object({
   legalName: z.string().min(2, 'Legal name is required'),
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest) {
         .set({ kycStatus: 'pending', updatedAt: new Date() })
         .where(eq(users.id, userId));
     });
+
+    // Notify Admin of new KYC Request
+    await sendEmail({
+      type: 'admin_action_required',
+      adminActionType: 'kyc_request',
+      adminActionDetails: `User: ${legalName}\nID Type: ${idType}\nID Number: ${idNumber}`,
+    }).catch(err => console.error('[Emailer] Failed to alert admin:', err));
 
     return NextResponse.json(
       { message: 'KYC Verification Submitted Successfully' },

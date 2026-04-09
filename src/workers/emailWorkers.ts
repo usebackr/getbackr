@@ -69,7 +69,8 @@ export interface ReceiptJobData {
     | 'forgot_password'
     | 'verification_email'
     | 'kyc_received'
-    | 'account_deleted';
+    | 'account_deleted'
+    | 'admin_action_required';
   userId?: string;
   email?: string;
   displayName?: string;
@@ -82,6 +83,9 @@ export interface ReceiptJobData {
   totalRaised?: string | number;
   goalAmount?: string | number;
   campaignUrl?: string;
+  // Extra data for admin alert
+  adminActionType?: 'kyc_request' | 'withdrawal_request';
+  adminActionDetails?: string;
 }
 
 /**
@@ -100,6 +104,8 @@ export async function sendEmail(data: ReceiptJobData) {
     rejectionReason,
     displayName,
     token,
+    adminActionType,
+    adminActionDetails,
   } = data;
 
   console.log(
@@ -520,6 +526,45 @@ export async function sendEmail(data: ReceiptJobData) {
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
     }
+
+    // 4h. Admin Alerts
+    if (type === 'admin_action_required') {
+      const to = process.env.ADMIN_EMAIL || 'admin@findbackr.com.ng';
+      const actionTitle = adminActionType === 'kyc_request' ? 'New KYC Verification Request' : 'New Withdrawal Request';
+      
+      const { data: res, error } = await getResend().emails.send({
+        to,
+        from: FROM_EMAIL,
+        subject: `[ADMIN PRIORITY] ${actionTitle}`,
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}; border-top: 4px solid #ef4444;">
+              <h2 style="font-size: 1.5rem; color: #ef4444; margin-bottom: 24px;">Action Required: ${actionTitle}</h2>
+              <p>A user has submitted a request that requires administrative approval.</p>
+              
+              <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 24px 0; border-left: 4px solid #3b82f6;">
+                <h3 style="margin-top: 0; color: #0f172a; font-size: 1.1rem;">Details</h3>
+                <p style="margin: 0; white-space: pre-wrap;">${adminActionDetails || 'Please check the admin dashboard for details.'}</p>
+              </div>
+              
+              <div style="text-align: center; margin-top: 32px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/admin" 
+                   style="display: inline-block; padding: 12px 24px; background: #0f172a; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                  Go to Admin Dashboard
+                </a>
+              </div>
+              
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                System Generated Alert &bull; Backr Admin
+              </div>
+            </div>
+          </div>
+        `,
+      });
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
+    }
+
     if (type === 'creator_alert') {
       const to = email || backerEmail; // job variable stores the creator's email
       if (!to) throw new Error('Missing creator email');

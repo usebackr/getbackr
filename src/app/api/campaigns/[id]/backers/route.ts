@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { campaigns } from '@/db/schema/campaigns';
@@ -40,7 +40,7 @@ export async function GET(
       anonymous: contributions.anonymous,
       createdAt: contributions.createdAt,
       backerEmail: contributions.backerEmail,
-      backerName: users.displayName,
+      backerName: sql<string | null>`COALESCE(${contributions.backerName}, ${users.displayName})`,
       referralSource: contributions.referralSource,
     })
     .from(contributions)

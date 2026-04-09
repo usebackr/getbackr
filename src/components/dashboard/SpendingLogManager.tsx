@@ -192,7 +192,7 @@ export default function SpendingLogManager({ campaignId }: SpendingLogManagerPro
 
       {logs.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
-          <Receipt size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+          <ClipboardList size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
           <p style={{ fontWeight: 600 }}>No spending logs yet.</p>
           <p style={{ fontSize: '0.85rem' }}>Start by adding your first project expense.</p>
         </div>
@@ -201,7 +201,7 @@ export default function SpendingLogManager({ campaignId }: SpendingLogManagerPro
           {logs.map((log) => (
             <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
               <div style={{ width: '48px', height: '48px', background: '#f8fafc', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                <Receipt size={24} />
+                <ClipboardList size={24} />
               </div>
               <div style={{ flex: 1 }}>
                 <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{log.description}</h4>
