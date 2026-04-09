@@ -135,7 +135,7 @@ export default function WalletDashboard() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Sidebar />
-      <main className="dash-main" style={{ flex: 1, padding: 'clamp(16px, 5vw, 40px)' }}>
+      <main className="dash-main-wallet" style={{ flex: 1 }}>
         <header
           style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}
         >
@@ -197,6 +197,7 @@ export default function WalletDashboard() {
               </p>
             </div>
             <div
+              className="campaign-selector-container"
               style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '280px' }}
             >
               <label
@@ -343,14 +344,8 @@ export default function WalletDashboard() {
           <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Loading wallet data...</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            {/* Summary Cards - 2x2 Grid on Mobile */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-                gap: '24px',
-              }}
-            >
+            {/* Summary Cards */}
+            <div className="wallet-stats-grid">
               {[
                 {
                   label: 'Total Raised',
@@ -410,7 +405,7 @@ export default function WalletDashboard() {
                 background: '#ecfdf5',
                 border: '2px solid #059669',
                 borderRadius: '24px',
-                padding: '32px',
+                padding: 'clamp(24px, 5vw, 40px)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -422,7 +417,7 @@ export default function WalletDashboard() {
                 style={{
                   color: '#059669',
                   fontWeight: 800,
-                  fontSize: '0.9rem',
+                  fontSize: '0.8rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                 }}
@@ -434,7 +429,7 @@ export default function WalletDashboard() {
                   fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                   fontWeight: 900,
                   color: '#064e3b',
-                  margin: 0,
+                  margin: '8px 0',
                 }}
               >
                 ₦{summary.availableBalance.toLocaleString()}
@@ -513,42 +508,27 @@ export default function WalletDashboard() {
                 </div>
               )}
             </div>
+
             {/* Withdraw Section */}
-            <div className="dash-card" style={{ padding: 'clamp(16px, 5vw, 32px)' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '8px', fontWeight: 800 }}>
+            <div className="dash-card" style={{ padding: 'clamp(20px, 5vw, 32px)' }}>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', fontWeight: 800 }}>
                 Request Withdrawal
               </h3>
               <p
                 style={{
                   color: '#64748b',
                   fontSize: '0.85rem',
-                  marginBottom: '20px',
+                  marginBottom: '28px',
                   fontWeight: 500,
                 }}
               >
                 Funds are typically processed within 24 hours of request.
               </p>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '20px',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="withdrawal-grid">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div>
-                    <label
-                      style={{
-                        display: 'block',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: '#475569',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      Withdrawal Amount
-                    </label>
+                    <label className="input-label">Withdrawal Amount</label>
                     <div style={{ position: 'relative' }}>
                       <span
                         style={{
@@ -582,17 +562,7 @@ export default function WalletDashboard() {
                   </div>
 
                   <div>
-                    <label
-                      style={{
-                        display: 'block',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: '#475569',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      Project Context
-                    </label>
+                    <label className="input-label">Project Context</label>
                     <div
                       style={{
                         padding: '14px',
@@ -612,19 +582,9 @@ export default function WalletDashboard() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div>
-                    <label
-                      style={{
-                        display: 'block',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: '#475569',
-                        marginBottom: '8px',
-                      }}
-                    >
-                      Transparency Reason
-                    </label>
+                    <label className="input-label">Transparency Reason</label>
                     <textarea
                       value={withdrawReason}
                       onChange={(e) => setWithdrawReason(e.target.value)}
@@ -643,16 +603,8 @@ export default function WalletDashboard() {
                     />
                   </div>
 
-                  {error && (
-                    <div style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 700 }}>
-                      {error}
-                    </div>
-                  )}
-                  {success && (
-                    <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 700 }}>
-                      {success}
-                    </div>
-                  )}
+                  {error && <div className="error-text">{error}</div>}
+                  {success && <div className="success-text">{success}</div>}
 
                   <button
                     onClick={handleWithdraw}
@@ -691,7 +643,7 @@ export default function WalletDashboard() {
               </div>
             </div>
 
-            <div style={{ marginTop: '32px' }}>
+            <div style={{ marginTop: '20px' }}>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>
                 Transaction History
               </h3>
@@ -700,168 +652,200 @@ export default function WalletDashboard() {
                   <p style={{ color: '#64748b' }}>No wallet transactions yet.</p>
                 </div>
               ) : (
-                <div
-                  className="dash-card"
-                  style={{ padding: '0', overflow: 'hidden', borderRadius: '16px' }}
-                >
-                  <div style={{ overflowX: 'auto' }}>
-                    <table
-                      style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        textAlign: 'left',
-                        minWidth: '650px',
-                      }}
+                <>
+                  {/* Desktop Table */}
+                  <div className="desktop-transactions-table">
+                    <div
+                      className="dash-card"
+                      style={{ padding: '0', overflow: 'hidden', borderRadius: '16px' }}
                     >
-                      <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                        <tr>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Type
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Description
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Amount
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Status
-                          </th>
-                          <th
-                            style={{
-                              padding: '16px 24px',
-                              color: '#475569',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Date
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {transactions.map((tx: any, idx) => (
-                          <tr
-                            key={`${tx.type}-${tx.id}-${idx}`}
-                            style={{ borderBottom: '1px solid #f1f5f9' }}
-                          >
-                            <td style={{ padding: '16px 24px' }}>
-                              <span
-                                style={{
-                                  padding: '4px 10px',
-                                  borderRadius: '8px',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 700,
-                                  background: tx.type === 'contribution' ? '#ecfdf5' : '#fef2f2',
-                                  color: tx.type === 'contribution' ? '#059669' : '#dc2626',
-                                  textTransform: 'uppercase',
-                                }}
-                              >
-                                {tx.type === 'contribution' ? 'Credit' : 'Debit'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '16px 24px' }}>
-                              <div
-                                style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem' }}
-                              >
-                                {tx.description}
-                              </div>
-                              {tx.type === 'contribution' && (
-                                <span
-                                  style={{
-                                    fontSize: '0.7rem',
-                                    color: '#64748b',
-                                    display: 'block',
-                                    marginTop: '4px',
-                                  }}
-                                >
-                                  Fee: ₦{Number(tx.platformFee).toLocaleString()}
-                                </span>
-                              )}
-                            </td>
-                            <td
-                              style={{
-                                padding: '16px 24px',
-                                fontWeight: 800,
-                                fontSize: '1rem',
-                                color: tx.type === 'contribution' ? '#059669' : '#0f172a',
-                              }}
-                            >
-                              {tx.type === 'contribution' ? '+' : '-'}₦
-                              {Number(tx.amount).toLocaleString()}
-                            </td>
-                            <td style={{ padding: '16px 24px' }}>
-                              <span
-                                style={{
-                                  fontSize: '0.8rem',
-                                  color:
-                                    tx.status === 'confirmed' || tx.status === 'completed'
-                                      ? '#059669'
-                                      : '#64748b',
-                                  fontWeight: 500,
-                                  textTransform: 'capitalize',
-                                }}
-                              >
-                                {tx.status.replace('_', ' ')}
-                              </span>
-                            </td>
-                            <td
-                              style={{
-                                padding: '16px 24px',
-                                color: '#64748b',
-                                fontSize: '0.85rem',
-                              }}
-                            >
-                              {new Date(tx.createdAt).toLocaleDateString()}
-                            </td>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead
+                          style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}
+                        >
+                          <tr>
+                            <th className="table-th">Type</th>
+                            <th className="table-th">Description</th>
+                            <th className="table-th">Amount</th>
+                            <th className="table-th">Status</th>
+                            <th className="table-th">Date</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {transactions.map((tx: any, idx) => (
+                            <tr
+                              key={`${tx.type}-${tx.id}-${idx}`}
+                              style={{ borderBottom: '1px solid #f1f5f9' }}
+                            >
+                              <td style={{ padding: '16px 24px' }}>
+                                <span
+                                  className={`tx-badge ${tx.type === 'contribution' ? 'credit' : 'debit'}`}
+                                >
+                                  {tx.type === 'contribution' ? 'Credit' : 'Debit'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '16px 24px' }}>
+                                <div className="tx-desc">{tx.description}</div>
+                                {tx.type === 'contribution' && (
+                                  <span className="tx-fee">
+                                    Fee: ₦{Number(tx.platformFee).toLocaleString()}
+                                  </span>
+                                )}
+                              </td>
+                              <td
+                                className={`tx-amount ${tx.type === 'contribution' ? 'credit' : ''}`}
+                                style={{ padding: '16px 24px' }}
+                              >
+                                {tx.type === 'contribution' ? '+' : '-'}₦
+                                {Number(tx.amount).toLocaleString()}
+                              </td>
+                              <td style={{ padding: '16px 24px' }}>
+                                <span
+                                  className={`tx-status ${
+                                    tx.status === 'confirmed' || tx.status === 'completed'
+                                      ? 'confirmed'
+                                      : ''
+                                  }`}
+                                >
+                                  {tx.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td className="tx-date" style={{ padding: '16px 24px' }}>
+                                {new Date(tx.createdAt).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Mobile Transactions List */}
+                  <div className="mobile-transactions-list">
+                    {transactions.map((tx: any, idx) => (
+                      <div key={idx} className="mobile-tx-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <span className={`tx-badge ${tx.type === 'contribution' ? 'credit' : 'debit'}`}>
+                            {tx.type === 'contribution' ? 'Credit' : 'Debit'}
+                          </span>
+                          <span className="tx-date">{new Date(tx.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="tx-desc" style={{ marginBottom: '12px', fontSize: '1rem' }}>{tx.description}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                           <div className={`tx-amount ${tx.type === 'contribution' ? 'credit' : ''}`} style={{ fontSize: '1.2rem' }}>
+                            {tx.type === 'contribution' ? '+' : '-'}₦{Number(tx.amount).toLocaleString()}
+                          </div>
+                           <span className={`tx-status ${tx.status === 'confirmed' || tx.status === 'completed' ? 'confirmed' : ''}`}>
+                            {tx.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                        {tx.type === 'contribution' && (
+                          <div className="tx-fee" style={{ marginTop: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '8px' }}>
+                            Fee Contribution: ₦{Number(tx.platformFee).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
         )}
+
+        <style jsx>{`
+          .dash-main-wallet {
+            padding: clamp(16px, 5vw, 40px);
+          }
+
+          .wallet-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+          }
+
+          .withdrawal-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+             gap: 32px;
+          }
+
+          .input-label {
+            display: block;
+            fontSize: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 8px;
+          }
+
+          .error-text { color: #ef4444; font-size: 0.85rem; font-weight: 700; }
+          .success-text { color: #10b981; font-size: 0.85rem; font-weight: 700; }
+
+          .table-th {
+            padding: 16px 24px;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .tx-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .tx-badge.credit { background: #ecfdf5; color: #059669; }
+          .tx-badge.debit { background: #fef2f2; color: #dc2626; }
+
+          .tx-desc { font-weight: 600; color: #0f172a; font-size: 0.9rem; }
+          .tx-fee { font-size: 0.7rem; color: #64748b; display: block; margin-top: 4px; }
+          .tx-amount { font-weight: 800; font-size: 1rem; color: #0f172a; }
+          .tx-amount.credit { color: #059669; }
+          
+          .tx-status { font-size: 0.8rem; color: #64748b; font-weight: 500; text-transform: capitalize; }
+          .tx-status.confirmed { color: #059669; }
+          .tx-date { color: #64748b; font-size: 0.85rem; }
+
+          .mobile-transactions-list { display: none; }
+
+          @media (max-width: 768px) {
+            .dash-main-wallet {
+              padding: 16px;
+            }
+            .desktop-transactions-table { display: none; }
+            .mobile-transactions-list { 
+              display: flex; 
+              flex-direction: column; 
+              gap: 16px; 
+            }
+            .mobile-tx-card {
+              background: #fff;
+              border-radius: 16px;
+              padding: 20px;
+              border: 1px solid #e2e8f0;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+            .wallet-stats-grid {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 12px;
+            }
+            .campaign-selector-container {
+               min-width: 100% !important;
+            }
+            .withdrawal-grid {
+              gap: 24px;
+            }
+          }
+
+          @media (max-width: 480px) {
+             .wallet-stats-grid {
+              grid-template-columns: 1fr;
+            }
+          }
+        `}</style>
       </main>
     </div>
   );

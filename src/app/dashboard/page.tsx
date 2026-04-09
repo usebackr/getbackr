@@ -1007,10 +1007,9 @@ export default function DashboardPage() {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  fontSize: '3rem',
                                 }}
                               >
-                                🎬
+                                <Clapperboard size={48} />
                               </div>
                             )}
                             {camp.category && (
@@ -1146,7 +1145,7 @@ export default function DashboardPage() {
                                       fontWeight: 600,
                                     }}
                                   >
-                                    👥 <b>{camp.backers || 0}</b> backers
+                                    <Users size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> <b>{camp.backers || 0}</b> backers
                                   </span>
                                 </div>
                               </div>
@@ -1233,7 +1232,7 @@ export default function DashboardPage() {
                               marginBottom: '4px',
                             }}
                           >
-                            📢 Post Project Update
+                            <Megaphone size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }} /> Post Project Update
                           </button>
                           <button
                             onClick={() => setSelectedCampaignForBackers(camp.id)}
