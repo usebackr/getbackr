@@ -198,7 +198,7 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
               }}>
                 <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 10px #fff' }} /> #1 TRENDING
               </div>
-              <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '12px', maxWidth: '600px', lineHeight: 1.1 }}>{filteredCampaigns[0].title}</h2>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '12px', maxWidth: '600px', lineHeight: 1.1, color: '#fff' }}>{filteredCampaigns[0].title}</h2>
               <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '500px', marginBottom: '24px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {filteredCampaigns[0].description}
               </p>
