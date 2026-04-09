@@ -9,19 +9,22 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    console.log('--- Starting Payment Reconciliation via API (Last 5 Hours) ---');
+    const { searchParams } = new URL(req.url);
+    const hours = parseInt(searchParams.get('hours') || '24', 10);
     
-    // Get current time - 5 hours
-    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+    console.log(`--- Starting Payment Reconciliation via API (Last ${hours} Hours) ---`);
     
-    // Fetch all pending contributions from the last 5 hours
+    // Get current time - specified hours
+    const lookbackTime = new Date(Date.now() - hours * 60 * 60 * 1000);
+    
+    // Fetch all pending contributions from the lookback period
     const pendingContributions = await db
       .select()
       .from(contributions)
       .where(
         and(
           eq(contributions.status, 'pending'),
-          gt(contributions.createdAt, fiveHoursAgo)
+          gt(contributions.createdAt, lookbackTime)
         )
       )
       .orderBy(desc(contributions.createdAt));
