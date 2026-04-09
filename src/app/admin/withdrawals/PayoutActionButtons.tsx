@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Lock } from 'lucide-react';
 
 export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: string }) {
   const router = useRouter();
@@ -178,7 +179,7 @@ export default function PayoutActionButtons({ withdrawalId }: { withdrawalId: st
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '1.2rem' }}>🔐</span>
+          <Lock size={20} color="#1e40af" />
           <h4 style={{ fontSize: '1rem', fontWeight: 900, color: '#1e40af', margin: 0 }}>
             Two-Factor Required
           </h4>

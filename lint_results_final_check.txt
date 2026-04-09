@@ -1,0 +1,220 @@
+
+> backr-platform@0.1.0 lint
+> eslint . --ext .ts,.tsx
+
+
+/Users/mac/Backr/src/app/(auth)/forgot-password/page.tsx
+  28:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/(auth)/reset-password/page.tsx
+  50:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/kyc/KycActionButtons.tsx
+  36:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/kyc/page.tsx
+  239:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  304:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/admin/page.tsx
+   82:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  294:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  338:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/users/page.tsx
+  27:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/withdrawals/PayoutActionButtons.tsx
+  83:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/withdrawals/page.tsx
+  26:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/analytics/growth/route.ts
+  65:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/kyc/[id]/route.ts
+  119:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/payments/balance/route.ts
+  10:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/users/[id]/route.ts
+  122:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/users/[id]/status/route.ts
+  22:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/withdrawals/[id]/route.ts
+  209:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  290:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  384:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/forgot-password/route.ts
+  52:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/otp/bank-change/route.ts
+  68:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/register/route.ts
+  102:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/reset-password/route.ts
+  64:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/close/route.ts
+  51:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/route.ts
+  122:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/share-card/route.ts
+  136:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/status/route.ts
+  43:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/updates/route.ts
+  82:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/create/route.ts
+   97:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/cron/route.ts
+  24:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/dashboard/wallet-summary/route.ts
+  131:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/dashboard/wallet-transactions/route.ts
+  56:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/kyc/submit/route.ts
+  139:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/notifications/push/route.ts
+  47:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/notifications/route.ts
+  24:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/checkout/route.ts
+  130:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/resolve-bank/route.ts
+  18:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/webhook/route.ts
+  226:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/upload/route.ts
+  44:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/user/bank/route.ts
+   26:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/user/kyc/route.ts
+  72:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/wallet/withdraw/route.ts
+  174:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/c/[slug]/ShareButton.tsx
+  30:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/c/[slug]/page.tsx
+   20:17  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   21:16  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   22:15  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   23:13  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   24:30  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   25:22  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   28:17  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   32:16  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  338:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  465:39  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  632:50  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/campaigns/[slug]/page.tsx
+  87:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/donations/page.tsx
+   7:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/identity/page.tsx
+  13:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/notifications/page.tsx
+  7:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/page.tsx
+   55:48  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  204:34  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  485:52  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  504:42  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  606:6   warning  React Hook React.useEffect has a missing dependency: 'fetchStatsAndBank'. Either include it or remove the dependency array                                                                                                                                      react-hooks/exhaustive-deps
+  958:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  994:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/dashboard/profile/page.tsx
+   7:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/wallet/page.tsx
+   66:6   warning  React Hook useEffect has a missing dependency: 'fetchWallet'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   84:19  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  127:19  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  225:52  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  597:54  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  770:48  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/explore/ExploreClient.tsx
+   58:81  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  179:58  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  286:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/u/[username]/page.tsx
+  49:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/Sidebar.tsx
+  183:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/admin/GrowthChart.tsx
+  28:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/admin/UserManagementTable.tsx
+  11:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/analytics.ts
+  20:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/payments/paystack.ts
+  294:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/storage.ts
+   95:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/scripts/test-email.ts
+  60:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/workers/emailWorkers.ts
+  578:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 101 problems (0 errors, 101 warnings)
+

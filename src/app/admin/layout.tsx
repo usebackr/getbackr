@@ -1,6 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { verifyAdmin } from '@/lib/auth/admin';
+import { Sparkles, Flag, Users, Banknote, LogOut } from 'lucide-react';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = await verifyAdmin();
@@ -49,7 +50,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               background: 'rgba(255,255,255,0.05)',
             }}
           >
-            ✦ Platform Overview
+            <Sparkles size={18} /> Platform Overview
           </a>
           <a
             href="/admin/kyc"
@@ -65,7 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               transition: 'color 0.2s',
             }}
           >
-            ⚑ KYC Approvals
+            <Flag size={18} /> KYC Approvals
           </a>
           <a
             href="/admin/users"
@@ -81,7 +82,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               transition: 'color 0.2s',
             }}
           >
-            👥 User Management
+            <Users size={18} /> User Management
           </a>
           <a
             href="/admin/withdrawals"
@@ -97,7 +98,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               transition: 'color 0.2s',
             }}
           >
-            ₦ Transfer Payouts
+            <Banknote size={18} /> Transfer Payouts
           </a>
         </nav>
         <div style={{ padding: '24px', borderTop: '1px solid #1e293b' }}>
@@ -129,7 +130,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               textDecoration: 'none',
             }}
           >
-            Exit Admin ↑
+            Exit Admin <LogOut size={16} style={{ marginLeft: '4px' }} />
           </a>
         </header>
         <div style={{ padding: '40px', flex: 1 }}>{children}</div>

@@ -5,6 +5,7 @@ import { kycProfiles } from '@/db/schema/kycProfiles';
 import { eq, desc, sql } from 'drizzle-orm';
 import KycActionButtons from './KycActionButtons';
 import { getPublicUrl } from '@/lib/storage';
+import { ExternalLink } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -258,7 +259,11 @@ export default async function AdminKycPage({ searchParams }: { searchParams: { p
                             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                           }}
                         >
-                          View Full Size ↗
+                          View Full Size{' '}
+                          <ExternalLink
+                            size={12}
+                            style={{ display: 'inline', marginLeft: '2px' }}
+                          />
                         </a>
                       </div>
                     ) : (
@@ -323,7 +328,11 @@ export default async function AdminKycPage({ searchParams }: { searchParams: { p
                             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                           }}
                         >
-                          View Full Size ↗
+                          View Full Size{' '}
+                          <ExternalLink
+                            size={12}
+                            style={{ display: 'inline', marginLeft: '2px' }}
+                          />
                         </a>
                       </div>
                     ) : (

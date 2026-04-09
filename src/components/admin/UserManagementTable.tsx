@@ -55,7 +55,7 @@ export function UserManagementTable({
   async function handleDeleteUser(userId: string, email: string) {
     if (
       !window.confirm(
-        `⚠️ PERMANENT DELETION: Are you sure you want to delete ${email}? This will erase all their campaigns, contributions, and wallet data. This CANNOT be undone.`,
+        `WARNING: PERMANENT DELETION: Are you sure you want to delete ${email}? This will erase all their campaigns, contributions, and wallet data. This CANNOT be undone.`,
       )
     ) {
       return;

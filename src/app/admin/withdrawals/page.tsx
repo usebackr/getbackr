@@ -8,6 +8,7 @@ import { contributions } from '@/db/schema/contributions';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import PayoutActionButtons from './PayoutActionButtons';
 import { getTransferBalance } from '@/lib/payments/paystack';
+import { AlertTriangle, Gavel, Banknote } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,7 +135,7 @@ export default async function AdminWithdrawalsPage({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+            <AlertTriangle size={24} />
             <h3 style={{ fontWeight: 900, margin: 0, fontSize: '1.25rem' }}>
               Database Synchronization Issue
             </h3>
@@ -170,7 +171,11 @@ export default async function AdminWithdrawalsPage({
             fontFamily: 'Outfit, sans-serif',
           }}
         >
-          Payout Governance 🏛️
+          Payout Governance{' '}
+          <Gavel
+            size={32}
+            style={{ display: 'inline', marginLeft: '8px', verticalAlign: 'middle' }}
+          />
         </h1>
         <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: 500 }}>
           Review, analyze, and authorize fund transfers for Backr campaigns.
@@ -205,7 +210,7 @@ export default async function AdminWithdrawalsPage({
               border: '1px solid rgba(16, 185, 129, 0.2)',
             }}
           >
-            <span style={{ fontSize: '2rem' }}>💰</span>
+            <Banknote size={32} color="#10b981" />
           </div>
           <div>
             <h3

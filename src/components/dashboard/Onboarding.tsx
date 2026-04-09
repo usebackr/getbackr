@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Check } from 'lucide-react';
 
 interface UserProfile {
   kycStatus: 'unsubmitted' | 'pending' | 'verified' | 'rejected';
@@ -88,7 +89,15 @@ export function VerificationBanner({ user }: { user: UserProfile }) {
             opacity: resending ? 0.7 : 1,
           }}
         >
-          {resending ? 'Sending...' : sent ? '✓ Link Sent' : 'Resend Verification Link'}
+          {resending ? (
+            'Sending...'
+          ) : sent ? (
+            <>
+              <Check size={16} style={{ display: 'inline', marginRight: '4px' }} /> Link Sent
+            </>
+          ) : (
+            'Resend Verification Link'
+          )}
         </button>
       </div>
     );

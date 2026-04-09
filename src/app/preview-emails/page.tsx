@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Rocket } from 'lucide-react';
 
 export default function PublicEmailPreviewPage() {
   const [activeTemplate, setActiveTemplate] = useState<'donor' | 'creator'>('donor');
@@ -265,7 +266,11 @@ export default function PublicEmailPreviewPage() {
       <footer
         style={{ marginTop: '40px', color: '#94a3b8', fontSize: '0.8rem', textAlign: 'center' }}
       >
-        Rendering pixel-perfect emails for <strong>Backr.app</strong> 🚀
+        Rendering pixel-perfect emails for <strong>Backr.app</strong>{' '}
+        <Rocket
+          size={20}
+          style={{ display: 'inline', marginLeft: '8px', verticalAlign: 'middle' }}
+        />
       </footer>
     </div>
   );

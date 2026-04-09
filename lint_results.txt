@@ -1,0 +1,360 @@
+
+> backr-platform@0.1.0 lint
+> eslint . --ext .ts,.tsx
+
+
+/Users/mac/Backr/scripts/apply-auth-migration.ts
+   4:10  error  'sql' is defined but never used          @typescript-eslint/no-unused-vars
+  15:9   error  'db' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/scripts/apply-push-migration.ts
+  6:14  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  7:16  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+
+/Users/mac/Backr/src/app/(auth)/forgot-password/page.tsx
+  28:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/(auth)/login/page.tsx
+   92:20  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  248:12  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/(auth)/reset-password/page.tsx
+  50:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/(auth)/signup/page.tsx
+  193:23  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  533:54  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/(auth)/verify-email/page.tsx
+  175:59  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  214:11  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/(auth)/verify-email/pending/page.tsx
+  57:11  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  73:15  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/admin/kyc/KycActionButtons.tsx
+  36:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/kyc/page.tsx
+    8:10  error    'useRouter' is defined but never used                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  240:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  305:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/admin/page.tsx
+   82:64  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   84:9   error    'userCount' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   87:9   error    'campaignCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   89:9   error    'topCampaigns' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  218:38  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  261:33  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  297:73  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  323:48  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  341:62  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/users/page.tsx
+  27:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/withdrawals/PayoutActionButtons.tsx
+  83:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/admin/withdrawals/page.tsx
+    8:30  error    'inArray' is defined but never used                              @typescript-eslint/no-unused-vars
+   26:24  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  410:21  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  410:71  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/api/admin/analytics/growth/route.ts
+   5:29  error    'lte' is defined but never used                                        @typescript-eslint/no-unused-vars
+  11:27  error    'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  65:32  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  74:32  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/kyc/[id]/route.ts
+  119:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/payments/balance/route.ts
+  10:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/users/[id]/route.ts
+  122:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/users/[id]/status/route.ts
+  22:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/admin/withdrawals/[id]/route.ts
+  209:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  290:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  384:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/__tests__/auth.test.ts
+  406:23  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  421:23  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+
+/Users/mac/Backr/src/app/api/auth/forgot-password/route.ts
+  52:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/otp/bank-change/route.ts
+  68:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/register/route.ts
+  102:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/auth/reset-password/route.ts
+  64:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/close/route.ts
+  51:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/route.ts
+  122:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/share-card/route.ts
+  136:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/status/route.ts
+  43:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/[id]/updates/route.ts
+   5:20  error    'and' is defined but never used           @typescript-eslint/no-unused-vars
+   9:10  error    'sql' is defined but never used           @typescript-eslint/no-unused-vars
+  83:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/create/route.ts
+   97:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/campaigns/route.ts
+   3:30  error  'ilike' is defined but never used         @typescript-eslint/no-unused-vars
+   3:37  error  'or' is defined but never used            @typescript-eslint/no-unused-vars
+  10:10  error  'getPublicUrl' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/app/api/cron/route.ts
+  24:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/dashboard/wallet-summary/route.ts
+  131:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/dashboard/wallet-transactions/route.ts
+   6:10  error    'users' is defined but never used         @typescript-eslint/no-unused-vars
+  57:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/email-campaigns/import/route.ts
+  6:10  error  'eq' is defined but never used   @typescript-eslint/no-unused-vars
+  6:14  error  'and' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/app/api/kyc/submit/route.ts
+  139:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/notifications/push/route.ts
+  47:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/notifications/route.ts
+  24:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/checkout/route.ts
+  130:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/resolve-bank/route.ts
+  18:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/payments/webhook/route.ts
+  226:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/upload/route.ts
+  44:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/user/bank/route.ts
+   26:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/user/kyc/route.ts
+  72:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/api/wallet/withdraw/route.ts
+  174:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/beta/page.tsx
+    8:9   error  'router' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  118:16  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  126:15  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  126:64  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  127:23  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  127:37  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  140:17  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  144:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  328:33  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/blog/page.tsx
+   70:42  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   87:64  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   87:84  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  102:13  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  102:24  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  103:66  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  118:55  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/c/[slug]/CheckoutButton.tsx
+  7:10  error  'checkoutUrl' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  7:23  error  'setCheckoutUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/app/c/[slug]/ShareButton.tsx
+  30:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/c/[slug]/page.tsx
+   20:17  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   21:16  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   22:15  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   23:13  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   24:30  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   25:22  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   28:17  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   32:16  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  167:15  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                 react/no-unescaped-entities
+  338:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  465:39  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  598:25  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                 react/no-unescaped-entities
+  598:43  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                 react/no-unescaped-entities
+  632:50  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/c/[slug]/success/page.tsx
+   4:8  error  'Link' is defined but never used           @typescript-eslint/no-unused-vars
+  10:9  error  'slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/app/campaigns/[slug]/page.tsx
+  74:13  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  87:27  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/donations/page.tsx
+   7:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/identity/page.tsx
+   13:40  warning  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  235:95  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  489:54  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  490:59  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/dashboard/notifications/page.tsx
+  7:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/page.tsx
+   55:48  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  204:34  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  485:52  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  504:42  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  606:6   warning  React Hook React.useEffect has a missing dependency: 'fetchStatsAndBank'. Either include it or remove the dependency array                                                                                                                                      react-hooks/exhaustive-deps
+  863:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                 react/no-unescaped-entities
+  958:44  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  994:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/dashboard/profile/page.tsx
+   7:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/dashboard/settings/page.tsx
+  445:54  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/dashboard/wallet/page.tsx
+   66:6   warning  React Hook useEffect has a missing dependency: 'fetchWallet'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   84:19  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  127:19  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  225:52  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  466:63  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  466:75  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  597:54  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  770:48  warning  Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/app/explore/ExploreClient.tsx
+   58:81  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  179:58  warning  Unexpected any. Specify a different type                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  286:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/mac/Backr/src/app/explore/page.tsx
+  4:10  error  'projectWallets' is defined but never used  @typescript-eslint/no-unused-vars
+  9:10  error  'getPublicUrl' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/app/preview-emails/page.tsx
+   36:9   error  'hrStyle' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  142:46  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  142:75  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  202:13  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  202:42  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/terms/page.tsx
+   52:39  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   52:45  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  244:66  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/app/u/[username]/page.tsx
+  27:9   error    'avatarUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  51:44  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/Hero.tsx
+  148:17  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  148:38  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/components/Navbar.tsx
+  58:9  error  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/components/OngoingProjects.tsx
+  5:25  error  'or' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/mac/Backr/src/components/Sidebar.tsx
+  183:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/Testimonials.tsx
+  103:17  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  103:31  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/components/TransparencySection.tsx
+  73:15  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/Backr/src/components/admin/GrowthChart.tsx
+  28:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/components/admin/UserManagementTable.tsx
+   6:11  error    'User' is defined but never used          @typescript-eslint/no-unused-vars
+  21:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/__tests__/env.test.ts
+  34:19  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  48:19  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  62:19  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+  73:19  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+
+/Users/mac/Backr/src/lib/analytics.ts
+  20:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/payments/paystack.ts
+  294:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/lib/storage.ts
+   95:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/scripts/test-email.ts
+  60:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/mac/Backr/src/workers/emailWorkers.ts
+   93:5   error    'currency' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   98:5   error    'creatorName' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  101:5   error    'goalAmount' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  102:5   error    'campaignUrl' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  498:13  error    'dateStr' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  542:11  error    'dateStr' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  591:17  warning  Unexpected any. Specify a different type                    @typescript-eslint/no-explicit-any
+  723:10  error    'users' is defined but never used                           @typescript-eslint/no-unused-vars
+  733:7   error    'recipientEmails' is never reassigned. Use 'const' instead  prefer-const
+
+✖ 194 problems (93 errors, 101 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

@@ -26,7 +26,7 @@ export default function Hero() {
       style={{
         padding: '80px 24px 100px',
         textAlign: 'center',
-        background: 'radial-gradient(circle at top right, rgba(255, 122, 0, 0.05), transparent)',
+        background: 'radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent)',
       }}
     >
       <div className="container">

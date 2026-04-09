@@ -3,6 +3,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Rocket, Handshake, Gem } from 'lucide-react';
 
 export default function HowItWorksPage() {
   const steps = [
@@ -11,21 +12,21 @@ export default function HowItWorksPage() {
       title: 'Initiate Your Vision',
       description:
         'Create a campaign by outlining your project, setting a goal, and defining your timeline. Whether it’s tech, art, or community, Backr is your launchpad.',
-      icon: '🚀',
+      icon: <Rocket size={40} color="#fff" />,
     },
     {
       number: '02',
       title: 'Get Backed by Community',
       description:
         'Share your story with the world. People who believe in your vision contribute funds to make it a reality. No middleman, just direct support.',
-      icon: '🤝',
+      icon: <Handshake size={40} color="#fff" />,
     },
     {
       number: '03',
       title: 'Radical Transparency',
       description:
         'The core of Backr. Use your dashboard to log every spend. Upload receipts and updates so your backers see exactly how their money is changing lives.',
-      icon: '💎',
+      icon: <Gem size={40} color="#fff" />,
     },
   ];
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { ArrowRight } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -272,7 +273,7 @@ export default function AboutPage() {
                   gap: '16px',
                 }}
               >
-                <span style={{ color: 'var(--accent-primary)' }}>➔</span> Filmmakers
+                <ArrowRight size={18} color="var(--accent-primary)" /> Filmmakers
               </li>
               <li
                 style={{
@@ -287,7 +288,7 @@ export default function AboutPage() {
                   gap: '16px',
                 }}
               >
-                <span style={{ color: 'var(--accent-primary)' }}>➔</span> Musicians
+                <ArrowRight size={18} color="var(--accent-primary)" /> Musicians
               </li>
               <li
                 style={{
@@ -302,7 +303,7 @@ export default function AboutPage() {
                   gap: '16px',
                 }}
               >
-                <span style={{ color: 'var(--accent-primary)' }}>➔</span> Visual artists
+                <ArrowRight size={18} color="var(--accent-primary)" /> Visual artists
               </li>
               <li
                 style={{
@@ -317,7 +318,7 @@ export default function AboutPage() {
                   gap: '16px',
                 }}
               >
-                <span style={{ color: 'var(--accent-primary)' }}>➔</span> Writers
+                <ArrowRight size={18} color="var(--accent-primary)" /> Writers
               </li>
               <li
                 style={{
@@ -332,7 +333,7 @@ export default function AboutPage() {
                   gap: '16px',
                 }}
               >
-                <span style={{ color: 'var(--accent-primary)' }}>➔</span> Creative communities
+                <ArrowRight size={18} color="var(--accent-primary)" /> Creative communities
               </li>
             </ul>
           </div>

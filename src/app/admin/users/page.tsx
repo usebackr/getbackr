@@ -6,6 +6,7 @@ import { verifyAdminApi } from '@/lib/auth/admin';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { UserManagementTable } from '@/components/admin/UserManagementTable';
+import { AlertTriangle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,7 +141,11 @@ export default async function AdminUsersPage({
             fontSize: '0.9rem',
           }}
         >
-          ⚠️ Could not load user data — the database may need a migration. Run{' '}
+          <AlertTriangle
+            size={18}
+            style={{ display: 'inline', marginRight: '8px', verticalAlign: 'text-bottom' }}
+          />{' '}
+          Could not load user data — the database may need a migration. Run{' '}
           <code>npm run db:migrate</code> on the production database.
         </div>
       )}
