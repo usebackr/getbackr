@@ -588,7 +588,7 @@ export default function WalletDashboard() {
                     <textarea
                       value={withdrawReason}
                       onChange={(e) => setWithdrawReason(e.target.value)}
-                      placeholder="e.g. Pay for location recce, cast fees, or something creative-led..."
+                      placeholder="e.g. Pay for location recce, cast fees, etc..."
                       required
                       rows={3}
                       style={{
