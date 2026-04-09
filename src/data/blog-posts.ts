@@ -18,16 +18,16 @@ export const blogPosts: BlogPost[] = [
     title: 'How to Launch Your Campaign on Backr: A Step-by-Step Guide',
     excerpt: 'Ready to bring your creative vision to life? Follow our comprehensive guide on how to set up and launch your first project successfully on Backr.',
     category: 'Tutorial',
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop',
+    image: '/nigerian_entrepreneur_campaign_guide_1775720710834.png',
     author: 'Backr Team',
     date: 'April 9, 2024',
-    readTime: '6 min read',
+    readTime: '2 min read',
     content: `
 # How to Launch Your Campaign on Backr
 
 So you have a bold creative vision and you're ready to share it with the world. Backr was built specifically to help African creators turn their project ideas into reality through transparent, community-driven funding.
 
-Our launch process is designed to be lean, professional, and built on trust. Here is exactly how to go from "Idea" to "Live" in three simple steps.
+Our launch process is designed to be lean, professional, and built on trust. Here is exactly how to go from **Idea** to **Live** in three simple steps.
 
 ## Step 1: Define Your Vision
 The first step is about clarity. You'll need to provide:
@@ -43,7 +43,7 @@ Backr projects are goal-oriented.
 ## Step 3: Visual Identity
 A picture is worth a thousand backers.
 - **Cover Image**: Upload a high-quality cover image (Max size: **1MB**) that represents your project. 
-- **Impact**: Campaigns with original, clear photography or design usually reach their goals 3x faster than those without.
+- **Impact**: Campaigns with original, clear photography or design usually reach their goals **3x faster** than those without.
 
 ## Launching
 Once you've filled original details, hit **"Launch Project"**. Your campaign will go live immediately, and you can start sharing your unique link with your audience.
@@ -57,10 +57,10 @@ Welcome to the future of African creativity. Let's get backed!
     title: 'The Transparency Revolution: Why Accountability is the Key to Success',
     excerpt: 'Trust is the new currency. Discover why radical transparency is changing the landscape of crowdfunding for African creators and backers.',
     category: 'Industry',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop',
-    author: 'Founder of Backr',
+    image: '/transparency_trust_african_crowdfunding_1775720737123.png',
+    author: 'Backr Team',
     date: 'April 8, 2024',
-    readTime: '5 min read',
+    readTime: '1 min read',
     content: `
 # The Transparency Revolution
 
@@ -82,20 +82,20 @@ The African creative economy is booming, but to reach its full potential, we nee
     title: 'The Creator\'s Marketing Toolkit: How to Find Your First 100 Backers',
     excerpt: 'The hardest part of any campaign is getting started. Learn the proven strategies for building momentum and reaching your first major funding milestone.',
     category: 'Strategy',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop',
-    author: 'Marketing Lead',
+    image: '/african_creators_marketing_meeting_1775720765531.png',
+    author: 'Backr Team',
     date: 'April 7, 2024',
-    readTime: '8 min read',
+    readTime: '2 min read',
     content: `
 # Finding Your First 100 Backers
 
-Every multi-million Naira campaign starts with a single backer. But how do you bridge the gap between "Live" and "Goal"? The secret lies in your inner circle.
+Every multi-million Naira campaign starts with a single backer. But how do you bridge the gap between **Live** and **Goal**? The secret lies in your inner circle.
 
 ## 1. The 30% Rule
-Never launch to the public with 0% funding. Before vous go "Grand Public", reach out to your close friends, family, and existing fans. Getting to **30% of your goal** creates "social proof" that makes strangers feel safe to contribute.
+Never launch to the public with 0% funding. Before vous go **"Grand Public"**, reach out to your close friends, family, and existing fans. Getting to **30% of your goal** creates "social proof" that makes strangers feel safe to contribute.
 
 ## 2. Levering Video
-Creators who use a personal video to explain their project raise 50% more on average. It doesn't need to be Hollywood production—just be authentic, state your goal, and explain the impact.
+Creators who use a personal video to explain their project raise **50% more** on average. It doesn't need to be Hollywood production—just be authentic, state your goal, and explain the impact.
 
 ## 3. Regular Project Updates
 Don't wait until the campaign is over to talk to your backers. Use the Backr Update tool to share behind-the-scenes content, teasers, and "thank you" notes. This keeps the momentum alive throughout the 30-day window.
@@ -107,10 +107,10 @@ Don't wait until the campaign is over to talk to your backers. Use the Backr Upd
     title: 'Safety First: How Backr Protects Your Contributions',
     excerpt: 'Security is our top priority. Learn about our multi-layered approach to protecting funds through Escrow systems and KYC verification.',
     category: 'Safety',
-    image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2070&auto=format&fit=crop',
-    author: 'Security Lead',
+    image: '/nigerian_tech_professional_security_1775720793415.png',
+    author: 'Backr Team',
     date: 'April 6, 2024',
-    readTime: '4 min read',
+    readTime: '1 min read',
     content: `
 # How We Keep Your Funds Safe
 
@@ -132,17 +132,17 @@ We use world-class payment processors to handle all transactions. This means you
     title: 'Designing for Impact: Why High-Quality Visuals Lead to 3x More Funding',
     excerpt: 'Your project cover image is your first impression. Discover the simple design principles that make your campaign stand out in a crowded marketplace.',
     category: 'Strategy',
-    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop',
-    author: 'Design Lead',
+    image: '/nigerian_digital_artist_designing_impact_1775720823018.png',
+    author: 'Backr Team',
     date: 'April 5, 2024',
-    readTime: '5 min read',
+    readTime: '1 min read',
     content: `
 # The Power of Visual Design
 
 In a digital marketplace, your project is only as good as it looks. While your idea might be brilliant, if your cover image is blurry or confusing, backers will scroll right past it.
 
 ## The "Hero" Image
-Your cover image should be the "Hero" of your story. It should evoke the emotion of what vous are building. If it's a film, show a cinematic still. If it's a community project, show the people involved.
+Your cover image should be the **"Hero"** of your story. It should evoke the emotion of what vous are building. If it's a film, show a cinematic still. If it's a community project, show the people involved.
 
 ## Consistency is Key
 Good design isn't just about one image. It's about the consistency of your description, your updates, and your brand. Using a clean, professional aesthetic signals to backers that you are serious about your project.

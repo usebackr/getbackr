@@ -36,13 +36,32 @@ export default function BlogPostPage({ params }: Props) {
     .filter((p) => p.slug !== post.slug)
     .slice(0, 3);
 
+  const renderMarkdownText = (text: string) => {
+    // Basic bold support: **text** -> <strong>text</strong>
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={part + i} style={{ fontWeight: 900, color: 'var(--accent-secondary)' }}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   return (
     <div style={{ background: '#ffffff', minHeight: '100vh' }}>
       <Navbar />
 
-      <article style={{ paddingTop: 'clamp(80px, 12vw, 140px)' }}>
+      <article style={{ paddingTop: 'clamp(80px, 12vw, 140px)', overflowX: 'hidden' }}>
         {/* Header Section */}
-        <header className="container" style={{ maxWidth: '900px', marginBottom: '60px' }}>
+        <header 
+          className="container" 
+          style={{ 
+            maxWidth: '800px', 
+            margin: '0 auto', 
+            marginBottom: '60px',
+            padding: '0 24px' 
+          }}
+        >
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -59,9 +78,9 @@ export default function BlogPostPage({ params }: Props) {
           </div>
 
           <h1 style={{ 
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', 
+            fontSize: 'clamp(2.2rem, 6vw, 4rem)', 
             fontWeight: 1000, 
-            lineHeight: 1.05, 
+            lineHeight: 1.1, 
             color: 'var(--accent-secondary)',
             marginBottom: '32px',
             letterSpacing: '-0.02em'
@@ -98,20 +117,36 @@ export default function BlogPostPage({ params }: Props) {
         </header>
 
         {/* Hero Image */}
-        <div className="container" style={{ maxWidth: '1100px', marginBottom: '80px' }}>
+        <div 
+          className="container" 
+          style={{ 
+            maxWidth: '1000px', 
+            margin: '0 auto', 
+            marginBottom: '80px',
+            padding: '0 24px' 
+          }}
+        >
           <div style={{ 
-            height: 'clamp(300px, 50vh, 600px)',
+            height: 'clamp(280px, 50vh, 550px)',
             width: '100%',
-            borderRadius: '40px',
+            borderRadius: '32px',
             background: `url(${post.image}) center/cover no-repeat`,
             boxShadow: '0 40px 100px rgba(0,0,0,0.1)'
           }} />
         </div>
 
         {/* Content Section */}
-        <div className="container" style={{ maxWidth: '800px', marginBottom: '120px' }}>
+        <div 
+          className="container" 
+          style={{ 
+            maxWidth: '800px', 
+            margin: '0 auto', 
+            marginBottom: '120px',
+            padding: '0 24px' 
+          }}
+        >
           <div className="blog-body" style={{ 
-            fontSize: '1.25rem', 
+            fontSize: 'clamp(1.1rem, 4vw, 1.25rem)', 
             lineHeight: 1.8, 
             color: '#334155',
             fontWeight: 500
@@ -121,13 +156,13 @@ export default function BlogPostPage({ params }: Props) {
                 return null; // Skip redundant H1
               }
               if (line.startsWith('## ')) {
-                return <h2 key={i} style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-secondary)', marginTop: '48px', marginBottom: '24px' }}>{line.replace('## ', '')}</h2>;
+                return <h2 key={i} style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-secondary)', marginTop: '48px', marginBottom: '24px' }}>{line.replace('## ', '')}</h2>;
               }
               if (line.startsWith('- ')) {
-                 return <li key={i} style={{ marginBottom: '12px', paddingLeft: '8px' }}>{line.replace('- ', '')}</li>;
+                 return <li key={i} style={{ marginBottom: '12px', paddingLeft: '8px' }}>{renderMarkdownText(line.replace('- ', ''))}</li>;
               }
               if (line.trim() === '') return <br key={i} />;
-              return <p key={i} style={{ marginBottom: '24px' }}>{line}</p>;
+              return <p key={i} style={{ marginBottom: '24px' }}>{renderMarkdownText(line)}</p>;
             })}
           </div>
         </div>
