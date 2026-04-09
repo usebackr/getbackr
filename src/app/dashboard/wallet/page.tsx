@@ -755,7 +755,15 @@ export default function WalletDashboard() {
 
         <style jsx>{`
           .dash-main-wallet {
-            padding: clamp(16px, 5vw, 40px);
+            padding: clamp(20px, 4vw, 48px);
+            margin-left: 280px;
+          }
+
+          @media (max-width: 1024px) {
+            .dash-main-wallet {
+              margin-left: 0;
+              padding: calc(64px + 20px) 16px 40px;
+            }
           }
 
           .wallet-stats-grid {
@@ -813,7 +821,7 @@ export default function WalletDashboard() {
 
           @media (max-width: 768px) {
             .dash-main-wallet {
-              padding: 16px;
+              padding-top: calc(64px + 20px);
             }
             .desktop-transactions-table { display: none; }
             .mobile-transactions-list { 

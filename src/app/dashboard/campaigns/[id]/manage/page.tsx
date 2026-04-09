@@ -414,6 +414,13 @@ export default function CampaignManagePage() {
           flex: 1;
           padding: clamp(20px, 4vw, 40px);
           min-width: 0;
+          margin-left: 280px;
+        }
+        @media (max-width: 1024px) {
+          .manage-main {
+            margin-left: 0;
+            padding: calc(64px + 20px) clamp(16px, 4vw, 32px) 40px;
+          }
         }
         .header-inner {
           display: flex;
@@ -421,6 +428,22 @@ export default function CampaignManagePage() {
           align-items: center;
           gap: 16px;
           flex-wrap: wrap;
+        }
+        @media (max-width: 600px) {
+          .header-inner {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .header-inner > div:last-child {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+          }
+          .header-inner > div:last-child a,
+          .header-inner > div:last-child button {
+            flex: 1;
+            justify-content: center;
+          }
         }
         .stats-grid {
           display: grid;
