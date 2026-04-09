@@ -138,8 +138,9 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className="glass"
+    <>
+      <header
+        className="glass"
       style={{
         position: 'sticky',
         top: 0,
@@ -182,6 +183,8 @@ export default function Navbar() {
           {isOpen ? <Icons.Close /> : <Icons.Menu />}
         </button>
       </div>
+
+      </header>
 
       <div className={`nav-overlay ${isOpen ? 'open' : ''}`}>
         <div className="nav-overlay-header">
@@ -263,6 +266,6 @@ export default function Navbar() {
           }
         }
       `}</style>
-    </header>
+    </>
   );
 }
