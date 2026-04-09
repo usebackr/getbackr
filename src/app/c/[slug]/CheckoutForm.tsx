@@ -145,9 +145,9 @@ export default function CheckoutForm({
           }}
         >
           <p style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 600, margin: 0 }}>
-            Target ₦{raisedAmount.toLocaleString()} /{' '}
+            Target ₦{Math.floor(raisedAmount).toLocaleString()} /{' '}
             <span style={{ color: '#64748b', fontWeight: 600 }}>
-              ₦{goalAmount.toLocaleString()}
+              ₦{Math.floor(goalAmount).toLocaleString()}
             </span>
           </p>
           <span style={{ color: 'var(--accent-primary)', fontWeight: 800, fontSize: '0.95rem' }}>

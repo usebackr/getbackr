@@ -33,8 +33,8 @@ export default async function OngoingProjects() {
   const displayProjects =
     liveCampaigns.length > 0
       ? liveCampaigns.map((c) => {
-          const raisedNum = Number(c.raised) || 0;
-          const goalNum = Number(c.goal) || 1;
+          const raisedNum = Math.floor(Number(c.raised) || 0);
+          const goalNum = Math.floor(Number(c.goal) || 1);
           const progress = Math.min(100, Math.round((raisedNum / goalNum) * 100));
           return {
             title: c.title,

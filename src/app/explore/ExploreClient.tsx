@@ -470,9 +470,9 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
                           }}
                         >
                           <span style={{ color: '#0f172a' }}>
-                            ₦{raised.toLocaleString()}{' '}
+                            ₦{Math.floor(raised).toLocaleString()}{' '}
                             <span style={{ fontWeight: 500, color: '#94a3b8' }}>
-                              of ₦{goal.toLocaleString()}
+                              of ₦{Math.floor(goal).toLocaleString()}
                             </span>
                           </span>
                           <span style={{ color: 'var(--accent-primary)' }}>{actualPct}%</span>
