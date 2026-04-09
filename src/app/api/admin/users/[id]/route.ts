@@ -127,3 +127,77 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     );
   }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const token = cookies().get('accessToken')?.value;
+    const isAdmin = await verifyAdminApi(token);
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
+    }
+
+    const userId = params.id;
+    const { kycStatus, kycRejectionReason } = await req.json();
+
+    if (!kycStatus) {
+      return NextResponse.json({ error: 'kycStatus is required' }, { status: 400 });
+    }
+
+    // 1. Get user details for the email notification
+    const [user] = await db
+      .select({ email: users.email, displayName: users.displayName })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // 2. Update user KYC status
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          kycStatus: kycStatus,
+          kycRejectionReason: kycRejectionReason || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId));
+
+      // Also update the kycProfiles record if it exists to keep them in sync
+      await tx
+        .update(kycProfiles)
+        .set({
+          rejectionReason: kycRejectionReason || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(kycProfiles.userId, userId));
+    });
+
+    // 3. Trigger Email Notification (if revoking verification)
+    if (kycStatus === 'rejected' || kycStatus === 'unsubmitted') {
+      try {
+        const { sendEmail } = await import('@/workers/emailWorkers');
+        await sendEmail({
+          type: 'kyc_revoked',
+          email: user.email,
+          displayName: user.displayName,
+          rejectionReason: kycRejectionReason,
+        });
+      } catch (emailErr) {
+        console.error('[AdminUpdateKYC] Notification failed:', emailErr);
+      }
+    }
+
+    return NextResponse.json({
+      message: `User KYC status updated to ${kycStatus} successfully.`,
+      userId,
+      kycStatus,
+    });
+  } catch (err: any) {
+    console.error('[AdminUpdateKYC] Error:', err);
+    return NextResponse.json({ error: 'Failed to update user KYC status.' }, { status: 500 });
+  }
+}

@@ -65,6 +65,7 @@ export interface ReceiptJobData {
     | 'kyc_approved'
     | 'withdrawal_rejected'
     | 'kyc_rejected'
+    | 'kyc_revoked'
     | 'welcome_email'
     | 'forgot_password'
     | 'verification_email'
@@ -336,6 +337,42 @@ export async function sendEmail(data: ReceiptJobData) {
                   Re-upload ID
                 </a>
               </div>
+            </div>
+          </div>
+        `,
+      });
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
+    }
+
+    // 4b-2. KYC Revoked (Account was verified, now unverified)
+    if (type === 'kyc_revoked') {
+      const to = email;
+      if (!to) throw new Error('Missing email for KYC revocation');
+      const { data: res, error } = await getResend().emails.send({
+        to,
+        from: FROM_EMAIL,
+        subject: 'Important: Your Identity Verification Status has been Updated',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <div style="background: #fef2f2; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <span style="font-size: 32px;">🛑</span>
+              </div>
+              <h2 style="font-size: 1.5rem; color: #0f172a; text-align: center; margin-bottom: 24px;">Identity Verification Revoked</h2>
+              <p>Hello ${displayName || 'there'},</p>
+              <p>We are writing to inform you that your "Verified" status on Backr has been revoked following a routine security review or a detected discrepancy in your documents.</p>
+              <div style="background: #fff1f2; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px; margin: 24px 0;">
+                <p style="margin: 0; font-weight: 700; color: #991b1b; font-size: 0.9rem; text-transform: uppercase;">Reason for Revocation:</p>
+                <p style="margin: 8px 0 0; color: #0f172a;">${rejectionReason || 'A discrepancy was noted in your verification details. Please contact support for more information.'}</p>
+              </div>
+              <p><strong>Note:</strong> Your withdrawal privileges have been temporarily suspended. To restore full access to your funds, you must re-submit valid identity documents in your profile settings.</p>
+              <div style="margin-top: 40px; text-align: center;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard/settings" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
+                  Fix Verification Now
+                </a>
+              </div>
+              <p style="font-size: 0.85rem; color: #64748b; margin-top: 32px;">If you have any questions, please reply to this email or reach out to our support team.</p>
             </div>
           </div>
         `,
