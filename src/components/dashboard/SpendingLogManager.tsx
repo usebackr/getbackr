@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Receipt, Plus, Trash2, Calendar, DollarSign, ExternalLink } from 'lucide-react';
+import { Receipt, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
 
 interface SpendingLog {
   id: string;
@@ -205,7 +205,7 @@ export default function SpendingLogManager({ campaignId }: SpendingLogManagerPro
                 <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{log.description}</h4>
                 <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: '#64748b' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {new Date(log.entryDate).toLocaleDateString()}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: '#10b981' }}><DollarSign size={14} /> ₦{parseFloat(log.amount).toLocaleString()}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: '#10b981' }}>₦{parseFloat(log.amount).toLocaleString()}</span>
                 </div>
               </div>
               {log.receiptUrl && (

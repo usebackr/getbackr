@@ -60,6 +60,7 @@ export interface ReceiptJobData {
     | 'creator_alert'
     | 'withdrawal_otp'
     | 'bank_change_otp'
+    | 'password_change_otp'
     | 'payment_approved'
     | 'kyc_approved'
     | 'withdrawal_rejected'
@@ -159,6 +160,37 @@ export async function sendEmail(data: ReceiptJobData) {
                 <h1 style="letter-spacing: 12px; font-size: 2.5rem; margin: 0; color: ${BRAND_COLOR};">${otp}</h1>
               </div>
               <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, please contact support immediately and change your password.</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng
+              </div>
+            </div>
+          </div>
+        `,
+      });
+      if (error) throw error;
+      return { sent: true, type, messageId: res?.id };
+    }
+
+    // 1c. Password Change OTP
+    if (type === 'password_change_otp') {
+      const to = email;
+      if (!to) throw new Error('Missing email for password change OTP');
+      const { data: res, error } = await getResend().emails.send({
+        to,
+        from: FROM_EMAIL,
+        subject: 'Your Backr security code for password reset',
+        html: `
+          <div style="${emailWrapperStyle}">
+            <div style="${emailCardStyle}">
+              <div style="background: #fef2f2; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <span style="font-size: 32px;">🔐</span>
+              </div>
+              <h2 style="font-size: 1.5rem; color: #0f172a; text-align: center; margin-bottom: 24px;">Confirm Password Change</h2>
+              <p>You requested to change your Backr account password. Please use the verification code below to authorize this change:</p>
+              <div style="background: #f1f5f9; padding: 24px; text-align: center; border-radius: 12px; margin: 32px 0;">
+                <h1 style="letter-spacing: 12px; font-size: 2.5rem; margin: 0; color: ${BRAND_COLOR};">${otp}</h1>
+              </div>
+              <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, you can safely ignore this email.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
                 &copy; 2026 findbackr.com.ng
               </div>

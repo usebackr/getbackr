@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth/middleware';
 import { db } from '@/lib/db';
 import { campaigns } from '@/db/schema/campaigns';
+import { contributions } from '@/db/schema/contributions';
 import { getPublicUrl } from '@/lib/storage';
 
 const editCampaignSchema = z.object({
@@ -27,25 +28,49 @@ export async function GET(
   }
 
   const { id } = params;
-  const campaign = await db.query.campaigns.findFirst({
-    where: eq(campaigns.id, id),
-  });
+  
+  const [campaignWithStats] = await db
+    .select({
+      id: campaigns.id,
+      creatorId: campaigns.creatorId,
+      slug: campaigns.slug,
+      title: campaigns.title,
+      description: campaigns.description,
+      coverImageUrl: campaigns.coverImageUrl,
+      category: campaigns.category,
+      goalAmount: campaigns.goalAmount,
+      currency: campaigns.currency,
+      status: campaigns.status,
+      endDate: campaigns.endDate,
+      views: campaigns.views,
+      createdAt: campaigns.createdAt,
+      raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+      backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
+    })
+    .from(campaigns)
+    .leftJoin(
+      contributions,
+      sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
+    )
+    .where(eq(campaigns.id, id))
+    .groupBy(campaigns.id)
+    .limit(1);
 
-  if (!campaign) {
+  if (!campaignWithStats) {
     return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
   }
 
   // Security check: only creator can fetch draft details for editing
-  if (campaign.creatorId !== auth.userId) {
+  if (campaignWithStats.creatorId !== auth.userId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Self-heal the coverImageUrl
-  if (campaign.coverImageUrl) {
-    campaign.coverImageUrl = getPublicUrl(campaign.coverImageUrl);
+  if (campaignWithStats.coverImageUrl) {
+    campaignWithStats.coverImageUrl = getPublicUrl(campaignWithStats.coverImageUrl);
   }
 
-  return NextResponse.json({ campaign });
+  return NextResponse.json({ campaign: campaignWithStats });
 }
 
 export async function PUT(

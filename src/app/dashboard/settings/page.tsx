@@ -41,9 +41,9 @@ function PushToggle() {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('Payment and Payouts');
+  const [activeTab, setActiveTab] = useState('Password');
 
-  const tabs = ['Profile', 'Password', 'Payment and Payouts', 'Notifications'];
+  const tabs = ['Password', 'Payment and Payouts', 'Notifications'];
 
   // Payout states
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
@@ -60,6 +60,11 @@ export default function SettingsPage() {
   const [otpInput, setOtpInput] = useState('');
   const [otpError, setOtpError] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpContext, setOtpContext] = useState<'bank' | 'password'>('bank');
+
+  // Password states
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
 
   // Fetch banks on mount
   useEffect(() => {
@@ -121,6 +126,7 @@ export default function SettingsPage() {
         const res = await fetch('/api/auth/otp/bank-change', { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
+          setOtpContext('bank');
           setShowOtpModal(true);
         } else {
           setResolveError(data.error || 'Failed to send OTP.');
@@ -169,6 +175,63 @@ export default function SettingsPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const initiatePasswordSave = async () => {
+    if (newPassword !== newPasswordConfirm) {
+      setResolveError('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setResolveError('Password must be at least 8 characters');
+      return;
+    }
+
+    setSendingOtp(true);
+    setResolveError('');
+    try {
+      const res = await fetch('/api/auth/otp/password-change', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setOtpContext('password');
+        setShowOtpModal(true);
+      } else {
+        setResolveError(data.error || 'Failed to send OTP.');
+      }
+    } catch (err) {
+      setResolveError('Network error sending OTP.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const executePasswordSave = async (otp: string) => {
+    setSaving(true);
+    setSaveSuccess(false);
+    setOtpError('');
+
+    try {
+      const res = await fetch('/api/user/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword, otp }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setOtpError(data.error || 'Failed to change password');
+      } else {
+        setSaveSuccess(true);
+        setShowOtpModal(false);
+        setNewPassword('');
+        setNewPasswordConfirm('');
+        setTimeout(() => setSaveSuccess(false), 5000);
+      }
+    } catch (err) {
+      console.error(err);
+      setOtpError('Network error');
     } finally {
       setSaving(false);
     }
@@ -396,6 +459,67 @@ export default function SettingsPage() {
             </div>
           )}
 
+          {activeTab === 'Password' && (
+            <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>
+                Security Settings
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: 1.6 }}>
+                Update your account password. For your security, you will need to confirm this change with a code sent to your email.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="At least 8 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Repeat new password"
+                    value={newPasswordConfirm}
+                    onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
+                  />
+                </div>
+
+                {resolveError && activeTab === 'Password' && (
+                  <span style={{ color: '#ef4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={18} /> {resolveError}
+                  </span>
+                )}
+
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    onClick={initiatePasswordSave}
+                    disabled={saving || sendingOtp || !newPassword || !newPasswordConfirm}
+                    className="btn-primary"
+                    style={{ width: '100%', padding: '16px', opacity: (saving || sendingOtp || !newPassword || !newPasswordConfirm) ? 0.5 : 1 }}
+                  >
+                    {saving ? 'Processing...' : sendingOtp ? 'Sending OTP...' : 'Change Password'}
+                  </button>
+                </div>
+
+                {saveSuccess && (
+                  <p style={{ color: '#059669', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center' }}>
+                    Password updated successfully!
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'Notifications' && (
             <div className="card" style={{ padding: 'clamp(24px, 5vw, 40px)', background: '#fff' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '24px', fontWeight: 800 }}>
@@ -409,7 +533,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {activeTab !== 'Payment and Payouts' && activeTab !== 'Notifications' && (
+          {activeTab !== 'Payment and Payouts' && activeTab !== 'Notifications' && activeTab !== 'Password' && (
             <div
               style={{
                 padding: '40px',
@@ -472,8 +596,9 @@ export default function SettingsPage() {
                   lineHeight: 1.5,
                 }}
               >
-                To protect your platform earnings, we&apos;ve sent a 6-digit confirmation code to
-                your email. Please enter it to authorize updating your bank details.
+                {otpContext === 'bank' 
+                  ? "To protect your platform earnings, we've sent a 6-digit confirmation code to your email. Please enter it to authorize updating your bank details."
+                  : "To secure your account, we've sent a 6-digit confirmation code to your email. Please enter it to authorize updating your password."}
               </p>
 
               {otpError && (
@@ -520,7 +645,7 @@ export default function SettingsPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => executeSave(otpInput)}
+                  onClick={() => otpContext === 'bank' ? executeSave(otpInput) : executePasswordSave(otpInput)}
                   disabled={otpInput.length !== 6 || saving}
                   className="btn-primary"
                   style={{
