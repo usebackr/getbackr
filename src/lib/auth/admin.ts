@@ -61,6 +61,8 @@ export async function verifyAdminApi(tokenValue: string | undefined) {
   } catch (err) {
     return false;
   }
+}
+
 /**
  * Verify administrative access via a shared secret (for cron/automated tools)
  */

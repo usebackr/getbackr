@@ -72,6 +72,9 @@ export async function expireSubscriptions() {
       .where(eq(users.id, sub.creatorId));
   }
 
+  return { expiredCount: allExpired.length, items: allExpired };
+}
+
 /**
  * Maintenance Action: Reconcile pending payments (Fallback for missed webhooks)
  */
