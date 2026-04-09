@@ -68,6 +68,31 @@ export async function initializeTransaction(
 }
 
 /**
+ * Verifies a transaction status actively with Paystack's API.
+ */
+export async function verifyTransaction(reference: string): Promise<any> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) throw new Error('PAYSTACK_SECRET_KEY is not configured');
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}/transaction/verify/${encodeURIComponent(reference)}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${secretKey}` },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Paystack verification failed: ${response.status} ${errorBody}`);
+  }
+
+  const data = await response.json();
+  if (!data.status) {
+    throw new Error(`Paystack verification error: ${data.message}`);
+  }
+
+  return data.data;
+}
+
+/**
  * Creates a Subaccount on Paystack for split payments.
  */
 export async function createSubaccount(

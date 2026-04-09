@@ -1,13 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { contributions } from '@/db/schema/contributions';
-import { projectWallets } from '@/db/schema/projectWallets';
-import { campaigns } from '@/db/schema/campaigns';
-import { users } from '@/db/schema/users';
 import { verifyWebhookSignature } from '@/lib/payments/paystack';
-import { eq, sql } from 'drizzle-orm';
-import { sendEmail } from '@/workers/emailWorkers';
+import { processSuccessfulPayment } from '@/lib/payments/fulfillment';
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -45,183 +39,17 @@ export async function POST(req: NextRequest) {
     const platformFee = amountInMajor * 0.05;
     const netAmount = amountInMajor - platformFee;
     try {
-      console.log(
-        `[Paystack Webhook] Processing charge.success. Campaign: ${campaignId}, Reference: ${reference}`,
-      );
-
-      const txResult = await db.transaction(async (tx) => {
-        // A. Idempotency: skip if already processed
-        const existing = await tx
-          .select({ id: contributions.id })
-          .from(contributions)
-          .where(sql`${contributions.paymentReference} = ${reference}`)
-          .limit(1);
-
-        if (existing.length > 0) {
-          console.log(`[Paystack Webhook] Duplicate reference detected: ${reference}. Skipping.`);
-          return null;
-        }
-
-        const isAnonymous = metadata.anonymous === true || metadata.anonymous === 'true';
-        let backerName = (metadata.backerName || 'A Supporter').trim();
-        const contributionMessage = (metadata.message || '').trim();
-        const referralSource = (metadata.referralSource || '').trim();
-
-        if (backerId && !isAnonymous) {
-          const [backer] = await tx
-            .select({ displayName: users.displayName })
-            .from(users)
-            .where(eq(users.id, backerId))
-            .limit(1);
-          if (backer) backerName = backer.displayName;
-        }
-
-        const finalBackerName = isAnonymous ? 'Anonymous Supporter' : backerName;
-
-        // B. Insert confirmed contribution
-        console.log(`[Paystack Webhook] Recording contribution in database...`);
-
-        await tx.insert(contributions).values({
-          campaignId,
-          backerId: backerId || null,
-          backerEmail: data.customer.email,
-          backerName: finalBackerName,
-          amount: amountInMajor.toString(),
-          platformFee: platformFee.toString(),
-          netAmount: netAmount.toString(),
-          currency: data.currency || 'NGN',
-          anonymous: isAnonymous,
-          message: contributionMessage || null,
-          paymentReference: reference,
-          paymentMethod: data.channel || 'paystack',
-          status: 'confirmed',
-          referralSource: referralSource || null,
-        });
-
-        // C. Update campaign's project wallet (atomic increment)
-        console.log(`[Paystack Webhook] Updating wallet for campaign: ${campaignId}`);
-        // Use explicit numeric addition to be 100% sure with Postgres
-        const walletUpdate = await tx
-          .update(projectWallets)
-          .set({
-            balance: sql`${projectWallets.balance} + ${netAmount}::numeric`,
-            totalReceived: sql`${projectWallets.totalReceived} + ${amountInMajor}::numeric`,
-            updatedAt: new Date(),
-          })
-          .where(eq(projectWallets.campaignId, campaignId))
-          .returning({ id: projectWallets.id, balance: projectWallets.balance });
-
-        if (walletUpdate.length === 0) {
-          console.warn(
-            `[Paystack Webhook] No wallet found for campaign ${campaignId}. Creating one for tracking...`,
-          );
-          await tx.insert(projectWallets).values({
-            campaignId,
-            balance: netAmount.toString(),
-            totalReceived: amountInMajor.toString(),
-            currency: data.currency || 'NGN',
-          });
-        } else {
-          console.log(
-            `[Paystack Webhook] Wallet updated successfully. New recorded balance: ${walletUpdate[0].balance}`,
-          );
-        }
-
-        // D. Fetch campaign creator details and current wallet state
-        console.log(`[Paystack Webhook] Fetching notification details...`);
-        const [campaignDetails] = await tx
-          .select({
-            title: campaigns.title,
-            slug: campaigns.slug,
-            goalAmount: campaigns.goalAmount,
-            creatorId: campaigns.creatorId,
-            creatorEmail: users.email,
-            creatorName: users.displayName,
-          })
-          .from(campaigns)
-          .leftJoin(users, eq(users.id, campaigns.creatorId))
-          .where(eq(campaigns.id, campaignId))
-          .limit(1);
-
-        const [wallet] = await tx
-          .select({ totalReceived: projectWallets.totalReceived })
-          .from(projectWallets)
-          .where(eq(projectWallets.campaignId, campaignId))
-          .limit(1);
-
-        // Create internal notification for creator (Done outside transaction to avoid rollback on push failure)
-        const notificationData =
-          campaignDetails && campaignDetails.creatorId
-            ? {
-                userId: campaignDetails.creatorId,
-                type: 'donation_received' as const,
-                title: 'New Donation Received!',
-                message: `You received a donation of ${data.currency} ${amountInMajor.toLocaleString()} for your campaign "${campaignDetails.title}".`,
-                metadata: JSON.stringify({ campaignId, amount: amountInMajor }),
-              }
-            : null;
-
-        return {
-          campaignDetails,
-          wallet,
-          backerName: finalBackerName,
-          notificationData,
-        };
+      console.log(`[Paystack Webhook] Found charge.success for ${reference}`);
+      
+      await processSuccessfulPayment({
+        reference,
+        amountInMajor,
+        currency: data.currency || 'NGN',
+        customerEmail: data.customer.email,
+        channel: data.channel || 'paystack',
+        metadata,
       });
 
-      // F. Send Emails Directly (OUTSIDE THE DB TRANSACTION!)
-      // Direct sending ensures reliability in serverless environments like Vercel.
-      if (txResult && txResult.campaignDetails) {
-        try {
-          const { campaignDetails, wallet, backerName, notificationData } = txResult;
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-
-          // In-App & Web Push Notification
-          if (notificationData) {
-            const { sendAppNotification } = await import('@/lib/notifications/push');
-            await sendAppNotification(
-              notificationData.userId,
-              notificationData.title,
-              notificationData.message,
-              notificationData.type,
-              '/dashboard/notifications',
-              notificationData.metadata,
-            );
-          }
-
-          // Email to Donor (Receipt)
-          await sendEmail({
-            type: 'donor_receipt',
-            backerEmail: data.customer.email,
-            backerName: backerName,
-            amount: amountInMajor,
-            currency: data.currency,
-            campaignTitle: campaignDetails.title,
-            contributionId: reference,
-            campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-          });
-
-          // Email to Creator (Alert)
-          if (campaignDetails.creatorEmail) {
-            await sendEmail({
-              type: 'creator_alert',
-              backerEmail: campaignDetails.creatorEmail || undefined,
-              amount: amountInMajor,
-              currency: data.currency,
-              campaignTitle: campaignDetails.title,
-              creatorName: campaignDetails.creatorName || undefined,
-              backerName: backerName,
-              totalRaised: wallet?.totalReceived || netAmount,
-              goalAmount: campaignDetails.goalAmount,
-              campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
-            });
-          }
-        } catch (emailErr) {
-          console.error('[Paystack Webhook] Non-fatal error sending emails:', emailErr);
-        }
-      }
-
-      console.log(`[Paystack Webhook] Successfully processed donation for campaign ${campaignId}`);
       return NextResponse.json({ status: 'success' });
     } catch (err: any) {
       console.error('[Paystack Webhook] Database error:', err);

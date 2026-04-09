@@ -6,7 +6,7 @@ import { contributions } from '@/db/schema/contributions';
 
 // Initialise Resend with API key - Lazy loading to prevent build-time crashes
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
-const FROM_EMAIL = process.env.EMAIL_FROM ?? 'no-reply@findbackr.com.ng';
+const FROM_EMAIL = process.env.EMAIL_FROM ?? 'Backr Platform <no-reply@findbackr.com.ng>';
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -130,7 +130,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng
+                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, please contact support immediately and change your password.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng
+                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, you can safely ignore this email.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng
+                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
@@ -512,7 +512,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>If you have any questions regarding this action, please reach out to our support team.</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng</p>
+              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.</p>
             </div>
           </div>
         `,
