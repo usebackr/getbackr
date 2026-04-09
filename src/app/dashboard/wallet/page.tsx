@@ -584,7 +584,7 @@ export default function WalletDashboard() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div>
-                    <label className="input-label">Transparency Reason</label>
+                    <label className="input-label">Withdrawal Reason</label>
                     <textarea
                       value={withdrawReason}
                       onChange={(e) => setWithdrawReason(e.target.value)}
@@ -599,8 +599,12 @@ export default function WalletDashboard() {
                         fontSize: '0.95rem',
                         fontWeight: 500,
                         resize: 'none',
+                        marginBottom: '8px',
                       }}
                     />
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, lineHeight: '1.4' }}>
+                      <span style={{ color: 'var(--accent-primary)', fontWeight: 800 }}>Tip:</span> This reason is shared with your backers on the campaign page to maintain transparency on how funds are used.
+                    </p>
                   </div>
 
                   {error && <div className="error-text">{error}</div>}
