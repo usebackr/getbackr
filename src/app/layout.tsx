@@ -46,6 +46,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
+        <link rel="preconnect" href="https://findbackr.com.ng" />
+        <link rel="dns-prefetch" href="https://findbackr.com.ng" />
       </head>
       <body>{children}</body>
     </html>

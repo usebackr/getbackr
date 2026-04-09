@@ -186,11 +186,15 @@ export default function Sidebar() {
   // Poll for notifications
   useEffect(() => {
     const checkNotifications = async () => {
+      // Fast-fail if no session cookie exists (heuristic)
+      if (!document.cookie.includes('accessToken')) {
+        return;
+      }
+
       try {
         const res = await fetch('/api/notifications');
 
         // Handle session expiry during background poll
-        // For public pages (no session), ignore 401s
         if (res.status === 401) {
           return;
         }
@@ -208,7 +212,7 @@ export default function Sidebar() {
           }
         }
       } catch (err) {
-        // Silently fail for cross-domain or network issues
+        // Silently fail
       }
     };
 

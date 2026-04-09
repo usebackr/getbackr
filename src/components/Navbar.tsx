@@ -59,6 +59,12 @@ export default function Navbar() {
 
   useEffect(() => {
     async function checkSession() {
+      // Heuristic: If no cookie, we are accurately a guest
+      if (!document.cookie.includes('accessToken')) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch('/api/auth/session');
         const data = await res.json();
