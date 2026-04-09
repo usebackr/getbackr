@@ -18,22 +18,6 @@ export default function Footer() {
             marginBottom: '80px',
           }}
         >
-          <div style={{ maxWidth: '300px' }}>
-            <h2
-              style={{
-                fontSize: '1.8rem',
-                fontWeight: 900,
-                marginBottom: '24px',
-                color: '#ffffff',
-              }}
-            >
-              Backr
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', lineHeight: 1.6 }}>
-              Empowering the next generation of African creators through transparency,
-              accountability, and community.
-            </p>
-          </div>
           <div>
             <h4
               style={{

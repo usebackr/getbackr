@@ -162,7 +162,7 @@ export default function Navbar() {
         }}
       >
         <a href="/" style={{ textDecoration: 'none' }}>
-          <h2 className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: 900 }}>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
             Backr
           </h2>
         </a>
@@ -189,7 +189,7 @@ export default function Navbar() {
       <div className={`nav-overlay ${isOpen ? 'open' : ''}`}>
         <div className="nav-overlay-header">
           <a href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
-            <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 900 }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
               Backr
             </h2>
           </a>

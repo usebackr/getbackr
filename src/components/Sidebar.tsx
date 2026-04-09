@@ -276,7 +276,7 @@ export default function Sidebar() {
       {/* Mobile Header (Dashboard specific) */}
       <header className="mobile-header">
         <a href="/" style={{ textDecoration: 'none' }}>
-          <h2 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 900 }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
             Backr
           </h2>
         </a>
@@ -311,7 +311,7 @@ export default function Sidebar() {
           }}
         >
           <a href="/" style={{ textDecoration: 'none' }}>
-            <h2 className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: 900 }}>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
               Backr
             </h2>
           </a>

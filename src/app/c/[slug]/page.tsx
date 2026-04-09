@@ -13,6 +13,7 @@ import CheckoutForm from './CheckoutForm';
 import ShareButton from './ShareButton';
 import TransparencyLedger from './TransparencyLedger';
 import BackersList from './BackersList';
+import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton';
 import { getPublicUrl } from '@/lib/storage';
 import { Megaphone, ShieldCheck, ChevronLeft } from 'lucide-react';
 
@@ -198,28 +199,6 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         }}
       >
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <a
-            href="/explore"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              borderRadius: '20px',
-              color: '#475569',
-              textDecoration: 'none',
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              transition: 'all 0.2s',
-            }}
-            title="Back to Explore"
-          >
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </a>
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           <a href="/" style={{ textDecoration: 'none', color: 'var(--accent-primary)' }}>
             <h2
               style={{
@@ -230,24 +209,13 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                 margin: 0,
               }}
             >
-              backr
+              Backr
             </h2>
           </a>
         </div>
 
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <a
-            href="/dashboard"
-            className="btn-primary"
-            style={{
-              padding: '8px 16px',
-              borderRadius: '10px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-            }}
-          >
-            Dashboard
-          </a>
+          {/* Notification placeholders if needed to match footer/speed 2 exactly */}
         </div>
       </header>
 
@@ -262,6 +230,9 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
           gap: '40px',
         }}
       >
+        <div style={{ width: '100%' }}>
+          <BackToDashboardButton />
+        </div>
         {/* Left Column: Media & Story */}
         <div style={{ flex: '1 1 600px', maxWidth: '800px' }}>
           <div
