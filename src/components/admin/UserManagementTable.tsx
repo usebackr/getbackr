@@ -19,7 +19,7 @@ export function UserManagementTable({
   async function handleToggleBeta(userId: string, currentBeta: boolean) {
     setUpdating(userId);
     try {
-      const res = await fetch(`/api/admin/users/${userId}/status`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isBeta: !currentBeta }),
@@ -37,7 +37,7 @@ export function UserManagementTable({
   async function handleVerifyKYC(userId: string) {
     setUpdating(userId);
     try {
-      const res = await fetch(`/api/admin/users/${userId}/status`, {
+      const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kycStatus: 'verified' }),
@@ -47,6 +47,39 @@ export function UserManagementTable({
       }
     } catch (err) {
       console.error('Failed to verify KYC');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  async function handleRevokeKYC(userId: string, email: string) {
+    const reason = window.prompt(
+      `Please provide a reason for revoking KYC for ${email}:`,
+      'Discrepancy detected in documents.',
+    );
+
+    if (reason === null) return; // Cancelled
+
+    setUpdating(userId);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kycStatus: 'unsubmitted',
+          kycRejectionReason: reason,
+        }),
+      });
+
+      if (res.ok) {
+        setUsers(users.map((u) => (u.id === userId ? { ...u, kycStatus: 'unsubmitted' } : u)));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to revoke KYC');
+      }
+    } catch (err) {
+      console.error('Failed to revoke KYC');
+      alert('Network error during revocation');
     } finally {
       setUpdating(null);
     }
@@ -215,6 +248,24 @@ export function UserManagementTable({
                       }}
                     >
                       Verify
+                    </button>
+                  )}
+                  {user.kycStatus === 'verified' && (
+                    <button
+                      onClick={() => handleRevokeKYC(user.id, user.email)}
+                      disabled={!!updating}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#fff7ed',
+                        color: '#d97706',
+                        border: '1px solid #fed7aa',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Revoke
                     </button>
                   )}
                   <button

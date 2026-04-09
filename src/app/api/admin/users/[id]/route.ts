@@ -138,10 +138,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const userId = params.id;
-    const { kycStatus, kycRejectionReason } = await req.json();
+    const { kycStatus, kycRejectionReason, isBeta } = await req.json();
 
-    if (!kycStatus) {
-      return NextResponse.json({ error: 'kycStatus is required' }, { status: 400 });
+    if (kycStatus === undefined && isBeta === undefined) {
+      return NextResponse.json({ error: 'No update fields provided' }, { status: 400 });
     }
 
     // 1. Get user details for the email notification
@@ -155,28 +155,39 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // 2. Update user KYC status
+    // 2. Update user status in a transaction
     await db.transaction(async (tx) => {
+      const updatePayload: any = { updatedAt: new Date() };
+      
+      if (kycStatus !== undefined) {
+        updatePayload.kycStatus = kycStatus;
+        updatePayload.kycRejectionReason = kycRejectionReason || null;
+      }
+      
+      if (isBeta !== undefined) {
+        updatePayload.isBeta = !!isBeta;
+      }
+
       await tx
         .update(users)
-        .set({
-          kycStatus: kycStatus,
-          kycRejectionReason: kycRejectionReason || null,
-          updatedAt: new Date(),
-        })
+        .set(updatePayload)
         .where(eq(users.id, userId));
 
-      // Also update the kycProfiles record if it exists to keep them in sync
-      await tx
-        .update(kycProfiles)
-        .set({
-          rejectionReason: kycRejectionReason || null,
-          updatedAt: new Date(),
-        })
-        .where(eq(kycProfiles.userId, userId));
+      // Also update the kycProfiles record if KYC status changed to keep them in sync
+      if (kycStatus !== undefined) {
+        await tx
+          .update(kycProfiles)
+          .set({
+            rejectionReason: kycRejectionReason || null,
+            updatedAt: new Date(),
+          })
+          .where(eq(kycProfiles.userId, userId));
+      }
     });
 
     // 3. Trigger Email Notification (if revoking verification)
+    // Only send if the status is being set to something indicative of revocation from a previously good state
+    // We target 'rejected' or 'unsubmitted' here as per user request
     if (kycStatus === 'rejected' || kycStatus === 'unsubmitted') {
       try {
         const { sendEmail } = await import('@/workers/emailWorkers');
