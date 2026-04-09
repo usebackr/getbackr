@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { kycProfiles } from '@/db/schema/kycProfiles';
 import { eq } from 'drizzle-orm';
+import { sendEmail } from '@/workers/emailWorkers';
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB per file
 
@@ -121,12 +122,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         .where(eq(users.id, userId))
         .limit(1);
       if (user?.email) {
-        const { sendEmail } = await import('@/workers/emailWorkers');
         await sendEmail({
           type: 'kyc_received',
           email: user.email,
           displayName: user.displayName,
         });
+
+        // Also notify ADMIN
+        await sendEmail({
+          type: 'admin_action_required',
+          adminActionType: 'kyc_request',
+          adminActionDetails: `User: ${user.displayName || 'Unnamed User'}\nEmail: ${user.email}\nLegal Name: ${legalName}\nID Type: ${idType}\nID Number: ${idNumber}\n\nPlease review documents in the admin panel.`,
+        }).catch(err => console.error('[KYC Submit] Admin alert failed:', err));
       }
     } catch (emailErr) {
       console.error('[KYC Submit] Confirmation email failed:', emailErr);

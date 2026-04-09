@@ -529,7 +529,7 @@ export async function sendEmail(data: ReceiptJobData) {
 
     // 4h. Admin Alerts
     if (type === 'admin_action_required') {
-      const to = process.env.ADMIN_EMAIL || 'admin@findbackr.com.ng';
+      const to = process.env.ADMIN_EMAIL || 'usebackr@gmail.com';
       const actionTitle = adminActionType === 'kyc_request' ? 'New KYC Verification Request' : 'New Withdrawal Request';
       
       const { data: res, error } = await getResend().emails.send({
