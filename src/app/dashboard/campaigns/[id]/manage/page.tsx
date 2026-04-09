@@ -5,13 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import SpendingLogManager from '@/components/dashboard/SpendingLogManager';
 import UpdateManager from '@/components/dashboard/UpdateManager';
+import BackerListManager from '@/components/dashboard/BackerListManager';
 import { 
   Rocket, 
   Users, 
   TrendingUp, 
   Clock, 
   MessageSquare, 
-  Receipt, 
+  ClipboardList, 
   Settings,
   ChevronLeft,
   Share2,
@@ -236,7 +237,7 @@ export default function CampaignManagePage() {
           {[
             { id: 'overview', label: 'Overview', icon: TrendingUp },
             { id: 'updates', label: 'Updates', icon: MessageSquare },
-            { id: 'spending', label: 'Spending', icon: Receipt },
+            { id: 'spending', label: 'Spending', icon: ClipboardList },
             { id: 'backers', label: 'Backers', icon: Users },
             { id: 'settings', label: 'Settings', icon: Settings },
           ].map(tab => (
@@ -333,13 +334,7 @@ export default function CampaignManagePage() {
           {activeTab === 'updates' && <UpdateManager campaignId={id} />}
           {activeTab === 'spending' && <SpendingLogManager campaignId={id} />}
 
-          {activeTab === 'backers' && (
-            <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', padding: '32px', textAlign: 'center', color: '#94a3b8' }}>
-              <Users size={48} style={{ margin: '0 auto 16px', opacity: 0.4 }} />
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: '#64748b' }}>Backer List</p>
-              <p style={{ fontSize: '0.85rem' }}>Coming soon — you'll be able to see a full list of everyone who backed your project.</p>
-            </div>
-          )}
+          {activeTab === 'backers' && <BackerListManager campaignId={id} />}
 
           {/* SETTINGS TAB */}
           {activeTab === 'settings' && (

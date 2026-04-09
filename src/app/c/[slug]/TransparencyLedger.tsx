@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Receipt, ExternalLink } from 'lucide-react';
+import { ClipboardList, ExternalLink } from 'lucide-react';
 
 interface SpendLog {
   id: string;
@@ -27,7 +27,7 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
           textAlign: 'center',
         }}
       >
-        <Receipt size={40} style={{ margin: '0 auto 16px', color: '#cbd5e1' }} />
+        <ClipboardList size={40} style={{ margin: '0 auto 16px', color: '#cbd5e1' }} />
         <p style={{ color: '#64748b', fontSize: '0.95rem', fontWeight: 600 }}>No expenditure recorded yet.</p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function TransparencyLedger({ logs }: { logs: SpendLog[] }) {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
             <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '10px' }}>
-              <Receipt size={20} color="#64748b" />
+              <ClipboardList size={20} color="#64748b" />
             </div>
             <div style={{ minWidth: 0 }}>
               <p

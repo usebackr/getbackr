@@ -77,7 +77,7 @@ export default function UpdateManager({ campaignId }: UpdateManagerProps) {
 
   return (
     <div style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>Project Updates</h3>
           <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Keep your backers engaged with milestones and announcements</p>
@@ -95,7 +95,9 @@ export default function UpdateManager({ campaignId }: UpdateManagerProps) {
               color: '#fff',
               border: 'none',
               fontWeight: 700,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
             }}
           >
             <Plus size={18} /> Post New Update

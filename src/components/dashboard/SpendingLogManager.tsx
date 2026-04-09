@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Receipt, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Calendar, ExternalLink } from 'lucide-react';
 
 interface SpendingLog {
   id: string;
@@ -80,7 +80,7 @@ export default function SpendingLogManager({ campaignId }: SpendingLogManagerPro
 
   return (
     <div style={{ background: '#fff', borderRadius: '32px', border: '1px solid #e2e8f0', padding: '32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>Spending Log</h3>
           <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Record your project expenditures for transparency</p>
@@ -98,7 +98,9 @@ export default function SpendingLogManager({ campaignId }: SpendingLogManagerPro
               color: '#fff',
               border: 'none',
               fontWeight: 700,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
             }}
           >
             <Plus size={18} /> Add Log Entry
