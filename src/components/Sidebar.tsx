@@ -190,9 +190,8 @@ export default function Sidebar() {
         const res = await fetch('/api/notifications');
 
         // Handle session expiry during background poll
+        // For public pages (no session), ignore 401s
         if (res.status === 401) {
-          console.warn('[Sidebar] Session expired during poll');
-          window.location.href = '/login?error=session_expired';
           return;
         }
 
@@ -209,7 +208,7 @@ export default function Sidebar() {
           }
         }
       } catch (err) {
-        console.error('Failed to fetch notifications polling');
+        // Silently fail for cross-domain or network issues
       }
     };
 
