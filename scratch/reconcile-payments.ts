@@ -1,7 +1,7 @@
-import { db } from './src/lib/db';
-import { contributions } from './src/db/schema/contributions';
-import { processSuccessfulPayment } from './src/lib/payments/fulfillment';
-import { verifyTransaction } from './src/lib/payments/paystack';
+import { db } from '../src/lib/db';
+import { contributions } from '../src/db/schema/contributions';
+import { processSuccessfulPayment } from '../src/lib/payments/fulfillment';
+import { verifyTransaction } from '../src/lib/payments/paystack';
 import { eq, and, gt } from 'drizzle-orm';
 
 async function reconcileRecentPayments() {
