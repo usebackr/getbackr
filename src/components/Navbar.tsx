@@ -168,6 +168,7 @@ export default function Navbar() {
 
         <div className="nav-links-desktop">
           <a href="/explore">Explore</a>
+          <a href="/blog">Blog</a>
           <a href="/how-it-works">How it Works</a>
           <AuthButtons />
         </div>
