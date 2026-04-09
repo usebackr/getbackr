@@ -17,6 +17,7 @@ import BackToDashboardButton from '@/components/dashboard/BackToDashboardButton'
 import BrandLogo from '@/components/BrandLogo';
 import { getPublicUrl } from '@/lib/storage';
 import { Megaphone, ShieldCheck, ChevronLeft } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
   let campaign: any = null;
@@ -50,6 +51,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         displayName: users.displayName,
         avatarUrl: users.avatarUrl,
         username: users.username,
+        kycStatus: users.kycStatus,
       })
       .from(users)
       .where(eq(users.id, campaign.creatorId))
@@ -265,8 +267,9 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                   {!avatarUrl && (creator?.displayName?.charAt(0) || 'C')}
                 </div>
                 <div>
-                  <p style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0 }}>
+                  <p style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {creator?.displayName || 'Unknown Creator'}
+                    {creator?.kycStatus === 'verified' && <VerifiedBadge size={18} />}
                   </p>
                   <p
                     style={{

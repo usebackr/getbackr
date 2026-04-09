@@ -4,6 +4,8 @@ import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
 import { eq, desc, sql } from 'drizzle-orm';
 import { getPublicUrl } from '@/lib/storage';
+import { users } from '@/db/schema/users';
+import VerifiedBadge from '@/components/VerifiedBadge';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -19,8 +21,11 @@ export default async function OngoingProjects() {
       image: campaigns.coverImageUrl,
       slug: campaigns.slug,
       backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
+      creatorName: users.displayName,
+      kycStatus: users.kycStatus,
     })
     .from(campaigns)
+    .innerJoin(users, eq(campaigns.creatorId, users.id))
     .leftJoin(
       contributions,
       sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
@@ -47,6 +52,8 @@ export default async function OngoingProjects() {
               'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800',
             backers: c.backers,
             href: `/c/${c.slug}`,
+            creatorName: c.creatorName,
+            isVerified: c.kycStatus === 'verified',
           };
         })
       : [
@@ -60,6 +67,8 @@ export default async function OngoingProjects() {
               'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=800',
             backers: 124,
             href: '/explore',
+            creatorName: 'Babatunde',
+            isVerified: true,
           },
           {
             title: 'Solar Pod — Clean Energy',
@@ -71,6 +80,8 @@ export default async function OngoingProjects() {
               'https://images.unsplash.com/photo-1509391366360-fe5bb584850a?auto=format&fit=crop&q=80&w=800',
             backers: 450,
             href: '/explore',
+            creatorName: 'Afolabi',
+            isVerified: true,
           },
         ];
 
@@ -140,7 +151,10 @@ export default async function OngoingProjects() {
                 <div className="card-content">
                   <h3 className="card-title">{project.title}</h3>
                   <div className="card-meta">
-                    <span className="card-backers">
+                    <span className="card-backers" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: '#475569', fontWeight: 600 }}>{project.creatorName}</span>
+                      {project.isVerified && <VerifiedBadge size={14} />}
+                      <span style={{ color: '#94a3b8', margin: '0 4px' }}>•</span>
                       <b>{project.backers}</b> backers
                     </span>
                   </div>

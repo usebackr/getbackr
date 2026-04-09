@@ -7,6 +7,7 @@ import { eq, desc, sql, and } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPublicUrl } from '@/lib/storage';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,9 +95,19 @@ export default async function PublicProfilePage({ params }: { params: { username
           </div>
 
           <h1
-            style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '8px', color: '#0f172a' }}
+            style={{ 
+              fontSize: '2.5rem', 
+              fontWeight: 900, 
+              marginBottom: '8px', 
+              color: '#0f172a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px'
+            }}
           >
             {user.displayName}
+            {user.kycStatus === 'verified' && <VerifiedBadge size={32} />}
           </h1>
           <p
             style={{
