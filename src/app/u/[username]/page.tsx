@@ -16,15 +16,18 @@ export default async function PublicProfilePage({ params }: { params: { username
 
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
 
+  const decodedUsername = decodeURIComponent(username);
+  const cleanUsername = decodedUsername.startsWith('@') ? decodedUsername.slice(1) : decodedUsername;
+
   // 1. Fetch User Data
   const [user] = await db
     .select()
     .from(users)
     .where(
       isUUID
-        ? eq(users.id, username)
-        : eq(users.username, username.replace('%40', '').replace('@', '')),
-    )
+        ? eq(users.id, cleanUsername)
+        : eq(users.username, cleanUsername),
+    );
 
   if (!user) notFound();
 

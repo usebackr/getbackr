@@ -35,7 +35,21 @@ export default async function ExplorePage() {
       sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
     )
     .where(and(eq(campaigns.status, 'active')))
-    .groupBy(campaigns.id, users.displayName)
+    .groupBy(
+      campaigns.id,
+      campaigns.slug,
+      campaigns.title,
+      campaigns.description,
+      campaigns.category,
+      campaigns.coverImageUrl,
+      campaigns.goalAmount,
+      campaigns.endDate,
+      campaigns.status,
+      campaigns.createdAt,
+      users.displayName,
+      users.username,
+      users.avatarUrl,
+    )
     .orderBy(desc(campaigns.createdAt))
     .limit(40);
 
