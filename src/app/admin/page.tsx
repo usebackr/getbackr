@@ -6,6 +6,8 @@ import { contributions } from '@/db/schema/contributions';
 import { auditLogs } from '@/db/schema/auditLogs';
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { GrowthChart } from '@/components/admin/GrowthChart';
+import { ReconcileButton } from '@/components/admin/ReconcileButton';
+import { ShieldCheck, Info } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +78,10 @@ export default async function AdminDashboardPage() {
       .leftJoin(users, eq(auditLogs.actorId, users.id))
       .orderBy(desc(auditLogs.createdAt))
       .limit(8),
+    db // 10: pendingPayments (Last 48 hours)
+      .select({ count: sql<number>`count(*)::int` })
+      .from(contributions)
+      .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
   ]);
 
   const getValue = (index: number) =>
@@ -88,6 +94,7 @@ export default async function AdminDashboardPage() {
   const kycBetaCount = getValue(7)?.[0]?.count || 0;
   const recentBetaUsers = getValue(8) || [];
   const recentLogs = getValue(9) || [];
+  const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
 
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
@@ -147,6 +154,13 @@ export default async function AdminDashboardPage() {
           value={`₦${totalRevenue.toLocaleString()}`}
           color="#10b981"
         />
+        <StatCard
+          title="Pending Payments"
+          value={pendingPaymentsCount.toLocaleString()}
+          color={pendingPaymentsCount > 0 ? '#ef4444' : '#64748b'}
+          subValue="Last 48 hours"
+          isAlert={pendingPaymentsCount > 0}
+        />
       </div>
 
       {/* Onboarding Funnel */}
@@ -186,6 +200,44 @@ export default async function AdminDashboardPage() {
             isActive={kycBetaCount > 0}
           />
         </div>
+      </div>
+      {/* Financial Audit Section */}
+      <div 
+        style={{
+          background: '#f8fafc',
+          padding: '32px',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          marginBottom: '48px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)'
+        }}
+      >
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <div style={{ 
+            background: '#fff', 
+            width: '48px', 
+            height: '48px', 
+            borderRadius: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+          }}>
+            <ShieldCheck size={28} color="#10b981" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
+              Financial Integrity Audit
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Info size={14} /> Manually sync stuck payments with Paystack logs. Safe and idempotent.
+            </p>
+          </div>
+        </div>
+        <ReconcileButton />
       </div>
 
       <div
@@ -335,18 +387,30 @@ function StatusBadge({ label, active, color }: any) {
   );
 }
 
-function StatCard({ title, value, color, subValue, isDark }: any) {
+function StatCard({ title, value, color, subValue, isDark, isAlert }: any) {
   return (
     <div
       style={{
         background: isDark ? '#0f172a' : '#ffffff',
         padding: '32px',
         borderRadius: '16px',
-        border: isDark ? 'none' : '1px solid #e2e8f0',
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+        border: isDark ? 'none' : isAlert ? `2px solid #ef4444` : '1px solid #e2e8f0',
+        boxShadow: isAlert ? '0 0 20px rgba(239, 68, 68, 0.1)' : '0 4px 6px -1px rgba(0,0,0,0.05)',
         color: isDark ? '#fff' : 'inherit',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
+      {isAlert && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '4px',
+          height: '100%',
+          background: '#ef4444'
+        }} />
+      )}
       <p
         style={{
           fontSize: '0.85rem',

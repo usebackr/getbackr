@@ -99,6 +99,7 @@ export async function reconcilePendingPayments() {
   const results = {
     checked: pending.length,
     processed: 0,
+    processedRefs: [] as string[],
     failed: 0,
     errors: [] as string[]
   };
@@ -122,6 +123,7 @@ export async function reconcilePendingPayments() {
         });
         
         results.processed++;
+        results.processedRefs.push(contribution.paymentReference);
       }
     } catch (err: any) {
       console.error(`[Maintenance] Failed to verify ${contribution.paymentReference}:`, err.message);
