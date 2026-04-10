@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
 import { contributions } from '@/db/schema/contributions';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { eq, desc, sql, and, or } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPublicUrl } from '@/lib/storage';
