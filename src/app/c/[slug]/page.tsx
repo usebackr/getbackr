@@ -638,6 +638,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
           <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading checkout...</div>}>
             <CheckoutForm
               campaignId={campaign.id}
+              campaignSlug={campaign.slug}
               goalAmount={goalAmount}
               raisedAmount={raisedAmount}
               isClosed={campaign.status === 'closed'}

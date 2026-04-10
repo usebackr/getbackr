@@ -534,7 +534,7 @@ export default function CheckoutForm({
                 You must be logged in to back this project. 🇳🇬
               </p>
               <a
-                href={`/login?from=/c/${campaignId}`}
+                href={`/login?from=/c/${campaignSlug}`}
                 className="btn-primary"
                 style={{ display: 'inline-block', padding: '12px 32px', fontSize: '0.9rem' }}
               >

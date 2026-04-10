@@ -148,7 +148,13 @@ function VerifyEmailContent() {
         <button
           className="btn-primary"
           style={{ width: '100%', padding: '18px', fontSize: '1rem', fontWeight: 700 }}
-          onClick={() => router.push(`/login${from ? `?from=${encodeURIComponent(from)}` : ''}`)}
+          onClick={() => {
+            // Safety Check: If 'from' is malformed (e.g. contains a UUID instead of a slug)
+            // we default to /dashboard to prevent a 404.
+            const isUUIDUrl = from?.match(/\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+            const target = isUUIDUrl ? '/dashboard' : (from || '/login');
+            router.push(`/login${target !== '/login' ? `?from=${encodeURIComponent(target)}` : ''}`);
+          }}
         >
           Continue to {from ? 'Complete Support' : 'Login'}
         </button>
