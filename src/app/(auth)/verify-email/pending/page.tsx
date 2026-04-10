@@ -5,8 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 function PendingContent() {
   const searchParams = useSearchParams();
-  const router = useRouter(); // Use router for navigation
+  const router = useRouter();
   const from = searchParams.get('from');
+  const email = searchParams.get('email') || 'your email';
   const loginUrl = `/login${from ? `?from=${encodeURIComponent(from)}` : ''}`;
 
   return (
