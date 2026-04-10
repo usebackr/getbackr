@@ -1032,3 +1032,78 @@ export async function processEmailCampaign(emailCampaignId: string): Promise<{ s
 
   return { sent: uniqueRecipients.length };
 }
+
+// ---------------------------------------------------------------------------
+// 22.7 — Drip Emails (KYC Reminder & Engagement)
+// ---------------------------------------------------------------------------
+
+export async function sendDripEmail(email: string, displayName: string, type: 'kyc_reminder' | 'engagement_1') {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
+  const firstName = displayName.split(' ')[0] || 'there';
+
+  let subject = '';
+  let contentHtml = '';
+  let text = '';
+
+  if (type === 'kyc_reminder') {
+    subject = 'Unlock your full potential on Backr! 🚀';
+    contentHtml = `
+      <h2 style="font-size: 1.8rem; color: #0f172a; margin-bottom: 16px;">Finish setting up, ${firstName}!</h2>
+      <p style="font-size: 1.1rem; color: #475569; margin-bottom: 24px;">
+        We noticed you haven't completed your profile verification (KYC) yet. Completing this step is 
+        crucial for building trust with potential backers and enabling payouts for your campaigns.
+      </p>
+      <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 32px; border-left: 4px solid ${BRAND_COLOR};">
+        <h4 style="margin: 0 0 8px 0; color: #0f172a;">Why verify?</h4>
+        <ul style="margin: 0; padding-left: 20px; color: #64748b; font-size: 0.95rem;">
+          <li>Receive a "Verified" badge on your profile</li>
+          <li>Withdraw funds instantly to your bank account</li>
+          <li>Build maximum credibility with donors</li>
+        </ul>
+      </div>
+      <div style="text-align: center;">
+        <a href="${appUrl}/dashboard/identity" style="display: inline-block; padding: 14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+          Complete Verification Now
+        </a>
+      </div>
+    `;
+    text = `Hi ${firstName},\n\nComplete your KYC verification on Backr to unlock payouts and build trust.\n\nVerify here: ${appUrl}/dashboard/identity`;
+  } else if (type === 'engagement_1') {
+    subject = 'Fuel your creativity on Backr 💡';
+    contentHtml = `
+      <h2 style="font-size: 1.8rem; color: #0f172a; margin-bottom: 16px;">Ready to back a dream, ${firstName}?</h2>
+      <p style="font-size: 1.1rem; color: #475569; margin-bottom: 24px;">
+        Backr is home to incredible creators across Nigeria. From independent film to 
+        local crafts, there's always something inspiring to support.
+      </p>
+      <p style="color: #64748b; margin-bottom: 32px;">
+        By backing a project, you're not just giving money—you're helping a creator bring their 
+        vision to life. Check out some of the trending projects today!
+      </p>
+      <div style="text-align: center;">
+        <a href="${appUrl}/explore" style="display: inline-block; padding: 14px 32px; background: #0f172a; color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+          Explore Projects
+        </a>
+      </div>
+    `;
+    text = `Hi ${firstName},\n\nReady to support a creator? Explore the latest projects on Backr today!\n\nExplore here: ${appUrl}/explore`;
+  }
+
+  return getResend().emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject,
+    html: `
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <div style="text-align: center; margin-bottom: 32px;">
+             <h1 style="color: ${BRAND_COLOR}; margin: 0; font-weight: 900; letter-spacing: -1px;">Backr</h1>
+          </div>
+          ${contentHtml}
+          ${renderFooter()}
+        </div>
+      </div>
+    `,
+    text,
+  });
+}

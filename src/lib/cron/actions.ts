@@ -168,6 +168,49 @@ export async function reconcilePendingPayments(targetRef?: string, manualCampaig
 }
 
 /**
+ * Maintenance Action: Run Drip Email Campaigns
+ */
+export async function runDripCampaigns() {
+  console.log('[Drip] Scanning for drip campaign targets...');
+
+  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  const threeDaysAgo = new Date(Date.now() - 72 * 60 * 60 * 1000);
+
+  // 1. KYC Reminder: Users who signed up 2-3 days ago and NOT verified
+  const kycTargets = await db
+    .select()
+    .from(users)
+    .where(
+      and(
+        eq(users.kycStatus, 'none'),
+        sql`${users.createdAt} < ${twoDaysAgo}`,
+        sql`${users.createdAt} > ${threeDaysAgo}`,
+        sql`${users.kycReminderSentAt} IS NULL`,
+      ),
+    );
+
+  console.log(`[Drip] Found ${kycTargets.length} KYC reminder targets.`);
+
+  const { sendDripEmail } = await import('@/workers/emailWorkers');
+
+  let kycSent = 0;
+  for (const user of kycTargets) {
+    try {
+      await sendDripEmail(user.email, user.displayName, 'kyc_reminder');
+      await db
+        .update(users)
+        .set({ kycReminderSentAt: new Date(), updatedAt: new Date() })
+        .where(eq(users.id, user.id));
+      kycSent++;
+    } catch (err: any) {
+      console.error(`[Drip] Failed to send KYC reminder to ${user.email}:`, err.message);
+    }
+  }
+
+  return { kycRemindersSent: kycSent };
+}
+
+/**
  * Unified Maintenance Runner
  */
 export async function runMaintenance() {
@@ -177,19 +220,22 @@ export async function runMaintenance() {
   const boostsResult = await expireBoosts();
   const subsResult = await expireSubscriptions();
   const reconcileResult = await reconcilePendingPayments();
+  const dripResult = await runDripCampaigns();
 
   console.log('[Maintenance] Finished:', {
     campaignsClosed: campaignsResult.closedCount,
     boostsExpired: boostsResult.expiredCount,
     subsExpired: subsResult.expiredCount,
-    paymentsReconciled: reconcileResult.processed
+    paymentsReconciled: reconcileResult.processed,
+    dripEmailsSent: dripResult.kycRemindersSent,
   });
 
   return {
     campaigns: campaignsResult,
     boosts: boostsResult,
     subscriptions: subsResult,
-    reconciliation: reconcileResult
+    reconciliation: reconcileResult,
+    drip: dripResult,
   };
 }
 

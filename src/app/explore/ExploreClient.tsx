@@ -346,184 +346,234 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
               );
 
               return (
-                <a
+                <div
                   key={camp.id}
-                  href={`/c/${camp.slug}`}
-                  style={{ textDecoration: 'none', display: 'block' }}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px solid #f1f5f9',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                  className="explore-card"
+                  onClick={(e) => {
+                    // Navigate only if the click wasn't on a nested link
+                    if (!(e.target as HTMLElement).closest('a')) {
+                      window.location.href = `/c/${camp.slug}`;
+                    }
+                  }}
                 >
                   <div
-                    className="explore-card"
                     style={{
-                      background: '#ffffff',
-                      borderRadius: '16px',
-                      border: '1px solid #f1f5f9',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      transition: 'all 0.3s ease',
+                      height: '200px',
+                      width: '100%',
+                      position: 'relative',
+                      background: '#f1f5f9',
                     }}
                   >
-                    <div
+                    {camp.coverImageUrl && (
+                      <img
+                        src={camp.coverImageUrl}
+                        alt={camp.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    )}
+                    <span
                       style={{
-                        height: '200px',
-                        width: '100%',
-                        position: 'relative',
-                        background: '#f1f5f9',
+                        position: 'absolute',
+                        top: '12px',
+                        left: '12px',
+                        background: 'rgba(255,255,255,0.95)',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        color: 'var(--accent-primary)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                       }}
                     >
-                      {camp.coverImageUrl && (
-                        <img
-                          src={camp.coverImageUrl}
-                          alt={camp.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      )}
-                      <span
+                      {camp.category}
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: '24px 20px',
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {/* Creator Identity */}
+                    <div 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '10px', 
+                        marginBottom: '16px' 
+                      }}
+                    >
+                      <a 
+                        href={`/u/${camp.creatorUsername || camp.id}`} 
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                      >
+                        <div style={{ 
+                          width: '28px', 
+                          height: '28px', 
+                          borderRadius: '14px', 
+                          background: camp.creatorAvatar ? `url(${camp.creatorAvatar}) center/cover` : 'var(--accent-primary)',
+                          border: '2px solid #fff',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          fontSize: '0.7rem',
+                          fontWeight: 900
+                        }}>
+                          {!camp.creatorAvatar && (camp.creatorName?.[0] || 'U')}
+                        </div>
+                        <span style={{ 
+                          fontSize: '0.85rem', 
+                          fontWeight: 700, 
+                          color: '#475569',
+                          transition: 'color 0.2s'
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.color = 'var(--accent-primary)')}
+                        onMouseOut={(e) => (e.currentTarget.style.color = '#475569')}
+                        >
+                          {camp.creatorName}
+                        </span>
+                      </a>
+                    </div>
+
+                    <h3
+                      style={{
+                        fontSize: '1.2rem',
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        marginBottom: '8px',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {camp.title}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: '0.85rem',
+                        color: '#64748b',
+                        marginBottom: '16px',
+                        flex: 1,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {camp.description}
+                    </p>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '20px',
+                      }}
+                    >
+                      <div
                         style={{
-                          position: 'absolute',
-                          top: '12px',
-                          left: '12px',
-                          background: 'rgba(255,255,255,0.95)',
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          fontSize: '0.75rem',
-                          fontWeight: 800,
-                          color: 'var(--accent-primary)',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '16px',
+                          background: '#f1f5f9',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.8rem',
                         }}
                       >
-                        {camp.category}
+                        <Icons.Users />
+                      </div>
+                      <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                        <b>{camp.backers || 0}</b> backers
                       </span>
                     </div>
 
-                    <div
-                      style={{
-                        padding: '24px 20px',
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <div style={{ fontSize: '1.25rem' }}>{/* Category icon removed */}</div>
-                      <h3
-                        style={{
-                          fontSize: '1.2rem',
-                          fontWeight: 800,
-                          color: '#0f172a',
-                          marginBottom: '8px',
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {camp.title}
-                      </h3>
-                      <p
-                        style={{
-                          fontSize: '0.85rem',
-                          color: '#64748b',
-                          marginBottom: '16px',
-                          flex: 1,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {camp.description}
-                      </p>
-
+                    <div style={{ marginTop: 'auto' }}>
                       <div
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginBottom: '20px',
+                          justifyContent: 'space-between',
+                          marginBottom: '8px',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        <span style={{ color: '#0f172a' }}>
+                          ₦{Math.floor(raised).toLocaleString()}{' '}
+                          <span style={{ fontWeight: 500, color: '#94a3b8' }}>
+                            of ₦{Math.floor(goal).toLocaleString()}
+                          </span>
+                        </span>
+                        <span style={{ color: 'var(--accent-primary)' }}>{actualPct}%</span>
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '6px',
+                          background: '#f1f5f9',
+                          borderRadius: '3px',
+                          marginBottom: '16px',
+                          overflow: 'hidden',
                         }}
                       >
                         <div
                           style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '16px',
-                            background: '#f1f5f9',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.8rem',
+                            width: `${visualPct}%`,
+                            height: '100%',
+                            background: 'var(--accent-primary)',
                           }}
-                        >
-                          <Icons.Users />
-                        </div>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                          <b>{camp.backers || 0}</b> backers
-                        </span>
+                        />
                       </div>
-
-                      <div style={{ marginTop: 'auto' }}>
-                        <div
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                          {daysLeft > 0 ? `${daysLeft} days left` : 'Ends soon'}
+                        </span>
+                        <button
                           style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginBottom: '8px',
-                            fontSize: '0.85rem',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            background: '#0f172a',
+                            color: '#fff',
+                            border: 'none',
                             fontWeight: 700,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/c/${camp.slug}`;
                           }}
                         >
-                          <span style={{ color: '#0f172a' }}>
-                            ₦{Math.floor(raised).toLocaleString()}{' '}
-                            <span style={{ fontWeight: 500, color: '#94a3b8' }}>
-                              of ₦{Math.floor(goal).toLocaleString()}
-                            </span>
-                          </span>
-                          <span style={{ color: 'var(--accent-primary)' }}>{actualPct}%</span>
-                        </div>
-                        <div
-                          style={{
-                            width: '100%',
-                            height: '6px',
-                            background: '#f1f5f9',
-                            borderRadius: '3px',
-                            marginBottom: '16px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${visualPct}%`,
-                              height: '100%',
-                              background: 'var(--accent-primary)',
-                            }}
-                          />
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
-                            {daysLeft > 0 ? `${daysLeft} days left` : 'Ends soon'}
-                          </span>
-                          <button
-                            style={{
-                              padding: '8px 16px',
-                              borderRadius: '8px',
-                              background: '#0f172a',
-                              color: '#fff',
-                              border: 'none',
-                              fontWeight: 700,
-                              fontSize: '0.8rem',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Back Project
-                          </button>
-                        </div>
+                          Back Project
+                        </button>
                       </div>
                     </div>
                   </div>
-                </a>
+                </div>
               );
             })}
           </div>

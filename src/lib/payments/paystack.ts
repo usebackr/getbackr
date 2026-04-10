@@ -310,6 +310,7 @@ export async function getTransferBalance(): Promise<number> {
 
   const response = await fetch(`${PAYSTACK_BASE_URL}/balance`, {
     headers: { Authorization: `Bearer ${secretKey}` },
+    cache: 'no-store',
   });
 
   if (!response.ok) throw new Error('Failed to fetch balance from Paystack');

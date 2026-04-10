@@ -270,7 +270,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
         }}
       >
         <div style={{ width: '100%' }}>
-          <BackToDashboardButton />
+          <BackToDashboardButton to="/explore" label="Explore" />
         </div>
         {/* Left Column: Media & Story */}
         <div style={{ flex: '1 1 600px', maxWidth: '800px' }}>

@@ -20,8 +20,11 @@ export default async function PublicProfilePage({ params }: { params: { username
   const [user] = await db
     .select()
     .from(users)
-    .where(isUUID ? eq(users.id, username) : eq(users.username, username.replace('%40', '')))
-    .limit(1);
+    .where(
+      isUUID
+        ? eq(users.id, username)
+        : eq(users.username, username.replace('%40', '').replace('@', '')),
+    )
 
   if (!user) notFound();
 

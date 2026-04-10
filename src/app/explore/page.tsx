@@ -23,6 +23,8 @@ export default async function ExplorePage() {
       status: campaigns.status,
       createdAt: campaigns.createdAt,
       creatorName: users.displayName,
+      creatorUsername: users.username,
+      creatorAvatar: users.avatarUrl,
       raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
       backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
     })

@@ -48,13 +48,13 @@ DROP POLICY IF EXISTS "Users can update their own bank accounts" ON "bank_accoun
 CREATE POLICY "Users can update their own bank accounts"
 ON "bank_accounts" FOR UPDATE
 TO authenticated
-USING (auth.uid() = "userId");
+USING (auth.uid() = "user_id");
 
 DROP POLICY IF EXISTS "Users can delete their own bank accounts" ON "bank_accounts";
 CREATE POLICY "Users can delete their own bank accounts"
 ON "bank_accounts" FOR DELETE
 TO authenticated
-USING (auth.uid() = "userId");
+USING (auth.uid() = "user_id");
 
 -- 5. Strict Admin Lockdown for Audit Logs
 ALTER TABLE "audit_logs" ENABLE ROW LEVEL SECURITY;

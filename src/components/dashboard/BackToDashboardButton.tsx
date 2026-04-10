@@ -4,12 +4,20 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
-export default function BackToDashboardButton({ style }: { style?: React.CSSProperties }) {
+export default function BackToDashboardButton({
+  style,
+  to = '/dashboard',
+  label = 'Dashboard',
+}: {
+  style?: React.CSSProperties;
+  to?: string;
+  label?: string;
+}) {
   const router = useRouter();
 
   return (
     <button
-      onClick={() => router.push('/dashboard')}
+      onClick={() => router.push(to)}
       onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')}
       onMouseOut={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
       style={{
@@ -32,7 +40,7 @@ export default function BackToDashboardButton({ style }: { style?: React.CSSProp
       }}
     >
       <ArrowLeft size={16} strokeWidth={2.5} />
-      Dashboard
+      {label}
     </button>
   );
 }

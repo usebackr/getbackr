@@ -40,6 +40,8 @@ export const users = pgTable('users', {
   isBeta: boolean('is_beta').notNull().default(false),
   interests: jsonb('interests').notNull().default([]),
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+  dripStatus: jsonb('drip_status').notNull().default({}),
+  kycReminderSentAt: timestamp('kyc_reminder_sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

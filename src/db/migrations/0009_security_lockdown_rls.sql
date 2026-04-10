@@ -74,14 +74,14 @@ DROP POLICY IF EXISTS "Users can view their own bank accounts" ON "bank_accounts
 CREATE POLICY "Users can view their own bank accounts"
 ON "bank_accounts" FOR SELECT
 TO authenticated
-USING (auth.uid() = userId);
+USING (auth.uid() = user_id);
 
 -- Users can view their own withdrawals
 DROP POLICY IF EXISTS "Users can view their own withdrawals" ON "withdrawals";
 CREATE POLICY "Users can view their own withdrawals"
 ON "withdrawals" FOR SELECT
 TO authenticated
-USING (auth.uid() = creatorId);
+USING (auth.uid() = creator_id);
 
 -- 4. Lockdown Sensitive Tables (No Public Access)
 -- The following tables have NO public policies. 

@@ -99,6 +99,13 @@
       "when": 1775812515000,
       "tag": "0013_add_interests_to_users",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1775847550108,
+      "tag": "0014_glorious_purple_man",
+      "breakpoints": true
     }
   ]
 }
