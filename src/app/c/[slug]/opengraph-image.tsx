@@ -61,11 +61,11 @@ export default async function Image({ params }: { params: { slug: string } }) {
   });
 
   const title = fullCampaign?.title || 'Support this Campaign';
-  const creatorName = fullCampaign?.creator?.displayName || 'a Backr Creator';
+  const creatorName = (fullCampaign as any)?.creator?.displayName || 'a Backr Creator';
   const goal = parseFloat(fullCampaign?.goalAmount || '0');
   const raised = parseFloat((fullCampaign as any)?.wallet?.totalReceived || '0');
   const progress = Math.min(Math.round((raised / goal) * 100), 100);
-  const coverUrl = getPublicUrl(fullCampaign?.coverImageUrl);
+  const coverUrl = getPublicUrl(fullCampaign?.coverImageUrl || null);
 
   return new ImageResponse(
     (
