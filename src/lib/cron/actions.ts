@@ -78,7 +78,7 @@ export async function expireSubscriptions() {
 /**
  * Maintenance Action: Reconcile pending payments (Fallback for missed webhooks)
  */
-export async function reconcilePendingPayments(targetRef?: string) {
+export async function reconcilePendingPayments(targetRef?: string, manualCampaignId?: string) {
   console.log(
     targetRef
       ? `[Maintenance] Running targeted reconciliation for ref: ${targetRef}...`
@@ -129,17 +129,29 @@ export async function reconcilePendingPayments(targetRef?: string) {
           `[Maintenance] Found paid transaction for reference ${contribution.paymentReference}. Fulfilling...`,
         );
 
-        await processSuccessfulPayment({
+        // Merge manualCampaignId into metadata if provided
+        const metadata = {
+          ...(verification.metadata || {}),
+          ...(manualCampaignId ? { campaignId: manualCampaignId } : {}),
+        };
+
+        const fulfillment = await processSuccessfulPayment({
           reference: contribution.paymentReference,
           amountInMajor: verification.amount / 100,
           currency: verification.currency,
           customerEmail: verification.customer.email,
           channel: verification.channel,
-          metadata: verification.metadata || {},
+          metadata,
         });
 
-        results.processed++;
-        results.processedRefs.push(contribution.paymentReference);
+        if (fulfillment.status === 'success') {
+          results.processed++;
+          results.processedRefs.push(contribution.paymentReference);
+        } else {
+          console.warn(`[Maintenance] Fulfillment ignored for ${contribution.paymentReference}: ${fulfillment.message}`);
+          results.failed++;
+          results.errors.push(`${contribution.paymentReference}: ${fulfillment.message}`);
+        }
       } else if (targetRef) {
         // If specifically requested and failed verification
         results.failed++;
