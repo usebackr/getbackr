@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function ReconcileButton() {
-  const [loading, setLoading] = useState(false);
+  const [reference, setReference] = useState('');
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
@@ -12,7 +12,12 @@ export function ReconcileButton() {
   } | null>(null);
 
   const handleReconcile = async () => {
-    if (!confirm('Are you sure you want to run a manual reconciliation? This will check all pending payments against Paystack.')) {
+    const isTargeted = reference.trim().length > 0;
+    const confirmMsg = isTargeted
+      ? `Are you sure you want to audit specific reference: ${reference}?`
+      : 'Are you sure you want to run a global manual reconciliation? This will check all pending payments against Paystack.';
+
+    if (!confirm(confirmMsg)) {
       return;
     }
 
@@ -22,6 +27,8 @@ export function ReconcileButton() {
     try {
       const res = await fetch('/api/admin/reconcile', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference.trim() || undefined }),
       });
 
       const data = await res.json();
@@ -32,6 +39,8 @@ export function ReconcileButton() {
           message: data.summary || 'Audit complete.',
           details: data.details,
         });
+        // Clear reference on success
+        if (isTargeted) setReference('');
         // Optional: Refresh page to update counts after short delay
         setTimeout(() => window.location.reload(), 3000);
       } else {
@@ -51,25 +60,41 @@ export function ReconcileButton() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-      <button
-        onClick={handleReconcile}
-        disabled={loading}
-        className="btn-primary"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '12px 24px',
-          background: loading ? '#94a3b8' : '#0f172a',
-          fontSize: '0.9rem',
-          fontWeight: 700,
-          cursor: loading ? 'not-allowed' : 'pointer',
-        }}
-      >
-        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-        {loading ? 'Auditing Reality...' : 'Trigger Manual Audit'}
-      </button>
+      <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' }}>
+        <input
+          type="text"
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+          placeholder="Paste Payment Reference (optional)"
+          style={{
+            flex: 1,
+            padding: '12px 16px',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            fontSize: '0.9rem',
+            outline: 'none',
+          }}
+        />
+        <button
+          onClick={handleReconcile}
+          disabled={loading}
+          className="btn-primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px 24px',
+            background: loading ? '#94a3b8' : '#0f172a',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          {loading ? 'Auditing...' : reference ? 'Audit Reference' : 'Trigger Global Audit'}
+        </button>
+      </div>
 
       {result && (
         <div

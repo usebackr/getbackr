@@ -34,7 +34,15 @@ export async function POST(req: NextRequest) {
 
     console.log('[Admin Reconcile] Starting manual reconciliation triggered by:', actorId || 'Unknown');
 
-    const result = await reconcilePendingPayments();
+    let reference: string | undefined;
+    try {
+      const body = await req.json();
+      reference = body.reference;
+    } catch (e) {
+      // Optional body
+    }
+
+    const result = await reconcilePendingPayments(reference);
 
     // Log the event
     await db.insert(auditLogs).values({

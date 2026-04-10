@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { pusherClient } from '@/lib/pusher';
+import { pusherClient } from '@/lib/pusher-client';
 import { useRouter } from 'next/navigation';
 
 interface RealtimeUpdateOptions {

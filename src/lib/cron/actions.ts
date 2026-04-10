@@ -78,41 +78,57 @@ export async function expireSubscriptions() {
 /**
  * Maintenance Action: Reconcile pending payments (Fallback for missed webhooks)
  */
-export async function reconcilePendingPayments() {
-  console.log('[Maintenance] Scanning for pending contributions...');
-  
-  // Find pending contributions from the last 2 days
-  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-  
-  const pending = await db
-    .select()
-    .from(contributions)
-    .where(
-      and(
-        eq(contributions.status, 'pending'),
-        gt(contributions.createdAt, twoDaysAgo)
-      )
-    );
+export async function reconcilePendingPayments(targetRef?: string) {
+  console.log(
+    targetRef
+      ? `[Maintenance] Running targeted reconciliation for ref: ${targetRef}...`
+      : '[Maintenance] Scanning for pending contributions...',
+  );
 
-  console.log(`[Maintenance] Found ${pending.length} pending contributions to check.`);
-  
+  let pending: any[] = [];
+
+  if (targetRef) {
+    // If a specific reference is provided, check if we have it (any status)
+    pending = await db
+      .select()
+      .from(contributions)
+      .where(eq(contributions.paymentReference, targetRef));
+
+    // If NOT found in our DB, create a "virtual" contribution object to trigger the check
+    if (pending.length === 0) {
+      console.log(`[Maintenance] Ref ${targetRef} not found in DB. Performing discovery check...`);
+      pending = [{ paymentReference: targetRef, status: 'missing_in_db' }];
+    }
+  } else {
+    // Standard scan: Find pending contributions from the last 2 days
+    const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    pending = await db
+      .select()
+      .from(contributions)
+      .where(and(eq(contributions.status, 'pending'), gt(contributions.createdAt, twoDaysAgo)));
+  }
+
+  console.log(`[Maintenance] Processing ${pending.length} reconciliation target(s).`);
+
   const results = {
     checked: pending.length,
     processed: 0,
     processedRefs: [] as string[],
     failed: 0,
-    errors: [] as string[]
+    errors: [] as string[],
   };
 
   for (const contribution of pending) {
     if (!contribution.paymentReference) continue;
-    
+
     try {
       const verification = await verifyTransaction(contribution.paymentReference);
-      
+
       if (verification && verification.status === 'success') {
-        console.log(`[Maintenance] Found paid transaction for reference ${contribution.paymentReference}. Fulfilling...`);
-        
+        console.log(
+          `[Maintenance] Found paid transaction for reference ${contribution.paymentReference}. Fulfilling...`,
+        );
+
         await processSuccessfulPayment({
           reference: contribution.paymentReference,
           amountInMajor: verification.amount / 100,
@@ -121,9 +137,13 @@ export async function reconcilePendingPayments() {
           channel: verification.channel,
           metadata: verification.metadata || {},
         });
-        
+
         results.processed++;
         results.processedRefs.push(contribution.paymentReference);
+      } else if (targetRef) {
+        // If specifically requested and failed verification
+        results.failed++;
+        results.errors.push(`${contribution.paymentReference}: Verification status: ${verification?.status || 'not_found'}`);
       }
     } catch (err: any) {
       console.error(`[Maintenance] Failed to verify ${contribution.paymentReference}:`, err.message);

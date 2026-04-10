@@ -236,7 +236,7 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
 
         // Trigger Real-time Update via Pusher
         try {
-          const { getPusherServer } = await import('@/lib/pusher');
+          const { getPusherServer } = await import('@/lib/pusher-server');
           const pusher = getPusherServer();
           
           // 1. Trigger on Campaign Channel (for public page updates)
