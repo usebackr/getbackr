@@ -60,6 +60,7 @@ export function ReconcileButton() {
   };
 
   return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
       <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' }}>
         <input
           type="text"
