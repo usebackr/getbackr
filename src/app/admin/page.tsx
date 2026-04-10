@@ -21,6 +21,17 @@ const tableHeaderStyle = {
 };
 
 export default async function AdminDashboardPage() {
+  // 0. Pre-calculate contribution totals per campaign to avoid complex joins in the main query
+  const contributionTotals = db
+    .select({
+      campaignId: contributions.campaignId,
+      totalRaised: sql<string>`SUM(${contributions.amount})::text`.as('totalRaised'),
+    })
+    .from(contributions)
+    .where(eq(contributions.status, 'confirmed'))
+    .groupBy(contributions.campaignId)
+    .as('contributionTotals');
+
   // Run all queries in parallel, each independently fault-tolerant.
   const results = await Promise.allSettled([
     db.select({ count: sql<number>`count(*)::int` }).from(users), // 0: userCount
@@ -91,33 +102,21 @@ export default async function AdminDashboardPage() {
       .select({ count: sql<number>`count(*)::int` })
       .from(contributions)
       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
-    db // 11: allProjects
+    db // 11: allProjects (Optimized with subquery)
       .select({
         id: campaigns.id,
         title: campaigns.title,
+        slug: campaigns.slug,
         status: campaigns.status,
         goalAmount: campaigns.goalAmount,
         createdAt: campaigns.createdAt,
         creatorName: users.displayName,
         creatorEmail: users.email,
-        raised: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
+        raised: contributionTotals.totalRaised,
       })
       .from(campaigns)
       .leftJoin(users, eq(campaigns.creatorId, users.id))
-      .leftJoin(
-        contributions,
-        and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
-      )
-      .groupBy(
-        campaigns.id, 
-        campaigns.title, 
-        campaigns.status, 
-        campaigns.goalAmount, 
-        campaigns.createdAt, 
-        users.id, 
-        users.displayName, 
-        users.email
-      )
+      .leftJoin(contributionTotals, eq(campaigns.id, contributionTotals.campaignId))
       .orderBy(desc(campaigns.createdAt))
       .limit(50),
   ]);
@@ -139,7 +138,7 @@ export default async function AdminDashboardPage() {
   const recentBetaUsers = getValue(8) || [];
   const recentLogs = getValue(9) || [];
   const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
-  const allProjects: any[] = []; // getValue(11) || [];
+  const allProjects = getValue(11) || [];
 
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
