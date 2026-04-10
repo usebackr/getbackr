@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { pusherClient } from '@/lib/pusher-client';
+import { getPusherClient } from '@/lib/pusher-client';
 import { useRouter } from 'next/navigation';
 
 interface RealtimeUpdateOptions {
@@ -14,30 +14,27 @@ interface RealtimeUpdateOptions {
  * Custom hook to listen for real-time campaign updates (donations).
  * When a donation is received, it triggers a router refresh and an optional callback.
  */
-export function useRealtimeUpdate({ campaignId, userId, onDonation }: RealtimeUpdateOptions) {
-  const router = useRouter();
-
   useEffect(() => {
     if (!campaignId && !userId) return;
 
+    const pusher = getPusherClient();
+    if (!pusher) return; // Not in browser
+
     const channelName = userId ? `user-${userId}` : `campaign-${campaignId}`;
-    const channel = pusherClient.subscribe(channelName);
+    const channel = pusher.subscribe(channelName);
 
     channel.bind('donation-received', (data: any) => {
-      console.log(`[Realtime] Donation received for campaign ${campaignId}:`, data);
+      console.log(`[Realtime] Donation received:`, data);
       
-      // 1. Refresh the Next.js router to pull fresh server data (e.g. goal progress)
       router.refresh();
 
-      // 2. Trigger optional callback (for toasts or local state)
       if (onDonation) {
         onDonation(data);
       }
     });
 
     return () => {
-      pusherClient.unsubscribe(channelName);
+      pusher.unsubscribe(channelName);
       channel.unbind_all();
     };
-  }, [campaignId, onDonation, router]);
-}
+  }, [campaignId, userId, onDonation, router]);

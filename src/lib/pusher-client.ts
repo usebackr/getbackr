@@ -1,12 +1,21 @@
-import PusherClient from 'pusher-js';
+import Pusher from 'pusher-js';
+
+let pusherClientInstance: Pusher | null = null;
 
 /**
- * Client-side Pusher instance for listening to events.
- * Requires: NEXT_PUBLIC_PUSHER_KEY, NEXT_PUBLIC_PUSHER_CLUSTER
+ * Returns a Pusher client instance, initialized only on the client-side.
+ * Returns null during SSR/Build-time prerendering.
  */
-export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY || '',
-  {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
+export const getPusherClient = () => {
+  if (typeof window === 'undefined') return null;
+
+  if (!pusherClientInstance) {
+    pusherClientInstance = new Pusher(
+      process.env.NEXT_PUBLIC_PUSHER_KEY || '',
+      {
+        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
+      }
+    );
   }
-);
+  return pusherClientInstance;
+};
