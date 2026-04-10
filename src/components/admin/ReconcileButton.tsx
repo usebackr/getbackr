@@ -5,6 +5,7 @@ import { RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function ReconcileButton() {
   const [reference, setReference] = useState('');
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
