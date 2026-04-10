@@ -52,6 +52,13 @@ const emailCardStyle = `
   border: 1px solid #e2e8f0;
 `;
 
+const renderFooter = (includeUnsubscribe = true) => `
+  <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+    &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+    ${includeUnsubscribe ? `<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.` : ''}
+  </div>
+`;
+
 export interface ReceiptJobData {
   contributionId?: string;
   backerEmail?: string;
@@ -384,7 +391,7 @@ export async function sendEmail(data: ReceiptJobData) {
                   Fix Verification Now
                 </a>
               </div>
-              <p style="font-size: 0.85rem; color: #64748b; margin-top: 32px;">If you have any questions, please reply to this email or reach out to our support team.</p>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -476,10 +483,7 @@ export async function sendEmail(data: ReceiptJobData) {
                   Reset Password
                 </a>
               </div>
-              <p style="font-size: 0.85rem; color: #64748b;">This link will expire in 30 minutes. If you didn't request this, you can safely ignore this email.</p>
-              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
-              </div>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -510,10 +514,7 @@ export async function sendEmail(data: ReceiptJobData) {
                   Verify Email Address
                 </a>
               </div>
-              <p style="font-size: 0.85rem; color: #64748b;">If you didn't sign up for Backr, you can ignore this email.</p>
-              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
-              </div>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -545,10 +546,7 @@ export async function sendEmail(data: ReceiptJobData) {
                   Review usually takes <strong>24-48 business hours</strong>. You'll receive another email as soon as your status is updated.
                 </p>
               </div>
-              <p>In the meantime, you can continue exploring projects on Backr.</p>
-              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
-              </div>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -583,7 +581,7 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>If you have any questions regarding this action, please reach out to our support team.</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.</p>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -620,9 +618,7 @@ export async function sendEmail(data: ReceiptJobData) {
                 </a>
               </div>
               
-              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                System Generated Alert &bull; Backr Admin &bull; Plot 17B, Doherty Estate, Lagos
-              </div>
+              ${renderFooter(false)}
             </div>
           </div>
         `,
@@ -659,11 +655,7 @@ export async function sendEmail(data: ReceiptJobData) {
 
               <p style="font-size: 0.95rem; line-height: 1.6; color: #334155;">Your campaign <strong>"${campaignTitle}"</strong> is gaining momentum. Your current total raised is <strong>₦${Number(totalRaised).toLocaleString()}</strong>.</p>
 
-              <div style="margin-top: 40px; text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/dashboard" style="display:inline-block; padding:14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                  View Your Dashboard
-                </a>
-              </div>
+              ${renderFooter()}
             </div>
           </div>
         `,
@@ -708,11 +700,7 @@ export async function sendEmail(data: ReceiptJobData) {
 
             <p style="font-size: 0.95rem; line-height: 1.6; color: #334155;">You'll receive updates from the creator as they reach new milestones. Your support makes this possible.</p>
 
-            <div style="margin-top: 40px; text-align: center;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng'}/explore" style="display:inline-block; padding:14px 32px; background: #0f172a; color: white; text-decoration:none; border-radius: 12px; font-weight: 700;">
-                Explore More Projects
-              </a>
-            </div>
+            ${renderFooter()}
           </div>
         </div>
       `,
@@ -807,8 +795,13 @@ export async function sendAccountLockoutEmail(
     from: FROM_EMAIL,
     subject: 'Your Backr account has been temporarily locked',
     html: `
-      <p>Your Backr account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
-      <p>Your account will be unlocked at: <strong>${lockedUntilDate}</strong></p>
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <p>Your Backr account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
+          <p>Your account will be unlocked at: <strong>${lockedUntilDate}</strong></p>
+          ${renderFooter()}
+        </div>
+      </div>
     `,
   });
 
@@ -840,9 +833,7 @@ export async function sendSubscriptionFailureEmail(
           <h2>Renewal Failed</h2>
           <p>We were unable to renew your ${plan} subscription. Your account has entered a 7-day grace period ending on ${graceDate}.</p>
           <p>Please update your payment method to avoid losing premium features.</p>
-          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
-          </div>
+            ${renderFooter()}
         </div>
       </div>
     `,
@@ -902,11 +893,7 @@ export async function sendNewProjectAlerts(campaign: Campaign) {
             </a>
           </div>
 
-          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>
-            You're receiving this because you selected <strong>${categoryLabel}</strong> as an interest. 
-            <a href="${appUrl}/dashboard/settings" style="color: #64748b;">Manage preferences</a>.
-          </div>
+          ${renderFooter()}
         </div>
       </div>
     `,
@@ -973,11 +960,7 @@ export async function sendWeeklyDigestEmail(data: WeeklyDigestData) {
             </a>
           </div>
 
-          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>
-            You're receiving this because you're a member of Backr. 
-            <a href="${appUrl}/dashboard/settings" style="color: #64748b;">Unsubscribe</a>.
-          </div>
+          ${renderFooter()}
         </div>
       </div>
     `,
