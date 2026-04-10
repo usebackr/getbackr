@@ -11,6 +11,7 @@ const registerSchema = z.object({
   displayName: z.string().min(1, 'Display name is required'),
   beta: z.boolean().optional(),
   interests: z.array(z.string()).optional(),
+  from: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password, displayName, beta, interests } = parsed.data;
+    const { email, password, displayName, beta, interests, from } = parsed.data;
     const lowerEmail = email.toLowerCase();
 
     // Check if user exists
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
         type: 'verification_email',
         email: user.email,
         token: verificationToken,
+        from: from || undefined,
       });
 
       // Also send welcome email

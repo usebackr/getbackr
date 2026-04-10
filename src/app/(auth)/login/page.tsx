@@ -247,7 +247,7 @@ function LoginForm() {
       >
         Don&apos;t have an account?{' '}
         <a
-          href="/signup"
+          href={`/signup${searchParams.get('from') ? `?from=${encodeURIComponent(searchParams.get('from')!)}` : ''}`}
           style={{ color: 'var(--accent-primary)', fontWeight: 700, textDecoration: 'none' }}
         >
           Sign Up

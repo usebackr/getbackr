@@ -1,11 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CAMPAIGN_CATEGORIES } from '@/lib/constants/categories';
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+
   const [step, setStep] = React.useState(1);
   const [role, setRole] = React.useState('individual');
   const [interests, setInterests] = React.useState<string[]>([]);
@@ -22,7 +25,6 @@ export default function SignupPage() {
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-
 
   const toggleInterest = (id: string) => {
     setInterests((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
@@ -42,7 +44,7 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, role, interests }),
+        body: JSON.stringify({ ...formData, role, interests, from }),
       });
 
       if (!res.ok) {
@@ -52,7 +54,8 @@ export default function SignupPage() {
       }
 
       // Registration succeeded — go to pending verification
-      router.push(`/verify-email/pending?email=${encodeURIComponent(formData.email)}`);
+      const pendingUrl = `/verify-email/pending?email=${encodeURIComponent(formData.email)}${from ? `&from=${encodeURIComponent(from)}` : ''}`;
+      router.push(pendingUrl);
     } catch (err) {
       setError('Failed to connect to the server');
     } finally {

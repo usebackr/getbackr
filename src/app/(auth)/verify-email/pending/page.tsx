@@ -6,7 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 function PendingContent() {
   const searchParams = useSearchParams();
   const router = useRouter(); // Use router for navigation
-  const email = searchParams.get('email') || 'your email';
+  const from = searchParams.get('from');
+  const loginUrl = `/login${from ? `?from=${encodeURIComponent(from)}` : ''}`;
 
   return (
     <div
@@ -81,14 +82,14 @@ function PendingContent() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <button
-          onClick={() => router.push('/login')}
+          onClick={() => router.push(loginUrl)}
           className="btn-primary"
           style={{ width: '100%', padding: '16px' }}
         >
           Verification complete? Go to Login
         </button>
         <a
-          href="/login"
+          href={loginUrl}
           style={{
             color: 'var(--text-secondary)',
             textDecoration: 'none',

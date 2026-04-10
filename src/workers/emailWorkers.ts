@@ -79,6 +79,7 @@ export interface ReceiptJobData {
   email?: string;
   displayName?: string;
   token?: string;
+  from?: string;
   otp?: string;
   rejectionReason?: string;
   // Extra data for creator alert
@@ -108,6 +109,7 @@ export async function sendEmail(data: ReceiptJobData) {
     rejectionReason,
     displayName,
     token,
+    from,
     adminActionType,
     adminActionDetails,
   } = data;
@@ -491,7 +493,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'verification_email') {
       const to = email;
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-      const verifyUrl = `${appUrl}/verify-email?token=${token || data.token}&email=${email}`;
+      const verifyUrl = `${appUrl}/verify-email?token=${token || data.token}&email=${email}${from ? `&from=${encodeURIComponent(from)}` : ''}`;
       if (!to) throw new Error('Missing email for Verification');
 
       const { data: res, error } = await getResend().emails.send({

@@ -86,8 +86,12 @@ export default function Navbar() {
     }
   }, [isOpen]);
 
+  const pathname = usePathname();
+
   const AuthButtons = ({ isMobile = false }) => {
     if (loading) return null;
+    const fromParam = pathname ? `?from=${encodeURIComponent(pathname)}` : '';
+
     if (isAuthenticated) {
       return (
         <a
@@ -116,7 +120,7 @@ export default function Navbar() {
         }}
       >
         <a
-          href="/login"
+          href={`/login${fromParam}`}
           style={{
             color: 'var(--text-primary)',
             textDecoration: 'none',
@@ -129,7 +133,7 @@ export default function Navbar() {
           Log In
         </a>
         <a
-          href="/dashboard"
+          href={`/dashboard${fromParam}`}
           className="btn-primary"
           style={{
             padding: '12px 32px',

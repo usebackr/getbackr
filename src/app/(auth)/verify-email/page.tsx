@@ -176,12 +176,64 @@ function VerifyEmailContent() {
           Backr.
         </p>
 
+    const from = searchParams.get('from');
+
+    return (
+      <div
+        className="card"
+        style={{
+          maxWidth: '540px',
+          width: '100%',
+          textAlign: 'center',
+          padding: '80px 48px',
+          background: '#ffffff',
+          boxShadow: '0 40px 100px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <div
+          style={{
+            width: '100px',
+            height: '100px',
+            background: '#f0fdf4',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 40px',
+            animation: 'scaleIn 0.5s ease-out',
+          }}
+        >
+          <CheckCircle2 size={56} color="#10b981" strokeWidth={1.5} />
+        </div>
+
+        <h2
+          style={{
+            fontSize: '2.5rem',
+            fontWeight: 900,
+            marginBottom: '16px',
+            color: 'var(--accent-secondary)',
+          }}
+        >
+          Email <span className="text-gradient">Verified</span>!
+        </h2>
+        <p
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '1.1rem',
+            marginBottom: '48px',
+            lineHeight: 1.6,
+          }}
+        >
+          Thank you! Your account is now fully active. You&apos;re ready to start your journey with
+          Backr.
+        </p>
+
         <button
           className="btn-primary"
           style={{ width: '100%', padding: '18px', fontSize: '1rem', fontWeight: 700 }}
-          onClick={() => router.push('/login')}
+          onClick={() => router.push(`/login${from ? `?from=${encodeURIComponent(from)}` : ''}`)}
         >
-          Continue to Login
+          Continue to {from ? 'Complete Support' : 'Login'}
         </button>
       </div>
     );
