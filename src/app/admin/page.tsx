@@ -108,7 +108,16 @@ export default async function AdminDashboardPage() {
         contributions,
         and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
       )
-      .groupBy(campaigns.id, users.id)
+      .groupBy(
+        campaigns.id, 
+        campaigns.title, 
+        campaigns.status, 
+        campaigns.goalAmount, 
+        campaigns.createdAt, 
+        users.id, 
+        users.displayName, 
+        users.email
+      )
       .orderBy(desc(campaigns.createdAt))
       .limit(50),
   ]);
