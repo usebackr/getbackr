@@ -149,7 +149,7 @@ function LoginForm() {
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Password</label>
             <a
-              href="/forgot-password"
+              href={`/forgot-password${searchParams.get('from') ? `?from=${encodeURIComponent(searchParams.get('from')!)}` : ''}`}
               style={{
                 fontSize: '0.8rem',
                 color: 'var(--accent-primary)',

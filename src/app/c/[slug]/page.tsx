@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { eq, and, desc, sql, or, inArray } from 'drizzle-orm';
@@ -585,12 +586,14 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
             gap: '24px',
           }}
         >
-          <CheckoutForm
-            campaignId={campaign.id}
-            goalAmount={goalAmount}
-            raisedAmount={raisedAmount}
-            isClosed={campaign.status === 'closed'}
-          />
+          <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading checkout...</div>}>
+            <CheckoutForm
+              campaignId={campaign.id}
+              goalAmount={goalAmount}
+              raisedAmount={raisedAmount}
+              isClosed={campaign.status === 'closed'}
+            />
+          </Suspense>
 
           <BackersList backers={latestBackers as any} totalDonors={totalDonors} />
         </div>

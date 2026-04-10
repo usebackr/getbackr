@@ -459,7 +459,7 @@ export async function sendEmail(data: ReceiptJobData) {
     if (type === 'forgot_password') {
       const to = email;
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
-      const resetUrl = `${appUrl}/reset-password?token=${token || data.token}&email=${email}`;
+      const resetUrl = `${appUrl}/reset-password?token=${token || data.token}&email=${email}${from ? `&from=${encodeURIComponent(from)}` : ''}`;
       if (!to) throw new Error('Missing email for Forgot Password');
 
       const { data: res, error } = await getResend().emails.send({

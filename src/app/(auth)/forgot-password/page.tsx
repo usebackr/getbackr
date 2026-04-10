@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordForm() {
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,7 +22,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, from }),
       });
       const data = await res.json();
 
@@ -171,7 +175,7 @@ export default function ForgotPasswordPage() {
             }}
           >
             <a
-              href="/login"
+              href={`/login${from ? `?from=${encodeURIComponent(from)}` : ''}`}
               style={{ color: 'var(--text-primary)', fontWeight: 600, textDecoration: 'none' }}
             >
               ← Back to Login
@@ -180,5 +184,13 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }

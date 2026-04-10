@@ -19,9 +19,7 @@ function VerifyEmailContent() {
   // 1. Automatic Verification if token is present
   useEffect(() => {
     if (!token) {
-      if (!userId) {
-        setLoading(false);
-      }
+      setLoading(false);
       return;
     }
 
@@ -48,37 +46,7 @@ function VerifyEmailContent() {
     };
 
     performVerification();
-  }, [token, userId]);
-
-  // 2. Legacy Polling for "Check your email" tab that stayed open
-  useEffect(() => {
-    if (verified || token || !userId) return;
-
-    const checkStatus = async () => {
-      try {
-        const res = await fetch(`/api/auth/verify-status?userId=${userId}`);
-        const data = await res.json();
-        if (data.verified) {
-          setVerified(true);
-          setLoading(false);
-          return true;
-        }
-      } catch (err) {
-        console.error('Failed to check verification status');
-      }
-      return false;
-    };
-
-    checkStatus();
-    const interval = setInterval(async () => {
-      const isVerified = await checkStatus();
-      if (isVerified) {
-        clearInterval(interval);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [userId, token, verified]);
+  }, [token]);
 
   if (loading) {
     return (

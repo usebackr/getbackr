@@ -43,9 +43,10 @@ function ResetPasswordForm() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to reset password');
 
-      setMessage('Password reset successful! Redirecting to login...');
+      const from = searchParams.get('from');
+      setMessage('Password reset successful! Redirecting...');
       setTimeout(() => {
-        router.push('/login?message=Password+has+been+reset+successfully');
+        router.push(`/login?message=Password+has+been+reset+successfully${from ? `&from=${encodeURIComponent(from)}` : ''}`);
       }, 2500);
     } catch (err: any) {
       setError(err.message);

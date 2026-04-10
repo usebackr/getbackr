@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function ThankYouPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
 
   const reference = searchParams.get('reference');
@@ -185,5 +186,13 @@ export default function ThankYouPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<div>Loading success details...</div>}>
+      <SuccessContent />
+    </Suspense>
   );
 }

@@ -7,7 +7,7 @@ import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    const { email, from } = await req.json();
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 
     const lowerEmail = email.toLowerCase();
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         type: 'forgot_password',
         email: user.email,
         token,
+        from,
       });
     } catch (emailErr) {
       console.error('[forgot-password] Email failed:', emailErr);
