@@ -25,6 +25,7 @@ export default async function ExplorePage() {
       creatorName: users.displayName,
       creatorUsername: users.username,
       creatorAvatar: users.avatarUrl,
+      creatorId: users.id,
       raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
       backers: sql<number>`COUNT(DISTINCT ${contributions.backerEmail})::int`,
     })
@@ -49,6 +50,7 @@ export default async function ExplorePage() {
       users.displayName,
       users.username,
       users.avatarUrl,
+      users.id,
     )
     .orderBy(desc(campaigns.createdAt))
     .limit(40);

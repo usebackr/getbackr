@@ -289,7 +289,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
               style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}
             >
               <Link
-                href={creator?.username ? `/u/${creator.username}` : `/u/${campaign.creatorId}`}
+                href={creator?.username ? `/u/@${creator.username}` : `/u/${campaign.creatorId}`}
                 style={{
                   textDecoration: 'none',
                   display: 'flex',

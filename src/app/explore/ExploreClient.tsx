@@ -418,11 +418,11 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
                         marginBottom: '16px' 
                       }}
                     >
-                      <a 
-                        href={`/u/${camp.creatorUsername || camp.id}`} 
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
-                      >
+                        <a 
+                          href={camp.creatorUsername ? `/u/@${camp.creatorUsername}` : `/u/${camp.creatorId}`} 
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                        >
                         <div style={{ 
                           width: '28px', 
                           height: '28px', 
