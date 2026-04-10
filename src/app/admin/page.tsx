@@ -139,7 +139,7 @@ export default async function AdminDashboardPage() {
   const recentBetaUsers = getValue(8) || [];
   const recentLogs = getValue(9) || [];
   const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
-  const allProjects = getValue(11) || [];
+  const allProjects: any[] = []; // getValue(11) || [];
 
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
