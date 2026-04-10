@@ -14,12 +14,12 @@ export const dynamic = 'force-dynamic';
 export default async function PublicProfilePage({ params }: { params: { username: string } }) {
   const { username } = params;
 
-  const decoded = decodeURIComponent(username);
-  const identifier = decoded.startsWith('@') ? decoded.slice(1) : decoded;
-  const isPossiblyUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  const raw = decodeURIComponent(username).trim();
+  const cleaned = raw.startsWith('@') ? raw.slice(1) : raw;
+  const isPossiblyUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleaned);
 
   // 1. Fetch User Data
-  // We check BOTH username and ID to be as robust as possible
+  // We check RAW, CLEANED, and LOWERCASE variants of both to be 100% robust.
   const [user] = await db
     .select({
       id: users.id,
@@ -34,13 +34,19 @@ export default async function PublicProfilePage({ params }: { params: { username
     .from(users)
     .where(
       or(
-        isPossiblyUUID ? eq(users.id, identifier) : undefined,
-        sql`LOWER(${users.username}) = LOWER(${identifier})`,
+        isPossiblyUUID ? eq(users.id, cleaned) : undefined,
+        eq(users.username, cleaned),
+        eq(users.username, raw),
+        sql`LOWER(${users.username}) = LOWER(${cleaned})`,
+        sql`LOWER(${users.username}) = LOWER(${raw})`
       ),
     )
     .limit(1);
 
-  if (!user) notFound();
+  if (!user) {
+    console.error(`[Profile] User not found for identifier: ${username} (Cleaned: ${cleaned})`);
+    notFound();
+  }
 
   // 2. Fetch User's Campaigns (Live and Closed)
   const creatorCampaigns = await db
