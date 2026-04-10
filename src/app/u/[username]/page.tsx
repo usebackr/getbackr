@@ -21,7 +21,16 @@ export default async function PublicProfilePage({ params }: { params: { username
 
   // 1. Fetch User Data
   const [user] = await db
-    .select()
+    .select({
+      id: users.id,
+      displayName: users.displayName,
+      username: users.username,
+      avatarUrl: users.avatarUrl,
+      kycStatus: users.kycStatus,
+      bio: users.bio,
+      socialLinks: users.socialLinks,
+      createdAt: users.createdAt,
+    })
     .from(users)
     .where(
       isUUID
@@ -50,7 +59,15 @@ export default async function PublicProfilePage({ params }: { params: { username
       sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
     )
     .where(and(eq(campaigns.creatorId, user.id), sql`${campaigns.status} IN ('active', 'closed')`))
-    .groupBy(campaigns.id)
+    .groupBy(
+      campaigns.id,
+      campaigns.title,
+      campaigns.slug,
+      campaigns.status,
+      campaigns.category,
+      campaigns.goalAmount,
+      campaigns.coverImageUrl,
+    )
     .orderBy(desc(campaigns.createdAt));
 
   const socialLinks = (user.socialLinks as any) || {};

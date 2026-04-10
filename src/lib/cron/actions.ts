@@ -178,7 +178,11 @@ export async function runDripCampaigns() {
 
   // 1. KYC Reminder: Users who signed up 2-3 days ago and NOT verified
   const kycTargets = await db
-    .select()
+    .select({
+      id: users.id,
+      email: users.email,
+      displayName: users.displayName,
+    })
     .from(users)
     .where(
       and(
