@@ -107,6 +107,7 @@ export default async function AdminDashboardPage() {
         id: campaigns.id,
         title: campaigns.title,
         status: campaigns.status,
+        slug: campaigns.slug,
         goalAmount: campaigns.goalAmount,
         creatorName: users.displayName,
         creatorEmail: users.email,
@@ -129,7 +130,9 @@ export default async function AdminDashboardPage() {
     const res = results[index];
     if (!res || res.status === 'rejected') {
       if (res?.status === 'rejected') {
-        console.error(`[Admin Dashboard] Query ${index} failed:`, res.reason);
+        console.error(`[Admin Dashboard] Query ${index} CRITICAL FAILURE:`, res.reason);
+      } else {
+        console.warn(`[Admin Dashboard] Query ${index} returned no result, using default.`);
       }
       return defaultValue;
     }
@@ -147,8 +150,8 @@ export default async function AdminDashboardPage() {
   
   // Merge All Projects with Financial Totals
   const allProjectsRaw = getValue(11) || [];
-  const financialTotals = getValue(12) || [];
-  const totalsMap = new Map(financialTotals.map((t: any) => [t.campaignId, t.totalRaised]));
+  const financialTotalsData = getValue(12) || [];
+  const totalsMap = new Map(financialTotalsData.map((t: any) => [t.campaignId, t.totalRaised]));
   
   const allProjects = allProjectsRaw.map((p: any) => ({
     ...p,

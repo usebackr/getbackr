@@ -165,12 +165,12 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
 
           {/* Featured Hero */}
           {filteredCampaigns.length > 0 && activeCategory === 'All' && !search && (
-            <a 
+            <a
               href={`/c/${filteredCampaigns[0].slug}`}
-              style={{ 
-                width: '100%', 
-                height: '380px', 
-                borderRadius: '32px', 
+              style={{
+                width: '100%',
+                height: '380px',
+                borderRadius: '32px',
                 background: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.8)), url(${filteredCampaigns[0].coverImageUrl}) center/cover no-repeat`,
                 display: 'flex',
                 flexDirection: 'column',
@@ -188,15 +188,15 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
               onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.01)')}
               onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
-              <div style={{ 
-                position: 'absolute', 
-                top: '40px', 
-                left: '40px', 
-                background: '#10b981', 
-                color: '#fff', 
-                padding: '6px 16px', 
-                borderRadius: '20px', 
-                fontSize: '0.85rem', 
+              <div style={{
+                position: 'absolute',
+                top: '40px',
+                left: '40px',
+                background: '#10b981',
+                color: '#fff',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '0.85rem',
                 fontWeight: 800,
                 display: 'flex',
                 alignItems: 'center',
@@ -208,14 +208,14 @@ export default function ExploreClient({ initialCampaigns }: { initialCampaigns: 
               <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '500px', marginBottom: '24px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {filteredCampaigns[0].description}
               </p>
-              <div 
-                style={{ 
-                  width: 'fit-content', 
-                  padding: '14px 32px', 
-                  borderRadius: '16px', 
-                  background: '#fff', 
-                  color: '#0f172a', 
-                  fontWeight: 800, 
+              <div
+                style={{
+                  width: 'fit-content',
+                  padding: '14px 32px',
+                  borderRadius: '16px',
+                  background: '#fff',
+                  color: '#0f172a',
+                  fontWeight: 800,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'

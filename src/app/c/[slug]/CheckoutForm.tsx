@@ -5,11 +5,13 @@ import { useSearchParams } from 'next/navigation';
 
 export default function CheckoutForm({
   campaignId,
+  campaignSlug,
   goalAmount,
   raisedAmount,
   isClosed,
 }: {
   campaignId: string;
+  campaignSlug: string;
   goalAmount: number;
   raisedAmount: number;
   isClosed?: boolean;

@@ -150,10 +150,12 @@ function VerifyEmailContent() {
           style={{ width: '100%', padding: '18px', fontSize: '1rem', fontWeight: 700 }}
           onClick={() => {
             // Safety Check: If 'from' is malformed (e.g. contains a UUID instead of a slug)
-            // we default to /dashboard to prevent a 404.
-            const isUUIDUrl = from?.match(/\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-            const target = isUUIDUrl ? '/dashboard' : (from || '/login');
-            router.push(`/login${target !== '/login' ? `?from=${encodeURIComponent(target)}` : ''}`);
+            // or if it's an external URL, we default to /dashboard to prevent a 404.
+            let target = from || '/dashboard';
+            if (!target.startsWith('/') || target.startsWith('//') || target.match(/\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+              target = '/dashboard';
+            }
+            router.push(`/login${target !== '/dashboard' ? `?from=${encodeURIComponent(target)}` : ''}`);
           }}
         >
           Continue to {from ? 'Complete Support' : 'Login'}

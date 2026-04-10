@@ -43,12 +43,10 @@ function LoginForm() {
       }
 
       // Login successful
-      let from = searchParams.get('from') || '/dashboard';
-      
       // Safety Check: If 'from' is malformed (e.g. contains a UUID instead of a slug)
-      // we default to /dashboard to prevent a 404.
-      const isUUIDUrl = from.match(/\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-      if (isUUIDUrl) {
+      // or if it's an external URL, we default to /dashboard.
+      let from = searchParams.get('from') || '/dashboard';
+      if (!from.startsWith('/') || from.startsWith('//') || from.match(/\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         from = '/dashboard';
       }
 
