@@ -21,490 +21,516 @@ const tableHeaderStyle = {
 };
 
 export default async function AdminDashboardPage() {
-  // 0. Pre-calculate contribution totals per campaign to avoid complex joins in the main query
-  const contributionTotals = db
-    .select({
-      campaignId: contributions.campaignId,
-      totalRaised: sql<string>`SUM(${contributions.amount})::text`.as('totalRaised'),
-    })
-    .from(contributions)
-    .where(eq(contributions.status, 'confirmed'))
-    .groupBy(contributions.campaignId)
-    .as('contributionTotals');
-
-  // Run all queries in parallel, each independently fault-tolerant.
-  const results = await Promise.allSettled([
-    db.select({ count: sql<number>`count(*)::int` }).from(users), // 0: userCount
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(users)
-      .where(sql`is_beta = true`), // 1: betaCount
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(users)
-      .where(sql`last_login_at > now() - interval '24 hours'`), // 2: dauCount
-    db.select({ count: sql<number>`count(*)::int` }).from(campaigns), // 3: campaignCount
-    db // 4: financials
-      .select({
-        totalVolume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
-        totalRevenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
-      })
-      .from(contributions)
-      .where(eq(contributions.status, 'confirmed')),
-    db // 5: topCampaigns
-      .select({
-        id: campaigns.id,
-        title: campaigns.title,
-        revenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
-        volume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
-      })
-      .from(campaigns)
-      .leftJoin(
-        contributions,
-        and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
-      )
-      .groupBy(campaigns.id, campaigns.title)
-      .orderBy(desc(sql`SUM(${contributions.amount})`))
-      .limit(5),
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(users)
-      .where(and(eq(users.isBeta, true), eq(users.emailVerified, true))), // 6: verifiedBeta
-    db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(users)
-      .where(and(eq(users.isBeta, true), eq(users.kycStatus, 'verified'))), // 7: kycBeta
-    db // 8: recentBetaUsers
-      .select({
-        id: users.id,
-        email: users.email,
-        displayName: users.displayName,
-        emailVerified: users.emailVerified,
-        kycStatus: users.kycStatus,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(eq(users.isBeta, true))
-      .orderBy(desc(users.createdAt))
-      .limit(10),
-    db // 9: logs
-      .select({
-        id: auditLogs.id,
-        eventType: auditLogs.eventType,
-        actorEmail: users.email,
-        createdAt: auditLogs.createdAt,
-      })
-      .from(auditLogs)
-      .leftJoin(users, eq(auditLogs.actorId, users.id))
-      .orderBy(desc(auditLogs.createdAt))
-      .limit(8),
-     db // 10: pendingPayments (Last 48 hours)
-       .select({ count: sql<number>`count(*)::int` })
-       .from(contributions)
-       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
-    db // 11: allProjects (Safe Fetch)
-      .select({
-        id: campaigns.id,
-        title: campaigns.title,
-        status: campaigns.status,
-        slug: campaigns.slug,
-        goalAmount: campaigns.goalAmount,
-        creatorName: users.displayName,
-        creatorEmail: users.email,
-      })
-      .from(campaigns)
-      .leftJoin(users, eq(campaigns.creatorId, users.id))
-      .orderBy(desc(campaigns.createdAt))
-      .limit(100),
-    db // 12: financialTotals
+  try {
+    // 0. Pre-calculate contribution totals per campaign to avoid complex joins in the main query
+    const contributionTotals = db
       .select({
         campaignId: contributions.campaignId,
-        totalRaised: sql<number>`SUM(${contributions.amount})`.mapWith(Number),
+        totalRaised: sql<string>`SUM(${contributions.amount})::text`.as('totalRaised'),
       })
       .from(contributions)
       .where(eq(contributions.status, 'confirmed'))
-      .groupBy(contributions.campaignId),
-  ]);
+      .groupBy(contributions.campaignId)
+      .as('contributionTotals');
 
-  const getValue = (index: number, defaultValue: any = null) => {
-    const res = results[index];
-    if (!res || res.status === 'rejected') {
-      if (res?.status === 'rejected') {
-        console.error(`[Admin Dashboard] Query ${index} CRITICAL FAILURE:`, res.reason);
-      } else {
-        console.warn(`[Admin Dashboard] Query ${index} returned no result, using default.`);
+    // Run all queries in parallel, each independently fault-tolerant.
+    const results = await Promise.allSettled([
+      db.select({ count: sql<number>`count(*)::int` }).from(users), // 0: userCount
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(users)
+        .where(sql`is_beta = true`), // 1: betaCount
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(users)
+        .where(sql`last_login_at > now() - interval '24 hours'`), // 2: dauCount
+      db.select({ count: sql<number>`count(*)::int` }).from(campaigns), // 3: campaignCount
+      db // 4: financials
+        .select({
+          totalVolume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
+          totalRevenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
+        })
+        .from(contributions)
+        .where(eq(contributions.status, 'confirmed')),
+      db // 5: topCampaigns
+        .select({
+          id: campaigns.id,
+          title: campaigns.title,
+          revenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
+          volume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
+        })
+        .from(campaigns)
+        .leftJoin(
+          contributions,
+          and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
+        )
+        .groupBy(campaigns.id, campaigns.title)
+        .orderBy(desc(sql`SUM(${contributions.amount})`))
+        .limit(5),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(users)
+        .where(and(eq(users.isBeta, true), eq(users.emailVerified, true))), // 6: verifiedBeta
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(users)
+        .where(and(eq(users.isBeta, true), eq(users.kycStatus, 'verified'))), // 7: kycBeta
+      db // 8: recentBetaUsers
+        .select({
+          id: users.id,
+          email: users.email,
+          displayName: users.displayName,
+          emailVerified: users.emailVerified,
+          kycStatus: users.kycStatus,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.isBeta, true))
+        .orderBy(desc(users.createdAt))
+        .limit(10),
+      db // 9: logs
+        .select({
+          id: auditLogs.id,
+          eventType: auditLogs.eventType,
+          actorEmail: users.email,
+          createdAt: auditLogs.createdAt,
+        })
+        .from(auditLogs)
+        .leftJoin(users, eq(auditLogs.actorId, users.id))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(8),
+       db // 10: pendingPayments (Last 48 hours)
+         .select({ count: sql<number>`count(*)::int` })
+         .from(contributions)
+         .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
+      db // 11: allProjects (Safe Fetch)
+        .select({
+          id: campaigns.id,
+          title: campaigns.title,
+          status: campaigns.status,
+          slug: campaigns.slug,
+          goalAmount: campaigns.goalAmount,
+          creatorName: users.displayName,
+          creatorEmail: users.email,
+        })
+        .from(campaigns)
+        .leftJoin(users, eq(campaigns.creatorId, users.id))
+        .orderBy(desc(campaigns.createdAt))
+        .limit(100),
+      db // 12: financialTotals
+        .select({
+          campaignId: contributions.campaignId,
+          totalRaised: sql<number>`SUM(${contributions.amount})`.mapWith(Number),
+        })
+        .from(contributions)
+        .where(eq(contributions.status, 'confirmed'))
+        .groupBy(contributions.campaignId),
+    ]);
+
+    const getValue = (index: number, defaultValue: any = null) => {
+      const res = results[index];
+      if (!res || res.status === 'rejected') {
+        if (res?.status === 'rejected') {
+          console.error(`[Admin Dashboard] Query ${index} CRITICAL FAILURE:`, res.reason);
+        } else {
+          console.warn(`[Admin Dashboard] Query ${index} returned no result, using default.`);
+        }
+        return defaultValue;
       }
-      return defaultValue;
-    }
-    return res.value as any;
-  };
+      return res.value as any;
+    };
 
-  const betaCount = getValue(1)?.[0]?.count || 0;
-  const dauCount = getValue(2)?.[0]?.count || 0;
-  const financialStats = getValue(4)?.[0] || null;
-  const verifiedBetaCount = getValue(6)?.[0]?.count || 0;
-  const kycBetaCount = getValue(7)?.[0]?.count || 0;
-  const recentBetaUsers = getValue(8) || [];
-  const recentLogs = getValue(9) || [];
-  const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
-  
-  // Merge All Projects with Financial Totals
-  const allProjectsRaw = getValue(11) || [];
-  const financialTotalsData = getValue(12) || [];
-  const totalsMap = new Map(financialTotalsData.map((t: any) => [t.campaignId, t.totalRaised]));
-  
-  const allProjects = allProjectsRaw.map((p: any) => ({
-    ...p,
-    totalRaised: totalsMap.get(p.id) || 0
-  }));
+    const betaCount = getValue(1)?.[0]?.count || 0;
+    const dauCount = getValue(2)?.[0]?.count || 0;
+    const financialStats = getValue(4)?.[0] || null;
+    const verifiedBetaCount = getValue(6)?.[0]?.count || 0;
+    const kycBetaCount = getValue(7)?.[0]?.count || 0;
+    const recentBetaUsers = getValue(8) || [];
+    const recentLogs = getValue(9) || [];
+    const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
+    
+    // Merge All Projects with Financial Totals
+    const allProjectsRaw = getValue(11) || [];
+    const financialTotalsData = getValue(12) || [];
+    const totalsMap = new Map(financialTotalsData.map((t: any) => [t.campaignId, t.totalRaised]));
+    
+    const allProjects = allProjectsRaw.map((p: any) => ({
+      ...p,
+      totalRaised: totalsMap.get(p.id) || 0
+    }));
 
-  const totalVolume = Number(financialStats?.totalVolume || 0);
-  const totalRevenue = Number(financialStats?.totalRevenue || 0);
+    const totalVolume = Number(financialStats?.totalVolume || 0);
+    const totalRevenue = Number(financialStats?.totalRevenue || 0);
 
-  // Conversion rates
-  const verificationRate = betaCount > 0 ? Math.round((verifiedBetaCount / betaCount) * 100) : 0;
-  const kycRate = verifiedBetaCount > 0 ? Math.round((kycBetaCount / verifiedBetaCount) * 100) : 0;
+    // Conversion rates
+    const verificationRate = betaCount > 0 ? Math.round((verifiedBetaCount / betaCount) * 100) : 0;
+    const kycRate = verifiedBetaCount > 0 ? Math.round((kycBetaCount / verifiedBetaCount) * 100) : 0;
 
-  return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '40px' }}>
-        <h1
+    return (
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '40px' }}>
+          <h1
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 900,
+              color: '#0f172a',
+              marginBottom: '8px',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            Beta Pulse Dashboard
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '1.05rem', fontWeight: 500 }}>
+            Real-time insights into your early access launch and onboarding funnel.
+          </p>
+        </div>
+
+        {/* Main Stats Row */}
+        <div
           style={{
-            fontSize: '2.5rem',
-            fontWeight: 900,
-            color: '#0f172a',
-            marginBottom: '8px',
-            fontFamily: 'Outfit, sans-serif',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '24px',
+            marginBottom: '32px',
           }}
         >
-          Beta Pulse Dashboard
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '1.05rem', fontWeight: 500 }}>
-          Real-time insights into your early access launch and onboarding funnel.
-        </p>
-      </div>
-
-      {/* Main Stats Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '24px',
-          marginBottom: '32px',
-        }}
-      >
-        <StatCard
-          title="Total Beta Users"
-          value={betaCount.toLocaleString()}
-          color="#3b82f6"
-          subValue={`${verificationRate}% verification rate`}
-        />
-        <StatCard
-          title="Daily Active"
-          value={dauCount.toLocaleString()}
-          color="#f59e0b"
-          subValue="Active last 24h"
-        />
-        <StatCard
-          title="Platform Volume"
-          value={`₦${totalVolume.toLocaleString()}`}
-          color="#0f172a"
-          isDark
-        />
-        <StatCard
-          title="Backr Revenue"
-          value={`₦${totalRevenue.toLocaleString()}`}
-          color="#10b981"
-        />
-        <StatCard
-          title="Pending Payments"
-          value={pendingPaymentsCount.toLocaleString()}
-          color={pendingPaymentsCount > 0 ? '#ef4444' : '#64748b'}
-          subValue="Last 48 hours"
-          isAlert={pendingPaymentsCount > 0}
-        />
-      </div>
-
-      {/* Onboarding Funnel */}
-      <div
-        style={{
-          background: '#fff',
-          padding: '32px',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          marginBottom: '48px',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-        }}
-      >
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '24px' }}>
-          Onboarding Funnel
-        </h3>
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-          <FunnelStep
-            title="Signups"
-            count={betaCount}
-            sub={`${verificationRate}% convert`}
-            isActive
+          <StatCard
+            title="Total Beta Users"
+            value={betaCount.toLocaleString()}
+            color="#3b82f6"
+            subValue={`${verificationRate}% verification rate`}
           />
-          <FunnelArrow />
-          <FunnelStep
-            title="Verified"
-            count={verifiedBetaCount}
-            sub={`${kycRate}% move to KYC`}
-            isActive={verifiedBetaCount > 0}
+          <StatCard
+            title="Daily Active"
+            value={dauCount.toLocaleString()}
+            color="#f59e0b"
+            subValue="Active last 24h"
           />
-          <FunnelArrow />
-          <FunnelStep
-            title="KYC Approved"
-            count={kycBetaCount}
-            sub="Ready to contribute"
+          <StatCard
+            title="Platform Volume"
+            value={`₦${totalVolume.toLocaleString()}`}
+            color="#0f172a"
+            isDark
+          />
+          <StatCard
+            title="Backr Revenue"
+            value={`₦${totalRevenue.toLocaleString()}`}
             color="#10b981"
-            isActive={kycBetaCount > 0}
+          />
+          <StatCard
+            title="Pending Payments"
+            value={pendingPaymentsCount.toLocaleString()}
+            color={pendingPaymentsCount > 0 ? '#ef4444' : '#64748b'}
+            subValue="Last 48 hours"
+            isAlert={pendingPaymentsCount > 0}
           />
         </div>
-      </div>
-      {/* Financial Audit Section */}
-      <div 
-        style={{
-          background: '#f8fafc',
-          padding: '32px',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          marginBottom: '48px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)'
-        }}
-      >
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <div style={{ 
-            background: '#fff', 
-            width: '48px', 
-            height: '48px', 
-            borderRadius: '12px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-          }}>
-            <ShieldCheck size={28} color="#10b981" />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
-              Financial Integrity Audit
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Info size={14} /> Manually sync stuck payments with Paystack logs. Safe and idempotent.
-            </p>
-          </div>
-        </div>
-        <ReconcileButton />
-      </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1.5fr 1fr',
-          gap: '32px',
-          marginBottom: '48px',
-        }}
-      >
-        {/* Recent Beta Onboarding */}
+        {/* Onboarding Funnel */}
         <div
           style={{
             background: '#fff',
             padding: '32px',
             borderRadius: '16px',
             border: '1px solid #e2e8f0',
+            marginBottom: '48px',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
           }}
         >
-          <h3
-            style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '24px' }}
-          >
-            Recent Beta Onboarding
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '24px' }}>
+            Onboarding Funnel
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {recentBetaUsers.map((u: any) => (
-              <div
-                key={u.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingBottom: '12px',
-                  borderBottom: '1px solid #f1f5f9',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>
-                    {u.displayName || u.email}
+          <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            <FunnelStep
+              title="Signups"
+              count={betaCount}
+              sub={`${verificationRate}% convert`}
+              isActive
+            />
+            <FunnelArrow />
+            <FunnelStep
+              title="Verified"
+              count={verifiedBetaCount}
+              sub={`${kycRate}% move to KYC`}
+              isActive={verifiedBetaCount > 0}
+            />
+            <FunnelArrow />
+            <FunnelStep
+              title="KYC Approved"
+              count={kycBetaCount}
+              sub="Ready to contribute"
+              color="#10b981"
+              isActive={kycBetaCount > 0}
+            />
+          </div>
+        </div>
+        {/* Financial Audit Section */}
+        <div 
+          style={{
+            background: '#f8fafc',
+            padding: '32px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            marginBottom: '48px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)'
+          }}
+        >
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <div style={{ 
+              background: '#fff', 
+              width: '48px', 
+              height: '48px', 
+              borderRadius: '12px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}>
+              <ShieldCheck size={28} color="#10b981" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
+                Financial Integrity Audit
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Info size={14} /> Manually sync stuck payments with Paystack logs. Safe and idempotent.
+              </p>
+            </div>
+          </div>
+          <ReconcileButton />
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1.5fr 1fr',
+            gap: '32px',
+            marginBottom: '48px',
+          }}
+        >
+          {/* Recent Beta Onboarding */}
+          <div
+            style={{
+              background: '#fff',
+              padding: '32px',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+            }}
+          >
+            <h3
+              style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '24px' }}
+            >
+              Recent Beta Onboarding
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {recentBetaUsers.map((u: any) => (
+                <div
+                  key={u.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingBottom: '12px',
+                    borderBottom: '1px solid #f1f5f9',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>
+                      {u.displayName || u.email}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                      Joined {new Date(u.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                    Joined {new Date(u.createdAt).toLocaleDateString()}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <StatusBadge label="VERIFIED" active={u.emailVerified} color="#3b82f6" />
+                    <StatusBadge label="KYC" active={u.kycStatus === 'verified'} color="#10b981" />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <StatusBadge label="VERIFIED" active={u.emailVerified} color="#3b82f6" />
-                  <StatusBadge label="KYC" active={u.kycStatus === 'verified'} color="#10b981" />
+              ))}
+            </div>
+          </div>
+
+          {/* Growth telemetry (Chart Placeholder / Reduced) */}
+          <GrowthChart />
+        </div>
+
+        <div 
+          style={{ 
+            background: '#fff', 
+            padding: '32px', 
+            borderRadius: '16px', 
+            border: '1px solid #e2e8f0', 
+            marginBottom: '48px',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '4px' }}>
+                Platform Campaigns
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Management overview of all {allProjects.length} active and closed projects.
+              </p>
+            </div>
+            <div style={{ padding: '8px 16px', background: '#f8fafc', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e2e8f0' }}>
+              <Search size={16} color="#94a3b8" />
+              <input 
+                type="text" 
+                placeholder="Filter projects..." 
+                style={{ background: 'none', border: 'none', outline: 'none', fontSize: '0.85rem', width: '200px' }}
+                disabled
+              />
+            </div>
+          </div>
+    
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
+                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Campaign</th>
+                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Creator</th>
+                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Raised / Goal</th>
+                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Status</th>
+                  <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Internal ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allProjects.map((p: any) => {
+                  const pct = Math.min(Math.round((Number(p.totalRaised || 0) / Number(p.goalAmount || 1)) * 100), 100);
+                  return (
+                    <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '16px 8px' }}>
+                        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {p.title}
+                          <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer">
+                            <ExternalLink size={12} color="#94a3b8" />
+                          </a>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                          /c/{p.slug}
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 8px' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{p.creatorName || 'Unknown'}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{p.creatorEmail || 'No email'}</div>
+                      </td>
+                      <td style={{ padding: '16px 8px' }}>
+                        <div style={{ marginBottom: '6px', fontSize: '0.85rem', fontWeight: 800 }}>
+                          ₦{Number(p.totalRaised || 0).toLocaleString()} <span style={{ color: '#94a3b8', fontWeight: 500 }}>/ ₦{Number(p.goalAmount).toLocaleString()}</span>
+                        </div>
+                        <div style={{ width: '120px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 8px' }}>
+                        <StatusBadge 
+                          label={p.status?.toUpperCase() || 'UNKNOWN'} 
+                          active={p.status === 'active'} 
+                          color={p.status === 'active' ? '#10b981' : p.status === 'closed' ? '#ef4444' : '#f59e0b'} 
+                        />
+                      </td>
+                      <td style={{ padding: '16px 8px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                          <code style={{ fontSize: '0.75rem', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                            {p.id ? `${p.id.slice(0, 8)}...` : 'N/A'}
+                          </code>
+                          <button 
+                            onClick={() => {
+                              if (p.id) {
+                                navigator.clipboard.writeText(p.id);
+                                alert('Project UUID copied to clipboard!');
+                              }
+                            }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', hover: { background: '#f1f5f9' } } as any}
+                          >
+                            <Copy size={14} color="#64748b" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style={{ background: '#0f172a', padding: '32px', borderRadius: '16px', color: '#fff' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px' }}>
+            Recent Activity Logs
+          </h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '16px',
+            }}
+          >
+            {recentLogs.map((log: any) => (
+              <div
+                key={log.id}
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center',
+                  background: 'rgba(255,255,255,0.05)',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: getLogColor(log.eventType),
+                  }}
+                />
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                    {log.eventType.replace('_', ' ').toUpperCase()}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                    {log.actorEmail || 'System'} • {new Date(log.createdAt).toLocaleTimeString()}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Growth telemetry (Chart Placeholder / Reduced) */}
-        <GrowthChart />
       </div>
-
-      <div 
-        style={{ 
-          background: '#fff', 
-          padding: '32px', 
-          borderRadius: '16px', 
-          border: '1px solid #e2e8f0', 
-          marginBottom: '48px',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '4px' }}>
-              Platform Campaigns
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-              Management overview of all {allProjects.length} active and closed projects.
-            </p>
-          </div>
-          <div style={{ padding: '8px 16px', background: '#f8fafc', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e2e8f0' }}>
-            <Search size={16} color="#94a3b8" />
-            <input 
-              type="text" 
-              placeholder="Filter projects..." 
-              style={{ background: 'none', border: 'none', outline: 'none', fontSize: '0.85rem', width: '200px' }}
-              disabled
-            />
-          </div>
+    );
+  } catch (error: any) {
+    console.error('[Admin Dashboard] CRITICAL PAGE FAILURE:', error);
+    return (
+      <div style={{ padding: '40px', background: '#fff1f2', border: '2px solid #ef4444', borderRadius: '16px', margin: '40px', fontFamily: 'sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+          <div style={{ background: '#ef4444', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>!</div>
+          <h1 style={{ color: '#991b1b', margin: 0, fontSize: '1.5rem' }}>Admin Dashboard Error Trace</h1>
         </div>
- 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Campaign</th>
-                <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Creator</th>
-                <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Raised / Goal</th>
-                <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Status</th>
-                <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Internal ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allProjects.map((p: any) => {
-                const pct = Math.min(Math.round((Number(p.totalRaised || 0) / Number(p.goalAmount || 1)) * 100), 100);
-                return (
-                  <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '16px 8px' }}>
-                      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {p.title}
-                        <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer">
-                          <ExternalLink size={12} color="#94a3b8" />
-                        </a>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
-                        /c/{p.slug}
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px 8px' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{p.creatorName || 'Unknown'}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{p.creatorEmail || 'No email'}</div>
-                    </td>
-                    <td style={{ padding: '16px 8px' }}>
-                      <div style={{ marginBottom: '6px', fontSize: '0.85rem', fontWeight: 800 }}>
-                        ₦{Number(p.totalRaised || 0).toLocaleString()} <span style={{ color: '#94a3b8', fontWeight: 500 }}>/ ₦{Number(p.goalAmount).toLocaleString()}</span>
-                      </div>
-                      <div style={{ width: '120px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px 8px' }}>
-                      <StatusBadge 
-                        label={p.status?.toUpperCase() || 'UNKNOWN'} 
-                        active={p.status === 'active'} 
-                        color={p.status === 'active' ? '#10b981' : p.status === 'closed' ? '#ef4444' : '#f59e0b'} 
-                      />
-                    </td>
-                    <td style={{ padding: '16px 8px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <code style={{ fontSize: '0.75rem', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                          {p.id ? `${p.id.slice(0, 8)}...` : 'N/A'}
-                        </code>
-                        <button 
-                          onClick={() => {
-                            if (p.id) {
-                              navigator.clipboard.writeText(p.id);
-                              alert('Project UUID copied to clipboard!');
-                            }
-                          }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', hover: { background: '#f1f5f9' } } as any}
-                        >
-                          <Copy size={14} color="#64748b" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #fee2e2', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <p style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '16px' }}>
+            {error.message || 'An unexpected server-side exception occurred.'}
+          </p>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '8px' }}>Stack Trace:</p>
+          <pre style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', overflow: 'auto', fontSize: '11px', color: '#334155', border: '1px solid #e2e8f0', maxHeight: '400px', lineHeight: '1.4' }}>
+            {error.stack || 'No stack trace available.'}
+          </pre>
+        </div>
+        <div style={{ marginTop: '24px', background: '#fef2f2', padding: '16px', borderRadius: '8px', border: '1px solid #fee2e2' }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: '#991b1b', lineHeight: '1.5' }}>
+            <strong>Action Required:</strong> Take a screenshot of this error and send it to the engineering team. This is a secure debug view visible only to administrators.
+          </p>
         </div>
       </div>
-
-      <div style={{ background: '#0f172a', padding: '32px', borderRadius: '16px', color: '#fff' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '24px' }}>
-          Recent Activity Logs
-        </h3>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          {recentLogs.map((log: any) => (
-            <div
-              key={log.id}
-              style={{
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center',
-                background: 'rgba(255,255,255,0.05)',
-                padding: '12px 16px',
-                borderRadius: '10px',
-              }}
-            >
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: getLogColor(log.eventType),
-                }}
-              />
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                  {log.eventType.replace('_', ' ').toUpperCase()}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                  {log.actorEmail || 'System'} • {new Date(log.createdAt).toLocaleTimeString()}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  }
 }
 
 function FunnelStep({ title, count, sub, isActive, color = '#3b82f6' }: any) {
