@@ -7,9 +7,18 @@ import { auditLogs } from '@/db/schema/auditLogs';
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { GrowthChart } from '@/components/admin/GrowthChart';
 import { ReconcileButton } from '@/components/admin/ReconcileButton';
-import { ShieldCheck, Info } from 'lucide-react';
+import { ShieldCheck, Info, Copy, ExternalLink, Search } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+const tableHeaderStyle = {
+  fontSize: '0.75rem',
+  fontWeight: 800,
+  color: '#64748b',
+  padding: '12px 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px'
+};
 
 export default async function AdminDashboardPage() {
   // Run all queries in parallel, each independently fault-tolerant.
@@ -82,6 +91,26 @@ export default async function AdminDashboardPage() {
       .select({ count: sql<number>`count(*)::int` })
       .from(contributions)
       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
+    db // 11: allProjects
+      .select({
+        id: campaigns.id,
+        title: campaigns.title,
+        status: campaigns.status,
+        goalAmount: campaigns.goalAmount,
+        createdAt: campaigns.createdAt,
+        creatorName: users.displayName,
+        creatorEmail: users.email,
+        raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+      })
+      .from(campaigns)
+      .leftJoin(users, eq(campaigns.creatorId, users.id))
+      .leftJoin(
+        contributions,
+        and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
+      )
+      .groupBy(campaigns.id, users.id)
+      .orderBy(desc(campaigns.createdAt))
+      .limit(50),
   ]);
 
   const getValue = (index: number) =>
@@ -95,6 +124,7 @@ export default async function AdminDashboardPage() {
   const recentBetaUsers = getValue(8) || [];
   const recentLogs = getValue(9) || [];
   const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
+  const allProjects = getValue(11) || [];
 
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
@@ -294,6 +324,110 @@ export default async function AdminDashboardPage() {
 
         {/* Growth telemetry (Chart Placeholder / Reduced) */}
         <GrowthChart />
+      </div>
+
+      {/* NEW: Full Campaign Management Table */}
+      <div 
+        style={{ 
+          background: '#fff', 
+          padding: '32px', 
+          borderRadius: '16px', 
+          border: '1px solid #e2e8f0', 
+          marginBottom: '48px',
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '4px' }}>
+              Platform Campaigns
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              Management overview of all {allProjects.length}+ active and closed projects.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
+                <th style={tableHeaderStyle}>Campaign Details</th>
+                <th style={tableHeaderStyle}>Internal ID (Audit)</th>
+                <th style={tableHeaderStyle}>Progress</th>
+                <th style={tableHeaderStyle}>Status</th>
+                <th style={tableHeaderStyle}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allProjects.map((p: any) => {
+                const progress = p.goalAmount > 0 ? Math.min(Math.round((Number(p.raised) / Number(p.goalAmount)) * 100), 100) : 0;
+                return (
+                  <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', height: '80px' }}>
+                    <td>
+                      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>{p.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.creatorName || p.creatorEmail}</div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <code style={{ 
+                          fontSize: '0.75rem', 
+                          background: '#f8fafc', 
+                          padding: '4px 8px', 
+                          borderRadius: '6px', 
+                          color: '#475569',
+                          border: '1px solid #e2e8f0',
+                          fontFamily: 'monospace'
+                        }}>
+                          {p.id.slice(0, 8)}...{p.id.slice(-4)}
+                        </code>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(p.id);
+                            alert('Copied Campaign ID to clipboard!');
+                          }}
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            padding: '4px', 
+                            cursor: 'pointer', 
+                            color: '#94a3b8',
+                            transition: 'color 0.2s'
+                          }}
+                          title="Copy Full ID"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ minWidth: '150px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.75rem' }}>
+                        <span style={{ fontWeight: 700 }}>₦{Number(p.raised).toLocaleString()}</span>
+                        <span style={{ color: '#94a3b8' }}>{progress}%</span>
+                      </div>
+                      <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: '#3b82f6', borderRadius: '3px' }} />
+                      </div>
+                    </td>
+                    <td>
+                      <StatusBadge label={p.status.toUpperCase()} active={p.status === 'active'} color={p.status === 'active' ? '#10b981' : '#ef4444'} />
+                    </td>
+                    <td>
+                      <a 
+                        href={`/c/${p.slug}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none' }}
+                      >
+                        Visit <ExternalLink size={14} />
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div style={{ background: '#0f172a', padding: '32px', borderRadius: '16px', color: '#fff' }}>
