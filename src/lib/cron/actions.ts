@@ -158,3 +158,65 @@ export async function runMaintenance() {
     reconciliation: reconcileResult
   };
 }
+
+/**
+ * Maintenance Action: Generate Weekly Digest
+ * Runs once a week (Friday 10 AM)
+ */
+export async function runWeeklyDigest() {
+  console.log('[Digest] Generating weekly roundup...');
+  
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  
+  // 1. Find Trending Creators (Most raised in last 7 days)
+  const trending = await db
+    .select({
+      displayName: users.displayName,
+      username: users.username,
+      campaignTitle: campaigns.title,
+      totalAmount: sql<number>`SUM(${contributions.amount})::numeric`,
+    })
+    .from(contributions)
+    .innerJoin(campaigns, eq(contributions.campaignId, campaigns.id))
+    .innerJoin(users, eq(campaigns.creatorId, users.id))
+    .where(
+      and(
+        eq(contributions.status, 'confirmed'),
+        gt(contributions.createdAt, sevenDaysAgo)
+      )
+    )
+    .groupBy(users.id, campaigns.id)
+    .orderBy(sql`SUM(${contributions.amount}) DESC`)
+    .limit(3);
+
+  // 2. Find New Campaigns (launched in last 7 days)
+  const newCampaigns = await db
+    .select()
+    .from(campaigns)
+    .where(
+      and(
+        eq(campaigns.status, 'active'),
+        gt(campaigns.createdAt, sevenDaysAgo)
+      )
+    )
+    .orderBy(campaigns.createdAt)
+    .limit(5);
+
+  console.log(`[Digest] Found ${trending.length} trending creators and ${newCampaigns.length} new campaigns.`);
+
+  const { sendWeeklyDigestEmail } = await import('@/workers/emailWorkers');
+  const result = await sendWeeklyDigestEmail({
+    trendingCreators: trending.map(t => ({
+      ...t,
+      username: t.username || 'user',
+      totalAmount: Number(t.totalAmount)
+    })),
+    newCampaigns: newCampaigns as any,
+  });
+
+  return { 
+    sentCount: result.sent,
+    trending: trending.length,
+    newCampaigns: newCampaigns.length 
+  };
+}

@@ -10,6 +10,7 @@ const registerSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   displayName: z.string().min(1, 'Display name is required'),
   beta: z.boolean().optional(),
+  interests: z.array(z.string()).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password, displayName, beta } = parsed.data;
+    const { email, password, displayName, beta, interests } = parsed.data;
     const lowerEmail = email.toLowerCase();
 
     // Check if user exists
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
         passwordHash,
         displayName,
         isBeta: !!beta,
+        interests: interests || [],
         emailVerified: process.env.NODE_ENV !== 'production',
       })
       .returning({ id: users.id, email: users.email });

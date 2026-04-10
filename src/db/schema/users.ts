@@ -38,6 +38,7 @@ export const users = pgTable('users', {
   premiumStatus: premiumStatusEnum('premium_status').notNull().default('none'),
   premiumExpiresAt: timestamp('premium_expires_at', { withTimezone: true }),
   isBeta: boolean('is_beta').notNull().default(false),
+  interests: jsonb('interests').notNull().default([]),
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

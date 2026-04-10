@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { CAMPAIGN_CATEGORIES } from '@/lib/constants/categories';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -22,22 +23,6 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
-  // Creator-centric categories as requested
-  const categories = [
-    { id: 'theatre', label: 'Theatre' },
-    { id: 'concerts', label: 'Concerts' },
-    { id: 'events', label: 'Events' },
-    { id: 'art_exhibition', label: 'Art Exhibition' },
-    { id: 'film_video', label: 'Film & Video' },
-    { id: 'music', label: 'Music' },
-    { id: 'photography', label: 'Photography' },
-    { id: 'art_design', label: 'Art & Design' },
-    { id: 'fashion', label: 'Fashion' },
-    { id: 'podcasts', label: 'Podcasts' },
-    { id: 'publishing', label: 'Publishing' },
-    { id: 'food_craft', label: 'Food & Craft' },
-    { id: 'comics', label: 'Comics' },
-  ];
 
   const toggleInterest = (id: string) => {
     setInterests((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
@@ -193,7 +178,7 @@ export default function SignupPage() {
                   What&apos;s your craft?
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                  {categories.map((cat) => (
+                  {CAMPAIGN_CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => toggleInterest(cat.id)}

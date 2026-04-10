@@ -109,6 +109,18 @@ export async function POST(req: NextRequest) {
       return campaign;
     });
 
+    // Trigger New Project Alert if created as active
+    if (finalStatus === 'active') {
+      try {
+        const { sendNewProjectAlerts } = await import('@/workers/emailWorkers');
+        sendNewProjectAlerts(newCampaign).catch((err) =>
+          console.error('[Campaign Creation Alert] Failed:', err),
+        );
+      } catch (err) {
+        console.error('[Campaign Creation Alert] Import failed:', err);
+      }
+    }
+
     return NextResponse.json(
       {
         message: 'Campaign created successfully.',

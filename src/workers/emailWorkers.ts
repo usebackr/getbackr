@@ -2,6 +2,9 @@ import { Resend } from 'resend';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
+import { users } from '@/db/schema/users';
+import { campaigns, Campaign } from '@/db/schema/campaigns';
+import { CATEGORY_LABELS } from '@/lib/constants/categories';
 // import { getQueue, QUEUE_NAMES } from '@/lib/queue'; // Removed during Redis decommissioning
 
 // Initialise Resend with API key - Lazy loading to prevent build-time crashes
@@ -137,11 +140,12 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b;">This code expires in 10 minutes. Please keep it confidential.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
         `,
+        text: `Confirm Your Withdrawal\n\nYour one-time security code for campaign ${campaignTitle ?? 'your campaign'} is: ${otp}\n\nThis code expires in 10 minutes.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -168,11 +172,12 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, please contact support immediately and change your password.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
         `,
+        text: `Confirm Bank Details Change\n\nYou requested to update your platform payouts bank account. Your verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -199,11 +204,12 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p style="font-size: 0.9rem; color: #64748b; text-align: center;">This code expires in 10 minutes. If you did not make this request, you can safely ignore this email.</p>
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                &copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
               </div>
             </div>
           </div>
         `,
+        text: `Confirm Password Change\n\nYou requested to change your Backr account password. Your verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -236,9 +242,13 @@ export async function sendEmail(data: ReceiptJobData) {
                   View Transaction History
                 </a>
               </div>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+              </div>
             </div>
           </div>
         `,
+        text: `Payout Approved\n\nGreat news! Your withdrawal request for ₦${Number(amount).toLocaleString()} has been approved and the transfer has been initiated.\n\nCampaign: ${campaignTitle || 'Your Campaign'}\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -431,9 +441,13 @@ export async function sendEmail(data: ReceiptJobData) {
               <p>Thanks for being part of this.</p>
               <p style="margin: 0;">— ${founderName}</p>
               <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Founder, Backr</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.
+              </div>
             </div>
           </div>
         `,
+        text: `Welcome to Backr!\n\nHi ${firstName},\n\nI’m glad you’re here. Backr was built for a simple reason — creators need a better way to raise money, and supporters need a better way to trust where that money goes.\n\nYou can raise funds, share updates, and show how money is being used — all in one place.\n\nExplore more at: https://findbackr.com.ng/dashboard\n\n— Babatunde Lawal\nFounder, Backr\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -461,9 +475,13 @@ export async function sendEmail(data: ReceiptJobData) {
                 </a>
               </div>
               <p style="font-size: 0.85rem; color: #64748b;">This link will expire in 30 minutes. If you didn't request this, you can safely ignore this email.</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+              </div>
             </div>
           </div>
         `,
+        text: `Reset your Backr password\n\nSomeone requested a password reset for your account. If this was you, use the link below to set a new password:\n\n${resetUrl}\n\nThis link expires in 30 minutes.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -491,9 +509,13 @@ export async function sendEmail(data: ReceiptJobData) {
                 </a>
               </div>
               <p style="font-size: 0.85rem; color: #64748b;">If you didn't sign up for Backr, you can ignore this email.</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+              </div>
             </div>
           </div>
         `,
+        text: `Verify your Backr account\n\nThanks for joining Backr! Please verify your email address to complete your registration:\n\n${verifyUrl}\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -522,9 +544,13 @@ export async function sendEmail(data: ReceiptJobData) {
                 </p>
               </div>
               <p>In the meantime, you can continue exploring projects on Backr.</p>
+              <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+              </div>
             </div>
           </div>
         `,
+        text: `Documents Received: Identity Verification in progress\n\nWe've successfully received your identity verification documents! Our team is now reviewing them. This usually takes 24-48 business hours.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -555,10 +581,11 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               <p>If you have any questions regarding this action, please reach out to our support team.</p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.</p>
+              <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">&copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>You're receiving this email because of your engagement with Backr. <a href="https://findbackr.com.ng/" style="color: #64748b; text-decoration: underline;">Manage preferences</a>.</p>
             </div>
           </div>
         `,
+        text: `Account Removed\n\nHi ${displayName || 'there'},\n\nWe're writing to inform you that your Backr account has been permanently removed by an administrator. All associated campaigns and data have been deleted.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -592,11 +619,12 @@ export async function sendEmail(data: ReceiptJobData) {
               </div>
               
               <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
-                System Generated Alert &bull; Backr Admin
+                System Generated Alert &bull; Backr Admin &bull; Plot 17B, Doherty Estate, Lagos
               </div>
             </div>
           </div>
         `,
+        text: `Admin Action Required: ${actionTitle}\n\nDetails: ${adminActionDetails || 'Check dashboard'}\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
       });
       if (error) throw error;
       return { sent: true, type, messageId: res?.id };
@@ -784,7 +812,6 @@ export async function sendAccountLockoutEmail(
 
   return { sent: true };
 }
-
 // ---------------------------------------------------------------------------
 // 22.4 — Subscription Failure notification
 // ---------------------------------------------------------------------------
@@ -799,21 +826,168 @@ export async function sendSubscriptionFailureEmail(
   data: SubscriptionRenewalJobData,
 ): Promise<{ sent: boolean }> {
   const { email, plan, gracePeriodEndsAt } = data;
-  const graceDate = new Date(gracePeriodEndsAt).toLocaleString('en-US', {
-    dateStyle: 'long',
-  });
+  const graceDate = new Date(gracePeriodEndsAt).toLocaleDateString();
 
   await getResend().emails.send({
     to: email,
     from: FROM_EMAIL,
-    subject: 'Your Backr Premium subscription payment failed',
+    subject: 'Action Required: Your Backr Premium renewal failed',
     html: `
-      <p>Your Backr Premium (<strong>${plan}</strong>) subscription payment has failed.</p>
-      <p>Grace period ends on: <strong>${graceDate}</strong></p>
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <h2>Renewal Failed</h2>
+          <p>We were unable to renew your ${plan} subscription. Your account has entered a 7-day grace period ending on ${graceDate}.</p>
+          <p>Please update your payment method to avoid losing premium features.</p>
+          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos
+          </div>
+        </div>
+      </div>
     `,
+    text: `Subscription Renewal Failed\n\nWe were unable to renew your ${plan} subscription. Your grace period ends on ${graceDate}. Please update your payment method.\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
   });
 
   return { sent: true };
+}
+
+// ---------------------------------------------------------------------------
+// 22.5 — New Project Alert
+// Notifies users who have registered interest in a category.
+// ---------------------------------------------------------------------------
+
+export async function sendNewProjectAlerts(campaign: Campaign) {
+  const categoryId = campaign.category;
+  if (!categoryId) return { sent: 0 };
+
+  // Fetch users interested in this category
+  // Since 'interests' is jsonb, we use the element-at operator or a containment check
+  const interestedUsers = await db
+    .select({ email: users.email, displayName: users.displayName })
+    .from(users)
+    .where(sql`${users.interests} @> ${JSON.stringify([categoryId])}::jsonb`);
+
+  if (interestedUsers.length === 0) return { sent: 0 };
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
+  const campaignUrl = `${appUrl}/c/${campaign.slug}`;
+  const categoryLabel = CATEGORY_LABELS[categoryId] || categoryId;
+
+  const emails = interestedUsers.map((user) => ({
+    to: user.email,
+    from: FROM_EMAIL,
+    subject: `New in ${categoryLabel}: ${campaign.title} 🚀`,
+    html: `
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <div style="background: #eff6ff; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+            <span style="font-size: 32px;">🌟</span>
+          </div>
+          <h2 style="font-size: 1.5rem; color: #0f172a; text-align: center; margin-bottom: 24px;">New Project in ${categoryLabel}</h2>
+          <p>Hi ${user.displayName.split(' ')[0]},</p>
+          <p>A new project has just been launched in one of your favorite categories!</p>
+          
+          <div style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; margin: 32px 0;">
+            ${campaign.coverImageUrl ? `<img src="${campaign.coverImageUrl}" style="width: 100%; height: 200px; object-fit: cover;" />` : ''}
+            <div style="padding: 24px;">
+              <h3 style="margin: 0 0 8px; color: #0f172a;">${campaign.title}</h3>
+              <p style="margin: 0; color: #64748b; font-size: 0.95rem; line-height: 1.5;">${campaign.description?.substring(0, 150)}...</p>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 32px;">
+            <a href="${campaignUrl}" style="display: inline-block; padding: 14px 32px; background: ${BRAND_COLOR}; color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+              View Project
+            </a>
+          </div>
+
+          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>
+            You're receiving this because you selected <strong>${categoryLabel}</strong> as an interest. 
+            <a href="${appUrl}/dashboard/settings" style="color: #64748b;">Manage preferences</a>.
+          </div>
+        </div>
+      </div>
+    `,
+    text: `New in ${categoryLabel}: ${campaign.title}!\n\nHi ${user.displayName.split(' ')[0]},\n\nA new project you might love just launched on Backr: ${campaign.title}\n\nCheck it out here: ${campaignUrl}\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
+  }));
+
+  // Batch send
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
+  }
+
+  return { sent: interestedUsers.length };
+}
+
+// ---------------------------------------------------------------------------
+// 22.6 — Weekly Digest
+// ---------------------------------------------------------------------------
+
+export interface WeeklyDigestData {
+  trendingCreators: { displayName: string; username: string; campaignTitle: string; totalAmount: number }[];
+  newCampaigns: Campaign[];
+}
+
+export async function sendWeeklyDigestEmail(data: WeeklyDigestData) {
+  const allUsers = await db.select({ email: users.email, displayName: users.displayName }).from(users);
+  if (allUsers.length === 0) return { sent: 0 };
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://findbackr.com.ng';
+  
+  const trendingHtml = data.trendingCreators.map(c => `
+    <div style="padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 12px;">
+      <h4 style="margin: 0; color: #0f172a;">${c.displayName} (@${c.username})</h4>
+      <p style="margin: 4px 0 0; color: #64748b; font-size: 0.85rem;">Raised ₦${Number(c.totalAmount).toLocaleString()} this week for "${c.campaignTitle}"</p>
+    </div>
+  `).join('');
+
+  const newHtml = data.newCampaigns.slice(0, 3).map(c => `
+    <div style="margin-bottom: 20px;">
+      <h4 style="margin: 0; color: ${BRAND_COLOR};">${c.title}</h4>
+      <p style="margin: 4px 0 0; color: #64748b; font-size: 0.85rem;">${CATEGORY_LABELS[c.category || ''] || 'General'}</p>
+    </div>
+  `).join('');
+
+  const emails = allUsers.map(user => ({
+    to: user.email,
+    from: FROM_EMAIL,
+    subject: `Weekly Roundup: Trending Creators & New Projects 💡`,
+    html: `
+      <div style="${emailWrapperStyle}">
+        <div style="${emailCardStyle}">
+          <h2 style="font-size: 1.8rem; color: #0f172a; text-align: center; margin-bottom: 8px;">Weekly Digest</h2>
+          <p style="text-align: center; color: #64748b; margin-bottom: 32px;">Here's what happened on Backr this week.</p>
+          
+          <h3 style="color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 16px;">🔥 Trending Creators</h3>
+          ${trendingHtml || '<p style="color: #94a3b8;">No trending activity this week.</p>'}
+          
+          <h3 style="color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-top: 32px; margin-bottom: 16px;">✨ New Projects</h3>
+          ${newHtml || '<p style="color: #94a3b8;">No new projects this week.</p>'}
+          
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${appUrl}/explore" style="display: inline-block; padding: 14px 32px; background: #0f172a; color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+              Explore All Projects
+            </a>
+          </div>
+
+          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+            &copy; 2026 findbackr.com.ng &bull; Plot 17B, Doherty Estate, Lagos<br/><br/>
+            You're receiving this because you're a member of Backr. 
+            <a href="${appUrl}/dashboard/settings" style="color: #64748b;">Unsubscribe</a>.
+          </div>
+        </div>
+      </div>
+    `,
+    text: `Backr Weekly Digest\n\nTrending Creators this week:\n${data.trendingCreators.map(c => `- ${c.displayName} raised ₦${Number(c.totalAmount).toLocaleString()}`).join('\n')}\n\nNew Projects:\n${data.newCampaigns.map(c => `- ${c.title}`).join('\n')}\n\nExplore more at ${appUrl}/explore\n\n© 2026 Backr - Plot 17B, Doherty Estate, Lagos`,
+  }));
+
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    await getResend().batch.send(emails.slice(i, i + BATCH_SIZE));
+  }
+
+  return { sent: allUsers.length };
 }
 
 // ---------------------------------------------------------------------------

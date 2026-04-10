@@ -155,6 +155,19 @@ export async function PUT(
 
   const [updated] = await db.update(campaigns).set(updates).where(eq(campaigns.id, id)).returning();
 
+  // Trigger New Project Alert if status changed to active
+  if (status === 'active' && campaign.status !== 'active') {
+    try {
+      const { sendNewProjectAlerts } = await import('@/workers/emailWorkers');
+      // Run in background (don't await to avoid delaying the response)
+      sendNewProjectAlerts(updated).catch((err) =>
+        console.error('[Campaign Activation Alert] Failed:', err),
+      );
+    } catch (err) {
+      console.error('[Campaign Activation Alert] Import failed:', err);
+    }
+  }
+
   return NextResponse.json({
     id: updated.id,
     slug: updated.slug,
