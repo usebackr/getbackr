@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { campaigns } from '@/db/schema/campaigns';
+import { contributions } from '@/db/schema/contributions';
 import { initializeTransaction } from '@/lib/payments/paystack';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 
@@ -120,9 +121,36 @@ export async function POST(req: NextRequest) {
       type: 'contribution',
     };
 
-    console.log(`[Checkout API] Initializing for ${email} (${name || 'Guest'})`);
+    // 1. Generate local reference for immediate persistence
+    const reference = `BK_${Math.random().toString(36).substring(2, 10).toUpperCase()}_${Date.now().toString().slice(-4)}`;
 
-    const transaction = await initializeTransaction(email, amount, 'NGN', metadata, callbackUrl);
+    // 2. Pre-calculate fees for the pending record
+    const baseAmount = amount;
+    const platformFee = baseAmount * 0.05;
+    const netAmount = baseAmount - platformFee;
+
+    console.log(`[Checkout API] Pre-persisting pending contribution for ${email}. Reference: ${reference}`);
+
+    // 3. Insert record before handing off to Paystack
+    await db.insert(contributions).values({
+      campaignId,
+      backerId: userId || null,
+      backerEmail: email,
+      backerName: isAnonymous ? 'Anonymous Supporter' : (name || 'A Supporter'),
+      amount: baseAmount.toString(),
+      platformFee: platformFee.toString(),
+      netAmount: netAmount.toString(),
+      currency: 'NGN',
+      anonymous: isAnonymous || false,
+      message: message || null,
+      paymentReference: reference,
+      status: 'pending',
+      referralSource: referralSource || null,
+    });
+
+    console.log(`[Checkout API] Initializing Paystack for ${email} (${name || 'Guest'})`);
+
+    const transaction = await initializeTransaction(email, amount, 'NGN', metadata, callbackUrl, undefined, reference);
 
     return NextResponse.json({
       authorizationUrl: transaction.authorization_url,

@@ -26,6 +26,7 @@ export async function initializeTransaction(
   metadata: Record<string, unknown>,
   callbackUrl: string,
   subaccount?: string, // optional subaccount for split payments
+  reference?: string, // optional custom reference
 ): Promise<InitializeTransactionResult> {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!secretKey) {
@@ -44,6 +45,7 @@ export async function initializeTransaction(
       currency: currency.toUpperCase(),
       metadata,
       callback_url: callbackUrl,
+      reference,
       subaccount: subaccount || undefined,
       bearer: subaccount ? 'subaccount' : 'account', // subaccount pays fees if present
     }),
