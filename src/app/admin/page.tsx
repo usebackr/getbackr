@@ -102,18 +102,33 @@ export default async function AdminDashboardPage() {
       .select({ count: sql<number>`count(*)::int` })
       .from(contributions)
       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
-    db // 11: allProjects (Ultra-simplified)
-      .select({
-        id: campaigns.id,
-        title: campaigns.title,
-        slug: campaigns.slug,
-        status: campaigns.status,
-        goalAmount: campaigns.goalAmount,
-      })
-      .from(campaigns)
-      .orderBy(desc(campaigns.createdAt))
-      .limit(50),
   ]);
+
+  const ct = db
+    .select({
+      campaignId: contributions.campaignId,
+      totalRaised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)`.as('total_raised'),
+    })
+    .from(contributions)
+    .where(eq(contributions.status, 'confirmed'))
+    .groupBy(contributions.campaignId)
+    .as('ct');
+
+  const allProjectsResult = await db
+    .select({
+      id: campaigns.id,
+      title: campaigns.title,
+      slug: campaigns.slug,
+      status: campaigns.status,
+      goalAmount: campaigns.goalAmount,
+      totalRaised: ct.totalRaised,
+      creatorName: users.displayName,
+      creatorEmail: users.email,
+    })
+    .from(campaigns)
+    .leftJoin(users, eq(campaigns.creatorId, users.id))
+    .leftJoin(ct, eq(campaigns.id, ct.campaignId))
+    .orderBy(desc(campaigns.createdAt));
 
   const getValue = (index: number) => {
     const res = results[index];
@@ -356,10 +371,17 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {allProjects.map((p: any, idx: number) => (
-            <div key={p.id || idx} style={{ fontSize: '0.8rem', color: '#0f172a' }}>
-              Project: {p.title || 'no-title'} | ID: {p.id || 'no-id'}
+            <div key={p.id || idx} style={{ fontSize: '0.85rem', color: '#0f172a', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '4px' }}>{p.title || 'Untitled Campaign'}</div>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', color: '#64748b' }}>
+                <span>ID: <code style={{ background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>{p.id}</code></span> | 
+                <span>Creator: <strong>{p.creatorName || 'Unknown'}</strong> ({p.creatorEmail || 'N/A'})</span> | 
+                <span>Goal: ₦{Number(p.goalAmount).toLocaleString()}</span> | 
+                <span>Raised: <span style={{ color: '#10b981', fontWeight: 700 }}>₦{Number(p.totalRaised || 0).toLocaleString()}</span></span> |
+                <span>Status: {p.status?.toUpperCase()}</span>
+              </div>
             </div>
           ))}
         </div>
