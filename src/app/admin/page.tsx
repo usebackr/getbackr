@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
         contributions,
         and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
       )
-      .groupBy(campaigns.id)
+      .groupBy(campaigns.id, campaigns.title)
       .orderBy(desc(sql`COALESCE(SUM(${contributions.amount}), 0)`))
       .limit(5),
     db
