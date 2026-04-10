@@ -98,43 +98,40 @@ export default async function AdminDashboardPage() {
       .leftJoin(users, eq(auditLogs.actorId, users.id))
       .orderBy(desc(auditLogs.createdAt))
       .limit(8),
-    db // 10: pendingPayments (Last 48 hours)
-      .select({ count: sql<number>`count(*)::int` })
+     db // 10: pendingPayments (Last 48 hours)
+       .select({ count: sql<number>`count(*)::int` })
+       .from(contributions)
+       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
+    db // 11: allProjects (Safe Fetch)
+      .select({
+        id: campaigns.id,
+        title: campaigns.title,
+        status: campaigns.status,
+        goalAmount: campaigns.goalAmount,
+        creatorName: users.displayName,
+        creatorEmail: users.email,
+      })
+      .from(campaigns)
+      .leftJoin(users, eq(campaigns.creatorId, users.id))
+      .orderBy(desc(campaigns.createdAt))
+      .limit(100),
+    db // 12: financialTotals
+      .select({
+        campaignId: contributions.campaignId,
+        totalRaised: sql<number>`SUM(${contributions.amount})`.mapWith(Number),
+      })
       .from(contributions)
-      .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
+      .where(eq(contributions.status, 'confirmed'))
+      .groupBy(contributions.campaignId),
   ]);
 
-  const ct = db
-    .select({
-      campaignId: contributions.campaignId,
-      totalRaised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)`.as('total_raised'),
-    })
-    .from(contributions)
-    .where(eq(contributions.status, 'confirmed'))
-    .groupBy(contributions.campaignId)
-    .as('ct');
-
-  const allProjectsResult = await db
-    .select({
-      id: campaigns.id,
-      title: campaigns.title,
-      slug: campaigns.slug,
-      status: campaigns.status,
-      goalAmount: campaigns.goalAmount,
-      totalRaised: ct.totalRaised,
-      creatorName: users.displayName,
-      creatorEmail: users.email,
-    })
-    .from(campaigns)
-    .leftJoin(users, eq(campaigns.creatorId, users.id))
-    .leftJoin(ct, eq(campaigns.id, ct.campaignId))
-    .orderBy(desc(campaigns.createdAt));
-
-  const getValue = (index: number) => {
+  const getValue = (index: number, defaultValue: any = null) => {
     const res = results[index];
-    if (res.status === 'rejected') {
-      console.error(`[Admin Dashboard] Query ${index} failed:`, res.reason);
-      return null;
+    if (!res || res.status === 'rejected') {
+      if (res?.status === 'rejected') {
+        console.error(`[Admin Dashboard] Query ${index} failed:`, res.reason);
+      }
+      return defaultValue;
     }
     return res.value as any;
   };
@@ -147,7 +144,16 @@ export default async function AdminDashboardPage() {
   const recentBetaUsers = getValue(8) || [];
   const recentLogs = getValue(9) || [];
   const pendingPaymentsCount = getValue(10)?.[0]?.count || 0;
-  const allProjects = getValue(11) || [];
+  
+  // Merge All Projects with Financial Totals
+  const allProjectsRaw = getValue(11) || [];
+  const financialTotals = getValue(12) || [];
+  const totalsMap = new Map(financialTotals.map((t: any) => [t.campaignId, t.totalRaised]));
+  
+  const allProjects = allProjectsRaw.map((p: any) => ({
+    ...p,
+    totalRaised: totalsMap.get(p.id) || 0
+  }));
 
   const totalVolume = Number(financialStats?.totalVolume || 0);
   const totalRevenue = Number(financialStats?.totalRevenue || 0);
