@@ -35,8 +35,8 @@ export default async function AdminDashboardPage() {
     db.select({ count: sql<number>`count(*)::int` }).from(campaigns), // 3: campaignCount
     db // 4: financials
       .select({
-        totalVolume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
-        totalRevenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
+        totalVolume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
+        totalRevenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
       })
       .from(contributions)
       .where(eq(contributions.status, 'confirmed')),
@@ -44,8 +44,8 @@ export default async function AdminDashboardPage() {
       .select({
         id: campaigns.id,
         title: campaigns.title,
-        revenue: sql<number>`COALESCE(SUM(${contributions.platformFee}), 0)::numeric`,
-        volume: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+        revenue: sql<string>`COALESCE(SUM(${contributions.platformFee}), 0)::text`,
+        volume: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
       })
       .from(campaigns)
       .leftJoin(
@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
         and(eq(campaigns.id, contributions.campaignId), eq(contributions.status, 'confirmed')),
       )
       .groupBy(campaigns.id, campaigns.title)
-      .orderBy(desc(sql`COALESCE(SUM(${contributions.amount}), 0)`))
+      .orderBy(desc(sql`SUM(${contributions.amount})`))
       .limit(5),
     db
       .select({ count: sql<number>`count(*)::int` })
@@ -100,7 +100,7 @@ export default async function AdminDashboardPage() {
         createdAt: campaigns.createdAt,
         creatorName: users.displayName,
         creatorEmail: users.email,
-        raised: sql<number>`COALESCE(SUM(${contributions.amount}), 0)::numeric`,
+        raised: sql<string>`COALESCE(SUM(${contributions.amount}), 0)::text`,
       })
       .from(campaigns)
       .leftJoin(users, eq(campaigns.creatorId, users.id))
@@ -122,8 +122,14 @@ export default async function AdminDashboardPage() {
       .limit(50),
   ]);
 
-  const getValue = (index: number) =>
-    results[index].status === 'fulfilled' ? (results[index] as any).value : null;
+  const getValue = (index: number) => {
+    const res = results[index];
+    if (res.status === 'rejected') {
+      console.error(`[Admin Dashboard] Query ${index} failed:`, res.reason);
+      return null;
+    }
+    return res.value as any;
+  };
 
   const betaCount = getValue(1)?.[0]?.count || 0;
   const dauCount = getValue(2)?.[0]?.count || 0;
