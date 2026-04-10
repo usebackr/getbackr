@@ -14,6 +14,9 @@ interface RealtimeUpdateOptions {
  * Custom hook to listen for real-time campaign updates (donations).
  * When a donation is received, it triggers a router refresh and an optional callback.
  */
+export function useRealtimeUpdate({ campaignId, userId, onDonation }: RealtimeUpdateOptions) {
+  const router = useRouter();
+
   useEffect(() => {
     if (!campaignId && !userId) return;
 
@@ -38,3 +41,4 @@ interface RealtimeUpdateOptions {
       channel.unbind_all();
     };
   }, [campaignId, userId, onDonation, router]);
+}
