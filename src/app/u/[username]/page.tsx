@@ -14,12 +14,12 @@ export const dynamic = 'force-dynamic';
 export default async function PublicProfilePage({ params }: { params: { username: string } }) {
   const { username } = params;
 
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
-
-  const decodedUsername = decodeURIComponent(username);
-  const cleanUsername = decodedUsername.startsWith('@') ? decodedUsername.slice(1) : decodedUsername;
+  const decoded = decodeURIComponent(username);
+  const identifier = decoded.startsWith('@') ? decoded.slice(1) : decoded;
+  const isPossiblyUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
 
   // 1. Fetch User Data
+  // We check BOTH username and ID to be as robust as possible
   const [user] = await db
     .select({
       id: users.id,
@@ -33,10 +33,12 @@ export default async function PublicProfilePage({ params }: { params: { username
     })
     .from(users)
     .where(
-      isUUID
-        ? eq(users.id, cleanUsername)
-        : eq(users.username, cleanUsername),
-    );
+      or(
+        isPossiblyUUID ? eq(users.id, identifier) : undefined,
+        sql`LOWER(${users.username}) = LOWER(${identifier})`,
+      ),
+    )
+    .limit(1);
 
   if (!user) notFound();
 

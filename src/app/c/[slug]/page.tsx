@@ -45,7 +45,8 @@ export async function generateMetadata(
     .limit(1);
 
   const title = `${campaign.title} | Backr`;
-  const description = `Help ${creator?.displayName || 'a Backr Creator'} achieve their goal: ${campaign.description?.slice(0, 150)}...`;
+  const campaignDesc = campaign.description || '';
+  const description = `Help ${creator?.displayName || 'a Backr Creator'} achieve their goal: ${campaignDesc.slice(0, 150)}${campaignDesc.length > 150 ? '...' : ''}`;
 
   return {
     title,
