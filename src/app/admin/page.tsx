@@ -102,21 +102,15 @@ export default async function AdminDashboardPage() {
       .select({ count: sql<number>`count(*)::int` })
       .from(contributions)
       .where(and(eq(contributions.status, 'pending'), sql`${contributions.createdAt} > now() - interval '48 hours'`)),
-    db // 11: allProjects (Optimized with subquery)
+    db // 11: allProjects (Ultra-simplified)
       .select({
         id: campaigns.id,
         title: campaigns.title,
         slug: campaigns.slug,
         status: campaigns.status,
         goalAmount: campaigns.goalAmount,
-        createdAt: campaigns.createdAt,
-        creatorName: users.displayName,
-        creatorEmail: users.email,
-        raised: contributionTotals.totalRaised,
       })
       .from(campaigns)
-      .leftJoin(users, eq(campaigns.creatorId, users.id))
-      .leftJoin(contributionTotals, eq(campaigns.id, contributionTotals.campaignId))
       .orderBy(desc(campaigns.createdAt))
       .limit(50),
   ]);
@@ -375,12 +369,14 @@ export default async function AdminDashboardPage() {
             </thead>
             <tbody>
               {allProjects.map((p: any) => {
-                const progress = p.goalAmount > 0 ? Math.min(Math.round((Number(p.raised) / Number(p.goalAmount)) * 100), 100) : 0;
+                const raisedAmount = p.raised ? Number(p.raised) : 0;
+                const goalAmount = p.goalAmount ? Number(p.goalAmount) : 0;
+                const progress = goalAmount > 0 ? Math.min(Math.round((raisedAmount / goalAmount) * 100), 100) : 0;
                 return (
                   <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', height: '80px' }}>
                     <td>
-                      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>{p.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.creatorName || p.creatorEmail}</div>
+                      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>{p.title || 'Untitled'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.creatorName || p.creatorEmail || 'Unknown Creator'}</div>
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -393,12 +389,14 @@ export default async function AdminDashboardPage() {
                           border: '1px solid #e2e8f0',
                           fontFamily: 'monospace'
                         }}>
-                          {p.id.slice(0, 8)}...{p.id.slice(-4)}
+                          {p.id?.slice(0, 8) || 'unknown'}...{p.id?.slice(-4) || 'id'}
                         </code>
                         <button 
                           onClick={() => {
-                            navigator.clipboard.writeText(p.id);
-                            alert('Copied Campaign ID to clipboard!');
+                            if (p.id) {
+                              navigator.clipboard.writeText(p.id);
+                              alert('Copied Campaign ID to clipboard!');
+                            }
                           }}
                           style={{ 
                             background: 'none', 
