@@ -41,12 +41,14 @@ function CreateCampaignForm() {
     coverImageUrl: '',
     status: 'draft',
   });
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Fetch campaign data if in edit mode
   useEffect(() => {
     if (editId) {
+      setActiveId(editId);
       setFetching(true);
       fetch(`/api/campaigns/${editId}`)
         .then((res) => res.json())
@@ -72,8 +74,8 @@ function CreateCampaignForm() {
   }, [editId]);
 
   const handleNext = async () => {
-    // Auto-save after Step 1 if it's a new campaign
-    if (step === 1 && !editId) {
+    // Auto-save after Step 1 if it's a new campaign and we haven't created it yet
+    if (step === 1 && !activeId) {
       setLoading(true);
       setError('');
       try {
@@ -89,15 +91,10 @@ function CreateCampaignForm() {
         });
         const data = await res.json();
         if (res.ok && data.campaign) {
-          // Update URL with newly created campaign ID without reloading
+          setActiveId(data.campaign.id);
+          // Update URL silently
           const newUrl = `${window.location.pathname}?id=${data.campaign.id}`;
-          window.history.replaceState(
-            { ...window.history.state, as: newUrl, url: newUrl },
-            '',
-            newUrl,
-          );
-          // We can't use router.replace easily without a potential re-fetch flash,
-          // but updating the ID in state or URL ensures next steps use PUT.
+          window.history.replaceState({ ...window.history.state }, '', newUrl);
           setStep(2);
         } else {
           setError(data.error || 'Failed to auto-save draft. Please try again.');
@@ -187,9 +184,9 @@ function CreateCampaignForm() {
     setError('');
 
     try {
-      // If editId exists, we are publishing/updating a draft
-      const url = editId ? `/api/campaigns/${editId}` : '/api/campaigns/create';
-      const method = editId ? 'PUT' : 'POST';
+      // If activeId exists, we are update/publish the specific draft
+      const url = activeId ? `/api/campaigns/${activeId}` : '/api/campaigns/create';
+      const method = activeId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
