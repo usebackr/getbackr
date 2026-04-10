@@ -356,89 +356,12 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                <th style={tableHeaderStyle}>Campaign Details</th>
-                <th style={tableHeaderStyle}>Internal ID (Audit)</th>
-                <th style={tableHeaderStyle}>Progress</th>
-                <th style={tableHeaderStyle}>Status</th>
-                <th style={tableHeaderStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allProjects.map((p: any) => {
-                const raisedAmount = p.raised ? Number(p.raised) : 0;
-                const goalAmount = p.goalAmount ? Number(p.goalAmount) : 0;
-                const progress = goalAmount > 0 ? Math.min(Math.round((raisedAmount / goalAmount) * 100), 100) : 0;
-                return (
-                  <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', height: '80px' }}>
-                    <td>
-                      <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>{p.title || 'Untitled'}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.creatorName || p.creatorEmail || 'Unknown Creator'}</div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <code style={{ 
-                          fontSize: '0.75rem', 
-                          background: '#f8fafc', 
-                          padding: '4px 8px', 
-                          borderRadius: '6px', 
-                          color: '#475569',
-                          border: '1px solid #e2e8f0',
-                          fontFamily: 'monospace'
-                        }}>
-                          {p.id?.slice(0, 8) || 'unknown'}...{p.id?.slice(-4) || 'id'}
-                        </code>
-                        <button 
-                          onClick={() => {
-                            if (p.id) {
-                              navigator.clipboard.writeText(p.id);
-                              alert('Copied Campaign ID to clipboard!');
-                            }
-                          }}
-                          style={{ 
-                            background: 'none', 
-                            border: 'none', 
-                            padding: '4px', 
-                            cursor: 'pointer', 
-                            color: '#94a3b8',
-                            transition: 'color 0.2s'
-                          }}
-                          title="Copy Full ID"
-                        >
-                          <Copy size={16} />
-                        </button>
-                      </div>
-                    </td>
-                    <td style={{ minWidth: '150px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.75rem' }}>
-                        <span style={{ fontWeight: 700 }}>₦{Number(p.raised).toLocaleString()}</span>
-                        <span style={{ color: '#94a3b8' }}>{progress}%</span>
-                      </div>
-                      <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${progress}%`, height: '100%', background: '#3b82f6', borderRadius: '3px' }} />
-                      </div>
-                    </td>
-                    <td>
-                      <StatusBadge label={p.status.toUpperCase()} active={p.status === 'active'} color={p.status === 'active' ? '#10b981' : '#ef4444'} />
-                    </td>
-                    <td>
-                      <a 
-                        href={`/c/${p.slug}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none' }}
-                      >
-                        Visit <ExternalLink size={14} />
-                      </a>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {allProjects.map((p: any, idx: number) => (
+            <div key={p.id || idx} style={{ fontSize: '0.8rem', color: '#0f172a' }}>
+              Project: {p.title || 'no-title'} | ID: {p.id || 'no-id'}
+            </div>
+          ))}
         </div>
       </div>
 
