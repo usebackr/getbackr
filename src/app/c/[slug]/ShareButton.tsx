@@ -6,9 +6,11 @@ interface ShareButtonProps {
   title: string;
   text: string;
   url: string;
+  creatorName?: string;
+  progressPercent?: number;
 }
 
-export default function ShareButton({ title, text, url }: ShareButtonProps) {
+export default function ShareButton({ title, text, url, creatorName, progressPercent }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -19,11 +21,16 @@ export default function ShareButton({ title, text, url }: ShareButtonProps) {
         ? `${window.location.origin}${url}`
         : url;
 
+    // Construct personalized message
+    const personalizedText = creatorName 
+      ? `Help ${creatorName} achieve their '${title}' goal on Backr! Currently ${progressPercent || 0}% funded. Support them here:`
+      : text;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title,
-          text,
+          text: personalizedText,
           url: fullUrl,
         });
         return; // Success

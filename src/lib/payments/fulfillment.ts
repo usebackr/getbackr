@@ -233,6 +233,35 @@ export async function processSuccessfulPayment(payload: FulfillmentPayload) {
             campaignUrl: `${appUrl}/c/${campaignDetails.slug}`,
           });
         }
+
+        // Trigger Real-time Update via Pusher
+        try {
+          const { getPusherServer } = await import('@/lib/pusher');
+          const pusher = getPusherServer();
+          
+          // 1. Trigger on Campaign Channel (for public page updates)
+          await pusher.trigger(`campaign-${campaignId}`, 'donation-received', {
+            campaignId,
+            amount: baseAmount,
+            backerName: backerName,
+            totalRaised: wallet?.totalReceived || netAmount,
+          });
+
+          // 2. Trigger on User Channel (for creator dashboard notifications)
+          if (campaignDetails.creatorId) {
+            await pusher.trigger(`user-${campaignDetails.creatorId}`, 'donation-received', {
+              campaignId,
+              amount: baseAmount,
+              backerName: backerName,
+              campaignTitle: campaignDetails.title,
+              totalRaised: wallet?.totalReceived || netAmount,
+            });
+          }
+          
+          console.log(`[Fulfillment] Pusher events triggered for campaign ${campaignId}`);
+        } catch (pusherErr) {
+          console.error('[Fulfillment] Pusher trigger failed:', pusherErr);
+        }
       } catch (emailErr) {
         console.error('[Fulfillment] Non-fatal error sending emails:', emailErr);
       }

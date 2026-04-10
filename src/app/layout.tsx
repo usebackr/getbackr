@@ -41,6 +41,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { Toaster } from 'react-hot-toast';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -49,7 +51,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://findbackr.com.ng" />
         <link rel="dns-prefetch" href="https://findbackr.com.ng" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster position="top-right" />
+      </body>
     </html>
   );
 }

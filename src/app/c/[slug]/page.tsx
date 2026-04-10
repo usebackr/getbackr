@@ -19,6 +19,52 @@ import BrandLogo from '@/components/BrandLogo';
 import { getPublicUrl } from '@/lib/storage';
 import { Megaphone, ShieldCheck, ChevronLeft } from 'lucide-react';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import RealtimeListener from '@/components/RealtimeListener';
+import { Metadata, ResolvingMetadata } from 'next';
+
+export async function generateMetadata(
+  { params }: { params: { slug: string } },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const [campaign] = await db
+    .select({
+      title: campaigns.title,
+      description: campaigns.description,
+      creatorId: campaigns.creatorId,
+    })
+    .from(campaigns)
+    .where(eq(campaigns.slug, params.slug))
+    .limit(1);
+
+  if (!campaign) return { title: 'Campaign Not Found | Backr' };
+
+  const [creator] = await db
+    .select({ displayName: users.displayName })
+    .from(users)
+    .where(eq(users.id, campaign.creatorId))
+    .limit(1);
+
+  const title = `${campaign.title} | Backr`;
+  const description = `Help ${creator?.displayName || 'a Backr Creator'} achieve their goal: ${campaign.description?.slice(0, 150)}...`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: `https://findbackr.com.ng/c/${params.slug}`,
+      images: [`/c/${params.slug}/opengraph-image`],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`/c/${params.slug}/opengraph-image`],
+    },
+  };
+}
 
 export default async function CampaignPublicPage({ params }: { params: { slug: string } }) {
   let campaign: any = null;
@@ -186,6 +232,7 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
 
   return (
     <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+      <RealtimeListener campaignId={campaign.id} />
       {/* Minimal Top Nav */}
       <header
         className="campaign-header"
@@ -372,9 +419,11 @@ export default async function CampaignPublicPage({ params }: { params: { slug: s
                 }}
               >
                 <ShareButton
-                  title={`Back ${campaign.title} on Backr`}
+                  title={campaign.title}
                   text={campaign.description || 'Support this awesome campaign!'}
                   url={`/c/${campaign.slug}`}
+                  creatorName={creator?.displayName}
+                  progressPercent={Math.min(Math.round((raisedAmount / goalAmount) * 100), 100)}
                 />
               </div>
             </div>

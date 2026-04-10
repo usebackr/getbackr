@@ -6,6 +6,8 @@ import Sidebar from '@/components/Sidebar';
 import { VerificationBanner, OnboardingChecklist } from '@/components/dashboard/Onboarding';
 import CampaignActions from '@/components/dashboard/CampaignActions';
 import { Download, Rocket, Clapperboard, Users, Megaphone, X, Settings } from 'lucide-react';
+import RealtimeListener from '@/components/RealtimeListener';
+import { Toaster } from 'react-hot-toast';
 
 const Icons = {
   Empty: () => (
@@ -642,6 +644,7 @@ export default function DashboardPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
+      {user?.id && <RealtimeListener userId={user.id} />}
 
       {selectedCampaignForBackers && (
         <BackersModal
