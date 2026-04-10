@@ -6,6 +6,7 @@ import { users } from '@/db/schema/users';
 import { kycProfiles } from '@/db/schema/kycProfiles';
 import { eq } from 'drizzle-orm';
 import { sendEmail } from '@/workers/emailWorkers';
+import sharp from 'sharp';
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB per file
 
@@ -61,16 +62,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const selfieBuffer = Buffer.from(await selfieFile.arrayBuffer());
 
   const ts = Date.now();
-  const idDocumentKey = `kyc/${userId}/id_document_${ts}`;
-  const selfieKey = `kyc/${userId}/selfie_${ts}`;
+  const idDocumentKey = `kyc/${userId}/id_document_${ts}.jpg`;
+  const selfieKey = `kyc/${userId}/selfie_${ts}.jpg`;
 
   try {
-    await uploadFile(idDocumentBuffer, idDocumentKey, idDocumentFile.type || 'image/jpeg');
-    await uploadFile(selfieBuffer, selfieKey, selfieFile.type || 'image/jpeg');
+    // Compress ID document
+    const compressedIdDoc = await sharp(idDocumentBuffer)
+      .resize({ width: 2048, withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toBuffer();
+
+    // Compress Selfie
+    const compressedSelfie = await sharp(selfieBuffer)
+      .resize({ width: 1600, withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toBuffer();
+
+    await uploadFile(compressedIdDoc, idDocumentKey, 'image/jpeg');
+    await uploadFile(compressedSelfie, selfieKey, 'image/jpeg');
   } catch (err) {
-    console.error('[KYC Submit] Upload Error:', err);
+    console.error('[KYC Submit] Processing/Upload Error:', err);
     return NextResponse.json(
-      { error: 'Document upload failed. Please try again.' },
+      { error: 'Image processing or upload failed. Please try again.' },
       { status: 500 },
     );
   }
