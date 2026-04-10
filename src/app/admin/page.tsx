@@ -7,7 +7,8 @@ import { auditLogs } from '@/db/schema/auditLogs';
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { GrowthChart } from '@/components/admin/GrowthChart';
 import { ReconcileButton } from '@/components/admin/ReconcileButton';
-import { ShieldCheck, Info, Copy, ExternalLink, Search } from 'lucide-react';
+import { ShieldCheck, Info, ExternalLink } from 'lucide-react';
+import { CampaignTable } from './CampaignTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -369,96 +370,7 @@ export default async function AdminDashboardPage() {
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '4px' }}>
-                Platform Campaigns
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Management overview of all {allProjects.length} active and closed projects.
-              </p>
-            </div>
-            <div style={{ padding: '8px 16px', background: '#f8fafc', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #e2e8f0' }}>
-              <Search size={16} color="#94a3b8" />
-              <input 
-                type="text" 
-                placeholder="Filter projects..." 
-                style={{ background: 'none', border: 'none', outline: 'none', fontSize: '0.85rem', width: '200px' }}
-                disabled
-              />
-            </div>
-          </div>
-    
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Campaign</th>
-                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Creator</th>
-                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Raised / Goal</th>
-                  <th style={{ ...tableHeaderStyle, textAlign: 'left' }}>Status</th>
-                  <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Internal ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allProjects.map((p: any) => {
-                  const pct = Math.min(Math.round((Number(p.totalRaised || 0) / Number(p.goalAmount || 1)) * 100), 100);
-                  return (
-                    <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '16px 8px' }}>
-                        <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {p.title}
-                          <a href={`/c/${p.slug}`} target="_blank" rel="noreferrer">
-                            <ExternalLink size={12} color="#94a3b8" />
-                          </a>
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
-                          /c/{p.slug}
-                        </div>
-                      </td>
-                      <td style={{ padding: '16px 8px' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{p.creatorName || 'Unknown'}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{p.creatorEmail || 'No email'}</div>
-                      </td>
-                      <td style={{ padding: '16px 8px' }}>
-                        <div style={{ marginBottom: '6px', fontSize: '0.85rem', fontWeight: 800 }}>
-                          ₦{Number(p.totalRaised || 0).toLocaleString()} <span style={{ color: '#94a3b8', fontWeight: 500 }}>/ ₦{Number(p.goalAmount).toLocaleString()}</span>
-                        </div>
-                        <div style={{ width: '120px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: '#10b981' }} />
-                        </div>
-                      </td>
-                      <td style={{ padding: '16px 8px' }}>
-                        <StatusBadge 
-                          label={p.status?.toUpperCase() || 'UNKNOWN'} 
-                          active={p.status === 'active'} 
-                          color={p.status === 'active' ? '#10b981' : p.status === 'closed' ? '#ef4444' : '#f59e0b'} 
-                        />
-                      </td>
-                      <td style={{ padding: '16px 8px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <code style={{ fontSize: '0.75rem', background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                            {p.id ? `${p.id.slice(0, 8)}...` : 'N/A'}
-                          </code>
-                          <button 
-                            onClick={() => {
-                              if (p.id) {
-                                navigator.clipboard.writeText(p.id);
-                                alert('Project UUID copied to clipboard!');
-                              }
-                            }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', hover: { background: '#f1f5f9' } } as any}
-                          >
-                            <Copy size={14} color="#64748b" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <CampaignTable projects={allProjects} />
         </div>
 
         <div style={{ background: '#0f172a', padding: '32px', borderRadius: '16px', color: '#fff' }}>
