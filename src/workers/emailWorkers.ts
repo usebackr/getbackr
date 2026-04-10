@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { contributions } from '@/db/schema/contributions';
 import { users } from '@/db/schema/users';
