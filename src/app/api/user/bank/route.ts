@@ -13,7 +13,14 @@ export async function GET(req: NextRequest) {
     const payload = verifyAccessToken(token);
 
     const accounts = await db
-      .select()
+      .select({
+        id: bankAccounts.id,
+        userId: bankAccounts.userId,
+        bankName: bankAccounts.bankName,
+        bankCode: bankAccounts.bankCode,
+        accountNumber: bankAccounts.accountNumber,
+        accountName: bankAccounts.accountName,
+      })
       .from(bankAccounts)
       .where(eq(bankAccounts.userId, payload.sub as string));
 
@@ -45,7 +52,10 @@ export async function POST(req: NextRequest) {
     const accountName = await resolveAccountNumber(accountNumber, bankCode);
 
     // Check if user already has an account, then update, else insert
-    const existing = await db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId));
+    const existing = await db
+      .select({ id: bankAccounts.id })
+      .from(bankAccounts)
+      .where(eq(bankAccounts.userId, userId));
 
     if (existing.length > 0) {
       if (!otp) {

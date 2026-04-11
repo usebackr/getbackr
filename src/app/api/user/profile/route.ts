@@ -12,7 +12,21 @@ export async function GET(req: NextRequest) {
     const payload = verifyAccessToken(token);
     const userId = payload.sub as string;
 
-    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const [user] = await db
+      .select({
+        id: users.id,
+        displayName: users.displayName,
+        username: users.username,
+        avatarUrl: users.avatarUrl,
+        kycStatus: users.kycStatus,
+        bio: users.bio,
+        category: users.category,
+        socialLinks: users.socialLinks,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
     if (user) {
       // Check if they actually have documents submitted
