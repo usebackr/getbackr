@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { users } from '@/db/schema/users';
 import { consumeVerificationToken } from '@/lib/auth/tokens';
+import { verifyAccessToken } from '@/lib/auth/jwt';
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Token is required'),
@@ -39,16 +40,37 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Update verification status
   await db
     .update(users)
     .set({ emailVerified: true, updatedAt: new Date() })
     .where(eq(users.id, userId));
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       message: 'Email verified successfully.',
       redirect: '/onboarding',
     },
     { status: 200 },
   );
+
+  // SESSION HARDENING: 
+  // If the user is already logged in as a DIFFERENT user, clear their cookies
+  const currentToken = req.cookies.get('accessToken')?.value;
+  if (currentToken) {
+    try {
+      const payload = verifyAccessToken(currentToken);
+      if (payload && payload.sub !== userId) {
+        console.log(`[Verify] Session mismatch detected. Clearing old session for ${payload.sub} (verifying ${userId})`);
+        response.cookies.delete('accessToken');
+        response.cookies.delete('refreshToken');
+      }
+    } catch (err) {
+      // If token is invalid anyway, clear it for safety
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
+    }
+  }
+
+  return response;
 }
