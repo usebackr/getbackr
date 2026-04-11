@@ -53,6 +53,7 @@ const Icons = {
 };
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -71,16 +72,6 @@ export default function Navbar() {
     }
     checkSession();
   }, [pathname]); // Refresh on navigation to catch logout/login changes
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [isOpen]);
-
-  const pathname = usePathname();
 
   const AuthButtons = ({ isMobile = false }) => {
     if (loading) return null;
