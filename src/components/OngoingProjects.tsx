@@ -31,7 +31,16 @@ export default async function OngoingProjects() {
       sql`${contributions.campaignId} = ${campaigns.id} AND ${contributions.status} = 'confirmed'`,
     )
     .where(eq(campaigns.status, 'active'))
-    .groupBy(campaigns.id, users.displayName, users.kycStatus)
+    .groupBy(
+      campaigns.id,
+      campaigns.title,
+      campaigns.category,
+      campaigns.goalAmount,
+      campaigns.coverImageUrl,
+      campaigns.slug,
+      users.displayName,
+      users.kycStatus,
+    )
     .orderBy(desc(campaigns.createdAt))
     .limit(6);
 
