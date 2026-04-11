@@ -38,6 +38,7 @@ export default async function OngoingProjects() {
       campaigns.goalAmount,
       campaigns.coverImageUrl,
       campaigns.slug,
+      campaigns.createdAt,
       users.displayName,
       users.kycStatus,
     )
