@@ -36,7 +36,19 @@ export async function POST(req: NextRequest) {
     const lowerEmail = email.toLowerCase();
 
     // Find user in DB
-    const user = await db.select().from(users).where(eq(users.email, lowerEmail)).limit(1);
+    // Explicit selection to avoid crashes if production DB is temporarily behind schema
+    const user = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        displayName: users.displayName,
+        emailVerified: users.emailVerified,
+        lockedUntil: users.lockedUntil,
+      })
+      .from(users)
+      .where(eq(users.email, lowerEmail))
+      .limit(1);
 
     if (user.length === 0) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });

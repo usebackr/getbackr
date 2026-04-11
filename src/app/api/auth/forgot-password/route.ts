@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 
     const lowerEmail = email.toLowerCase();
-    const [user] = await db.select().from(users).where(eq(users.email, lowerEmail)).limit(1);
+    const [user] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.email, lowerEmail))
+      .limit(1);
 
     // Always return a generic success message to prevent malicious email enumeration
     if (!user) {
