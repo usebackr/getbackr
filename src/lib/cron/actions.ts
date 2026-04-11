@@ -168,14 +168,6 @@ export async function reconcilePendingPayments(targetRef?: string, manualCampaig
 }
 
 /**
- * Maintenance Action: Run Drip Email Campaigns
- */
-export async function runDripCampaigns() {
-  console.log('[Cron] Drip Campaigns are temporarily disabled while awaiting database migration.');
-  return { kycRemindersSent: 0 };
-}
-
-/**
  * Unified Maintenance Runner
  */
 export async function runMaintenance() {
@@ -185,14 +177,12 @@ export async function runMaintenance() {
   const boostsResult = await expireBoosts();
   const subsResult = await expireSubscriptions();
   const reconcileResult = await reconcilePendingPayments();
-  const dripResult = await runDripCampaigns();
 
   console.log('[Maintenance] Finished:', {
     campaignsClosed: campaignsResult.closedCount,
     boostsExpired: boostsResult.expiredCount,
     subsExpired: subsResult.expiredCount,
     paymentsReconciled: reconcileResult.processed,
-    dripEmailsSent: dripResult.kycRemindersSent,
   });
 
   return {
@@ -200,7 +190,6 @@ export async function runMaintenance() {
     boosts: boostsResult,
     subscriptions: subsResult,
     reconciliation: reconcileResult,
-    drip: dripResult,
   };
 }
 
